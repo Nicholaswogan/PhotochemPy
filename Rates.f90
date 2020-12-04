@@ -1,7 +1,6 @@
       subroutine rates
         implicit none
-        ! might pass in T and Den
-        ! and return A
+        ! might pass in T and Den and return A
 
         ! module variables
         ! real*8, allocatable, dimension(:,:) :: rateparams ! a new one.
@@ -51,10 +50,6 @@
           ! the below are rate constants which don't fit in the 2BODY or 3BODY category
           else if (REACTYPE(J) .EQ. 'WEIRD') then
             DO I=1,NZ
-        !       A(j,i) = 0.0
-        !     enddo
-        !   endif
-        ! enddo
 
               ! H2 + O -> OH + H
               if (CHEMJ(1,J) .EQ. 'H2' .AND. CHEMJ(2,J) .EQ. 'O') THEN

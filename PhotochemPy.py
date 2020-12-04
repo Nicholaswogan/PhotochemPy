@@ -9,7 +9,6 @@ class PhotochemPy:
         # into memory.
 
         self.nz = 200 # number of vertical grid points
-        self.nw = 118 # number of wavelength bins
 
         # read species.dat to find nq, np, isl
         fil = open(species_dat,'r')
@@ -51,7 +50,7 @@ class PhotochemPy:
                     temp_spec.append(line.split()[0])
 
 
-        self.photo.allocate_memory(self.nw,self.nz,self.nq,\
+        self.photo.allocate_memory(self.nz,self.nq,\
                                   self.np,self.nsp,self.nr,\
                                   self.ks,self.kj)
         self.photo.read_species(species_dat)

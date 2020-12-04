@@ -1,18 +1,17 @@
       module photochem
         implicit none
         ! Module variables (shared between subroutines)
-        real*8, allocatable, dimension(:) :: Flux ! Solar flux photons/(cm2 s)
-        real*8, allocatable, dimension(:,:) :: prates ! photolysis rates (1/s)
         integer :: nz ! number of vertical grid points
         integer :: nq ! number of long lived species
         integer :: np ! number of particles
-        integer :: nw ! number of wavelengths
         integer :: nsp ! total number of species
         integer :: nsp2 ! total number of species, including HV and M
         integer :: nr ! number of reactions
-        integer :: nmax ! max number of reactions a species can be involved in
+        integer, parameter :: nmax = 300 ! max number of reactions a species can be involved in
         integer :: ks ! number of photo species
         integer :: kj ! number of photo reactions
+        integer, parameter :: kw = 2900 ! max number of wavelength bins
+        integer :: nw
 
         ! Defined in species.dat
         integer :: iSL ! number of sl species
@@ -52,18 +51,36 @@
         integer, allocatable, dimension(:) :: photonums
         integer, allocatable, dimension(:) :: photospec
 
-        ! needed in photogrid.f90
-        real*8, allocatable, dimension(:) :: z
-        real*8, allocatable, dimension(:) :: dz
-
         ! needed in read_atmosphere.f90
-        real*8, allocatable, dimension(:,:) :: usol_init
-        real*8, allocatable, dimension(:) :: den
-        real*8, allocatable, dimension(:) :: T
-        real*8, allocatable, dimension(:) :: EDD
+        real*8, allocatable, dimension(:,:) :: usol_init ! initial atmospheric composition
+        real*8, allocatable, dimension(:) :: den ! total number density vs altitude
+        real*8, allocatable, dimension(:) :: T ! Temperature vs altitude
+        real*8, allocatable, dimension(:) :: EDD ! Eddy diffusion coefficients
+
+        ! needed in subroutine photgrid (in photgrid.f90)
+        real*8, allocatable, dimension(:) :: z ! altitude of middle of grid
+        real*8, allocatable, dimension(:) :: dz ! Delta_z of each altitude grid
+
+        ! needed in initphoto.f90.
+        real*8, dimension(kw) :: Flux ! Solar flux photons/(cm2 s)
+        real*8, dimension(kw) :: wavl, wav, wavu ! wavelength bins
+        real*8, dimension(17,4) :: alphap ! this stuff is for re-computing O2 cross sections in photo.dat
+        real*8, dimension(17,4) :: beta  ! this. Ultimately I'll get rid of it
+        integer, dimension(17) :: nk !this
+        real*8, dimension(kw) :: SO2HZ ! this
+        character(len=11),allocatable, dimension(:) :: photolabel
+        real*8, allocatable, dimension(:,:,:) :: sq ! cross sections * qy
+
+        ! needed in initmie.f90
+        real*8, dimension(51) :: Rstand
+        real*8, dimension(kw,51) :: W0HC
+        real*8, dimension(kw,51) :: GHC, QEXTHC
+
+        ! needed in ...
+        real*8, allocatable, dimension(:,:,:) :: QEXTT, W0T, GFT
 
         ! needed in rates.f90
-        real*8, allocatable, dimension(:,:) :: A
+        real*8, allocatable, dimension(:,:) :: A ! reaction rate coefficients
 
         ! some planet parameters and constants
         real*8 :: g ! gravity cgs units
@@ -78,36 +95,38 @@
         include "read_species.f90" ! reads species.dat
         include "read_reactions.f90" ! reads reactions.rx
         include "read_atmosphere.f90" ! reads atmosphere.txt
-        include "photogrid.f90" ! step up vertical grid
+        include "photgrid.f90" ! step up grid for photolysis calculations
         include "rates.f90" ! calculates reaction rates
+        include "Initphoto.f90"
+        include "Xsections.f90"
+        include "initmie.f90"
+
         ! include "xsections.f90" ! loads xsections
         ! dochem
         ! chempl
         ! ...
 
-        subroutine allocate_memory(nnw, nnz, nnq, nnp, nnsp,&
+        subroutine allocate_memory(nnz, nnq, nnp, nnsp,&
            nnr, kks, kkj)
           implicit none
-          integer :: nnw, nnz, nnq, nnp, nnsp, nnr, kks, kkj
+          integer ::  nnz, nnq, nnp, nnsp, nnr, kks, kkj
           integer :: i,j
-!f2py     intent(in) :: nnw, nnz, nnq, nnp, nnsp, nnr, kks, kkj
+!f2py     intent(in) ::  nnz, nnq, nnp, nnsp, nnr, kks, kkj
 
           ! The dimensions.
           nz = nnz
           nq  = nnq
-          nw = nnw
           np = nnp
           nsp = nnsp
           nsp2 = nnsp+2
           ks = kks
           kj = kkj
           nr = nnr
-          nmax = 300
 
           ! allocate memory
           ! safeguard against allocating twice
-          if (allocated(Flux).neqv..True.) then
-            allocate(Flux(nw))
+          if (allocated(ISPEC).neqv..True.) then
+            ! allocate(Flux(nw))
             ! allocate(prates())
 
             ! Defined in species.dat
@@ -140,15 +159,24 @@
             allocate(photospec(ks))
             allocate(photonums(kj))
 
-            ! needed in photogrid.f90
-            allocate(z(nz))
-            allocate(dz(nz))
-
             ! needed in atmosphere.txt
             allocate(usol_init(nq,nz))
             allocate(den(nz))
             allocate(T(nz))
             allocate(EDD(nz))
+
+            ! needed in photogrid.f90
+            allocate(z(nz))
+            allocate(dz(nz))
+
+            ! needed in initphoto.f90.
+            allocate(photolabel(kj))
+            allocate(sq(kj,nz,kw))
+
+            ! needed in initmie.f90
+            allocate(QEXTT(kw,nz,np))
+            allocate(W0T(kw,nz,np))
+            allocate(GFT(kw,nz,np))
 
             ! needed in rates.f90
             allocate(A(NR,NZ))
@@ -158,8 +186,6 @@
                 A(i,j) = 0.0
               enddo
             enddo
-
-
 
           else
             print*, "Memory has already been allocated"
