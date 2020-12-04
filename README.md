@@ -6,4 +6,4 @@ PhotochemPy is an updated version of the `Atmos` photochemical model, originally
 
 The code is structured so that the photochemical model can easily be evolved with different ODE integration methods. My plan is evolve the photochemical model with CVODE, so that the atmosphere is actually resolved in time.
 
-I will also implement a simple backward Euler integration scheme. This will be used to integrate the system of ODEs to steady-state. Also, I will try to see if Newton's method can be used to find steady-state atmospheres.
+I will also implement a simple backward Euler integration scheme. This will be used to integrate the system of ODEs to steady-state. Also, I will try to see if optimization methods can be used to find steady-state atmospheres.
