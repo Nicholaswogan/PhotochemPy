@@ -1,5 +1,6 @@
 
       subroutine read_reactions(reactions_rx)
+        use reading_vars
         implicit none
 
         ! module variables
@@ -12,6 +13,7 @@
         ! integer, allocatable, dimension(:) :: photoreac
         ! integer, allocatable, dimension(:) :: photonums
         ! integer, allocatable, dimension(:) :: photospec
+        ! integer, allocatable, dimension(:) :: NUML, NUMP
 
         ! local variables
         character(len=*) :: reactions_rx
@@ -20,15 +22,12 @@
         integer :: i, m, j, l, ierr, n, k
         integer :: rhOcount, rhHcount, rhCcount, rhScount
         integer :: rhNcount, rhCLcount, numprod, bad
-        integer, allocatable, dimension(:) :: NUML, NUMP
         integer, allocatable, dimension(:) :: testvec
         integer :: jcount, jrcount, juniq
 !f2py   intent(in) :: reactions_rx
 
         ! allocate memeory
         allocate(testvec(nr))
-        allocate(numl(nsp))
-        allocate(nump(nsp))
 
         ! open reactions.rx
         open(9, file=trim(reactions_rx),status='OLD')

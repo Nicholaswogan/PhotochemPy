@@ -2,7 +2,9 @@
         implicit none
         ! Module variables (shared between subroutines)
         integer :: nz ! number of vertical grid points
+        integer :: nz1 !nz-1
         integer :: nq ! number of long lived species
+        integer :: nq1
         integer :: np ! number of particles
         integer :: nsp ! total number of species
         integer :: nsp2 ! total number of species, including HV and M
@@ -12,10 +14,14 @@
         integer :: kj ! number of photo reactions
         integer, parameter :: kw = 2900 ! max number of wavelength bins
         integer :: nw
+        integer, parameter :: naq = 10 !number of aqueous species
+        integer, parameter :: nt = 50 !number of temperatures in sulfate/H2O vapor pressure file (DATA/aerosol.table)
+        integer, parameter :: nf = 50 !NT=number of pressures per temperature in DATA/aerosol.table
 
         ! Defined in species.dat
         integer :: iSL ! number of sl species
-        real*8 :: FCO2, FN2 ! mixing ratios of N2 and CO2 if inert
+        real*8 :: FCO2, FN2 ! mixing ratios of N2 and CO2
+        integer :: CO2_inert, N2_inert
         character(len=8), allocatable, dimension(:) :: ISPEC
         integer, allocatable, dimension(:) :: LBOUND
         real*8, allocatable, dimension(:) :: VDEP0
@@ -26,36 +32,45 @@
         integer, allocatable, dimension(:) :: MBOUND
         real*8, allocatable, dimension(:) :: SMFLUX
         real*8, allocatable, dimension(:) :: VEFF0
-        integer, allocatable, dimension(:) :: atomsO
-        integer, allocatable, dimension(:) :: atomsH
-        integer, allocatable, dimension(:) :: atomsC
-        integer, allocatable, dimension(:) :: atomsS
-        integer, allocatable, dimension(:) :: atomsN
-        integer, allocatable, dimension(:) :: atomsCL
+        ! integer, allocatable, dimension(:) :: atomsO
+        ! integer, allocatable, dimension(:) :: atomsH
+        ! integer, allocatable, dimension(:) :: atomsC
+        ! integer, allocatable, dimension(:) :: atomsS
+        ! integer, allocatable, dimension(:) :: atomsN
+        ! integer, allocatable, dimension(:) :: atomsCL
         real*8, allocatable, dimension(:) :: mass
-        ! make all these atoms things local
+        integer LSO2, LH2CO, lh2so4, lso4aer, lh2s ! indexes of a few things
+        integer LCO, LH2O, LH2, LCH4, LO2
+        ! make all these atoms things local someday
 
         ! Defined in reactions.rx
         Character(len=8), allocatable, dimension(:,:) :: chemj
         integer, allocatable, dimension(:,:) :: jchem
         Character(len=8), allocatable, dimension(:) :: reactype
         real*8, allocatable, dimension(:,:) :: rateparams ! a new one.
-        ! I am going to need to calculate reaction rates each timestep with
-        ! the data stored in rateparams. So I need a subroutine... lets call it
-        ! rates, which does this. rates will take in T(z) and Density(z) and reactype
-        ! and calculate all of the reaction rate coefficients.
-        ! the reaction rates coefficients can be a module variable.
         integer, allocatable, dimension(:,:,:) :: iloss
         integer, allocatable, dimension(:,:) :: iprod
         integer, allocatable, dimension(:) :: photoreac
         integer, allocatable, dimension(:) :: photonums
         integer, allocatable, dimension(:) :: photospec
+        integer, allocatable, dimension(:) :: NUML, NUMP
 
         ! needed in read_atmosphere.f90
         real*8, allocatable, dimension(:,:) :: usol_init ! initial atmospheric composition
         real*8, allocatable, dimension(:) :: den ! total number density vs altitude
         real*8, allocatable, dimension(:) :: T ! Temperature vs altitude
         real*8, allocatable, dimension(:) :: EDD ! Eddy diffusion coefficients
+        real*8, allocatable, dimension(:,:) :: aersol ! aersol parameter
+        real*8, allocatable, dimension(:,:) :: wfall ! aersol parameter
+        real*8, allocatable, dimension(:,:) :: rpar ! aersol parameter
+
+        ! needed in read_planet.f90
+        real*8 :: G, Fscale, Alb, ztrop,far,R0,P0
+        character(len=8) :: planet
+
+        ! needed in read_photochem.f90
+        real*8 :: AGL, EPSJ, prono, hcdens, zy
+        integer :: Lgrid, IO2, ino, frak, ihztype
 
         ! needed in subroutine photgrid (in photgrid.f90)
         real*8, allocatable, dimension(:) :: z ! altitude of middle of grid
@@ -76,15 +91,37 @@
         real*8, dimension(kw,51) :: W0HC
         real*8, dimension(kw,51) :: GHC, QEXTHC
 
-        ! needed in ...
+        ! needed in Aertab.f90
+        real*8, allocatable, dimension(:,:) :: VH2O
+        real*8, allocatable, dimension(:,:) :: VH2SO4
+        real*8, dimension(nf) :: ftab
+
+        ! needed in Aercon.f90
+        real*8, allocatable, dimension(:) :: FSULF
+        real*8, allocatable, dimension(:) :: H2SO4S
+        real*8, allocatable, dimension(:) :: S8S
+
+        ! needed in photo.f90
         real*8, allocatable, dimension(:,:,:) :: QEXTT, W0T, GFT
+
+        ! needed in dochem.f90
+        ! real*8, allocatable, dimension(:,:) :: D ! density of every species
+        real*8, allocatable, dimension(:,:) :: YP
+        real*8, allocatable, dimension(:,:) :: YL
 
         ! needed in rates.f90
         real*8, allocatable, dimension(:,:) :: A ! reaction rate coefficients
 
+        ! needed in rainout.f90
+        real*8, allocatable, dimension(:,:) :: H
+        real*8, allocatable, dimension(:,:) :: RAINGC
+        real*8, allocatable, dimension(:) :: RAIN
+        real*8, allocatable, dimension(:,:) :: XSAVE
+
+        ! needed in ltning.f90
+        real*8 :: ZAPNO,ZAPO2,PRONOP,ZAPCO,ZAPH2,ZAPO
+
         ! some planet parameters and constants
-        real*8 :: g ! gravity cgs units
-        real*8 :: k_boltz ! boltzman constant cgs units
 
       contains
         ! Module subroutines go here.
@@ -92,22 +129,34 @@
         ! e.g. include "Photo.f90"
         ! etc...
 
+        ! ALL THESE WORK!!!
         include "read_species.f90" ! reads species.dat
         include "read_reactions.f90" ! reads reactions.rx
         include "read_atmosphere.f90" ! reads atmosphere.txt
+        include "read_planet.f90" ! reads planet.dat
+        include "read_photochem.f90" ! reads input_photochem.dat
         include "photgrid.f90" ! step up grid for photolysis calculations
         include "rates.f90" ! calculates reaction rates
         include "Initphoto.f90"
         include "Xsections.f90"
         include "initmie.f90"
+        include "Rainout.f90"
+        include "Aqueous.f90"
+        include "Ltning.f90" ! Needs work for time dependent model
+        include "Aertab.f90"
+        ! ALL THESE WORK!!!
 
-        ! include "xsections.f90" ! loads xsections
-        ! dochem
-        ! chempl
-        ! ...
+        ! in progress is below
+        subroutine test
+          use reading_vars
+
+          print*,atomsO
+        end subroutine
+
 
         subroutine allocate_memory(nnz, nnq, nnp, nnsp,&
            nnr, kks, kkj)
+          use reading_vars
           implicit none
           integer ::  nnz, nnq, nnp, nnsp, nnr, kks, kkj
           integer :: i,j
@@ -115,7 +164,9 @@
 
           ! The dimensions.
           nz = nnz
+          nz1 = nz-1
           nq  = nnq
+          nq1 = nq
           np = nnp
           nsp = nnsp
           nsp2 = nnsp+2
@@ -126,8 +177,6 @@
           ! allocate memory
           ! safeguard against allocating twice
           if (allocated(ISPEC).neqv..True.) then
-            ! allocate(Flux(nw))
-            ! allocate(prates())
 
             ! Defined in species.dat
             allocate(ISPEC(nsp2)) ! issue with this one
@@ -164,6 +213,11 @@
             allocate(den(nz))
             allocate(T(nz))
             allocate(EDD(nz))
+            allocate(aersol(nz,np))
+            allocate(wfall(nz,np))
+            allocate(rpar(nz,np))
+            allocate(numl(nsp))
+            allocate(nump(nsp))
 
             ! needed in photogrid.f90
             allocate(z(nz))
@@ -173,10 +227,24 @@
             allocate(photolabel(kj))
             allocate(sq(kj,nz,kw))
 
-            ! needed in initmie.f90
+            ! needed in Aertab.f90
+            allocate(VH2O(Nf,nz))
+            allocate(VH2SO4(Nf,nz))
+
+            ! needed in Aercon.f90
+            allocate(FSULF(nz))
+            allocate(H2SO4S(nz))
+            allocate(S8S(nz))
+
+            ! needed in Photo.f90
             allocate(QEXTT(kw,nz,np))
             allocate(W0T(kw,nz,np))
             allocate(GFT(kw,nz,np))
+
+            ! needed in dochem.f90
+            ! allocate(D(NSP2,NZ))
+            allocate(YP(NQ1,NZ))
+            allocate(YL(NQ1,NZ))
 
             ! needed in rates.f90
             allocate(A(NR,NZ))
@@ -187,11 +255,15 @@
               enddo
             enddo
 
+            ! needed in rainout.f90
+            allocate(H(NQ,NZ))
+            allocate(RAINGC(NQ,NZ))
+            allocate(RAIN(NZ))
+            allocate(XSAVE(naq,nz))
+
           else
             print*, "Memory has already been allocated"
           endif
-
-          ! Define planet parameters
 
           ! Define constants
 

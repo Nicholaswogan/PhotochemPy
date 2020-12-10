@@ -1,5 +1,6 @@
 
       subroutine read_species(species_dat)
+        use reading_vars
         implicit none
 
         ! module variables
@@ -21,6 +22,7 @@
         ! integer, allocatable, dimension(:) :: atomsN
         ! integer, allocatable, dimension(:) :: atomsCL
         ! integer, allocatable, dimension(:) :: mass
+        ! lnums
 
         ! local variables
         character(len=*) :: species_dat
@@ -47,6 +49,10 @@
         iIN=0
 
         i = 0
+        FCO2=0.
+        FN2=0.
+        CO2_inert = 0
+        N2_inert = 0
         do while (I.LT.1000)
         ! Note: Below will crash if species.dat is longer than 1000 lines.
           read(4,*, end=96) SPECIES,SPECTYPE
@@ -55,6 +61,16 @@
             ISPEC(iSP)=species
             ! This loads the "Lnumbers" for ease of use later in the code
             ! call LNUM(ISPEC(isP),iSP)
+            if(trim(species).eq.'SO2') LSO2=iSP
+            if(trim(species).eq.'H2CO') LH2CO=iSP
+            if(trim(species).eq.'H2SO4') LH2SO4=iSP
+            if(trim(species).eq.'SO4AER') LSO4AER=iSP
+            if(trim(species).eq.'H2S') LH2S=iSP
+            if(trim(species).eq.'CO') LCO=iSP
+            if(trim(species).eq.'H2O') LH2O=iSP
+            if(trim(species).eq.'H2') LH2=iSP
+            if(trim(species).eq.'CH4') LCH4=iSP
+            if(trim(species).eq.'O2') LO2=iSP
             ! Return to previous line in species.dat file
             backspace 4
 
@@ -89,8 +105,14 @@
               iIN=iIN+1
               backspace 4
               read(4,*) AX,AX,LX,LX,LX,LX,LX,LX,XX
-              if (species.EQ.'CO2') FCO2=XX
-              if (species.EQ.'N2') FN2=XX
+              if (species.EQ.'CO2') then
+                FCO2=XX
+                CO2_inert = 1
+              endif
+              if (species.EQ.'N2') then
+                FN2=XX
+                N2_inert = 1
+              endif
             endif
             if (SPECTYPE.EQ.'SL') iSL=iSL+1
             if (SPECTYPE.EQ.'HV') iIN=iIN+1

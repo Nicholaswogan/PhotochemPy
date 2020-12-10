@@ -7,12 +7,13 @@
         ! integer :: nsp2
         ! integer :: nz ! number of vertical grid points
         ! real*8, allocatable, dimension(:,:) :: usol_init
+        ! integer :: np ! number of particles
 
         ! local variables
         character(len=*), intent(in) :: atmosphere_txt
         character(len=10000) :: line
         character(len=8), dimension(1000) :: arr1
-        character(len=8),allocatable, dimension(:) :: arr2
+        character(len=15),allocatable, dimension(:) :: arr2
         real*8,allocatable, dimension(:) :: temp
         integer :: i, n, io, j, k, ii, iii
 
@@ -30,7 +31,7 @@
 
         ! reads in mixing ratios
         iii = 0
-        do i=1,nsp2
+        do i=1,nq
           do j=1,n
             if (arr2(j).eq.ispec(i)) then
               iii= iii+1
@@ -47,6 +48,7 @@
 
         if (iii.ne.nq) then
           print*,'Error when reading in initial atmosphere.'
+          print*, iii, nq
         endif
 
         rewind(4)
@@ -85,6 +87,38 @@
           endif
         enddo
 
+        rewind(4)
+        read(4,*)
+        ! reads in aersol parameters
+        do j=1,n
+          do i=1,np
+            if (trim(arr2(j)).eq.trim(ISPEC(size(ISPEC)-(nsp2-nq)-np+i))//'_AERSOL') then
+              do k=1,nz
+                read(4,*) (temp(ii),ii=1,n)
+                aersol(k,i) = temp(j)
+              enddo
+              rewind(4)
+              read(4,*)
+              exit
+            else if (trim(arr2(j)).eq.trim(ISPEC(size(ISPEC)-(nsp2-nq)-np+i))//'_WFALL') then
+              do k=1,nz
+                read(4,*) (temp(ii),ii=1,n)
+                wfall(k,i) = temp(j)
+              enddo
+              rewind(4)
+              read(4,*)
+              exit
+            else if (trim(arr2(j)).eq.trim(ISPEC(size(ISPEC)-(nsp2-nq)-np+i))//'_RPAR') then
+              do k=1,nz
+                read(4,*) (temp(ii),ii=1,n)
+                rpar(k,i) = temp(j)
+              enddo
+              rewind(4)
+              read(4,*)
+              exit
+            endif
+          enddo
+        enddo
         close(4)
 
       end subroutine

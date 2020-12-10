@@ -4,7 +4,7 @@
       ! Input is usol(nq,nz) (molecules/cm2)
       ! Output is prates (1/s), photolysis rates.
       ! prates is a module variable, so no need to be returned
-
+      implicit none
       ! Module variables
       ! integer :: nz ! number of heights
       ! integer :: kj ! number photolysis species
@@ -14,32 +14,43 @@
       ! prates
 
       ! local variables
-      implicit none
       real*8 :: SIGR(NZ)
       real*8 :: volmix(10,nz),icomp(10,nz),ncomp(nz)
       real*8 :: columndepth(KJ,NZ)
       integer :: l,i,j
 
+      real*8 TTOT(NZ),S(NZ),SALL(kw,NZ), STAU(kw),smax(kw)
+      real*8 D0(2)
+      real*8 LLNO(35)
+      real*8 SIGR(NZ)
+      real*8 volmix(10,nz),icomp(10,nz),ncomp(nz)
+      real*8 columndepth(KJ,NZ)
+      real*8 PRATESNO(NZ)  !used in High resolution model
+      real*8 PM, BK, RGAS, wt, hc, pi
+
 
       ! C   NO PREDISSOCIATION WAVELENGTHS (ALLEN AND FREDERICK, 1982)
       ! c- this used only if INO=0
-      DATA LLNO/3*0, 2*2, 3*0, 2*1, 25*0/
+      LLNO = (/3*0, 2*2, 3*0, 2*1, 25*0/)
 
       PM = 1.67E-24               !used in S8 (???) - what is this?
       BK = 1.38E-16               !Boltzmann constant - in erg/K
       RGAS = 8.3143E7             !erg/mol/K
 
       ! NEED molecular wt of atmosphere
+      wt = FCO2*44.+ FN2*28.
+      do i=1,nq
+        wt = wt + usol(i,1)*mass(i)
+      enddo
+      ! should work for every case (whether N2 and CO2 are inert or not)
 
       RMG = RGAS/(WT*G)           !gm cm^2/s^2/mol/K  / g *s^2/cm ->  cm/mol/K
-
       PI = 3.14159
       ZYR = ZY*PI/180.            ! note ZY is passed in subroutine call - solar angle in radians
       U0 = COS(ZYR)
       AM = 1./U0
 ! c -mc now in PHOTABLOK      ALB = 0.25                  ! albedo of surface
 
-      NPHOT = NPHOT + 1        ! counts calls to this subroutine
       HC = 6.625E-27 * 3.00E10     !planck constant*speed of light, used in EFLUX
 ! c-mc erg s * cm/s -> erg cm
 
@@ -65,14 +76,16 @@
       HAD = 0.0 * HA*DEN(NZ)
       TTOT(NZ) = HAD
 
+      ! calculate absorbers here!!!!!!!!! Not needed I think
+
+
       do k=1,kj   !kj=number of photolysis reactions
-        columndepth(k,NZ)=absorbers(k,NZ)*HAD
+        columndepth(k,NZ)=absorbers(k,NZ)*HAD !zeros out top
       enddo
 
       do k=1,kj
         DO  M=1,NZ1
           I = NZ - M      !run through heights from the top down.
-
           HA = RMG*0.5*(T(I) + T(I+1))  !scale height RT/MG
 
 ! c-mc        DZ = Z(I+1) - Z(I)  !ACK - this is good, but should already exist as a vector
@@ -348,14 +361,14 @@
         endif !end INO=2 loop
 
 !print out on last timestep
-        if (N .NE. 0 .AND. K.EQ.KN) then !N.NE.0 only on last timestep,  KN=1 or 1-4 for L<17
-          TAUR = SIGR(1)*TTOT(1)  !ack simple way of indicating total rayleigh optical depth. should be sum
-          DELWAV = WAVU(L) - WAVL(L)
-          EFLUX = 1.E6*HC*FLX/(WAV(L)*DELWAV*AGL)  !convert to W/m^2
-          GFLUX = EFLUX*S(1)  !ground flux = TOA flux*optical path
-          write(14, 120) L,WAV(L),TAUR,EFLUX,GFLUX,S(1)
- 120      FORMAT(1X,I3,1X,F6.1,1X,1P4E10.3)
-        endif
+ !        if (N .NE. 0 .AND. K.EQ.KN) then !N.NE.0 only on last timestep,  KN=1 or 1-4 for L<17
+ !          TAUR = SIGR(1)*TTOT(1)  !ack simple way of indicating total rayleigh optical depth. should be sum
+ !          DELWAV = WAVU(L) - WAVL(L)
+ !          EFLUX = 1.E6*HC*FLX/(WAV(L)*DELWAV*AGL)  !convert to W/m^2
+ !          GFLUX = EFLUX*S(1)  !ground flux = TOA flux*optical path
+ !          write(14, 120) L,WAV(L),TAUR,EFLUX,GFLUX,S(1)
+ ! 120      FORMAT(1X,I3,1X,F6.1,1X,1P4E10.3)
+ !        endif
 
 
 

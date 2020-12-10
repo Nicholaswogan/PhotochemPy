@@ -15,7 +15,7 @@
     call read_species("input/species.dat")
     call read_reactions("input/reactions.rx")
     call read_atmosphere("input/atmosphere.txt")
-    call photogrid(100.0D5)
+    call photgrid(100.0D5)
     ! call initphoto
 
     call rates
