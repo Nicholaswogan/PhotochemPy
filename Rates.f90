@@ -10,7 +10,7 @@
 
 
         ! local variables
-        character(len=10) :: PLANET
+        ! character(len=10) :: PLANET
         integer :: j, i
         real*8 :: a0, a270a,  A270B, A271A, A271B, A272A, A272B
         real*8 :: A362_0, A362_inf, A366_0, A366_inf, A367_EQ
@@ -19,7 +19,7 @@
 
 
         ! rate constant units are cm^3/molecules/s
-        planet = 'EARTH' ! for now
+        ! planet = 'EARTH' ! for now
 
         do J=1,NR
           ! Should add Cantera reaction types (https://cantera.org/science/reactions.html)

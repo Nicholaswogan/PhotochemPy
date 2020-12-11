@@ -9,7 +9,7 @@ f2py -c Photochem.f90 lin_alg.f Rainout_vars.o reading_vars.o \
 only: allocate_memory right_hand_side jacobian read_species read_reactions \
 read_atmosphere photgrid rates gridw readflux initphoto initmie read_planet \
 read_photochem rainout ltning aertab densty aercon photsatrat difco sedmnt \
-dochem
+dochem photo
 
 # clean stuff up
 rm rainout_vars.mod Rainout_vars.o

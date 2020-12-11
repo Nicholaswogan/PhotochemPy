@@ -36,6 +36,12 @@
 !   REACTS TO FORM B, THEN A MUST BE FOUND FIRST).  LONG-LIVED
 !   SPECIES CAN BE DONE IN ANY ORDER.
 
+      do i=1,nz
+        do j=1,nsp2
+          D(j,i) = 0.
+        enddo
+      enddo
+
 
 
 

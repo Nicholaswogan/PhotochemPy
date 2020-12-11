@@ -90,6 +90,7 @@
         real*8, dimension(kw) :: SO2HZ ! this
         character(len=11),allocatable, dimension(:) :: photolabel
         real*8, allocatable, dimension(:,:,:) :: sq ! cross sections * qy
+        real*8, allocatable, dimension(:,:) :: SIGNO
 
         ! needed in initmie.f90
         real*8, dimension(51) :: Rstand
@@ -166,6 +167,9 @@
         ! in progress is below
         include "Dochem.f90"
         include "Chempl.f90"
+        include "Photo.f90" ! need to deal with precision problem
+        include "Rayleigh.f90"
+        include "Twostr.f90"
 
 
 
@@ -247,6 +251,7 @@
             ! needed in initphoto.f90.
             allocate(photolabel(kj))
             allocate(sq(kj,nz,kw))
+            allocate(SIGNO(nz,2))
 
             ! needed in Aertab.f90
             allocate(VH2O(Nf,nz))

@@ -3919,7 +3919,7 @@
 !-----------------------------------------------------------------------------*
 !     INCLUDE 'PHOTOCHEM/INPUTFILES/parameters.inc'
       implicit none
-      real*8 :: signo(nz,2)
+      ! real*8 :: signo(nz,2)
       real*8 :: to2l(nz)
       real*8 :: e_15
       integer :: kin
