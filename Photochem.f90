@@ -133,10 +133,6 @@
         ! needed in PhotSatrat.f90
         real*8, allocatable, dimension(:) :: h2osat
 
-
-
-
-
         ! some planet parameters and constants
 
       contains
@@ -170,7 +166,7 @@
         ! in progress is below
         include "Dochem.f90"
         include "Chempl.f90"
-        
+
 
 
 
