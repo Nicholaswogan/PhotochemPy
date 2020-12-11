@@ -71,6 +71,14 @@
             if(trim(species).eq.'H2') LH2=iSP
             if(trim(species).eq.'CH4') LCH4=iSP
             if(trim(species).eq.'O2') LO2=iSP
+            if(trim(species).eq.'S8AER') Ls8aer=iSP
+            if(trim(species).eq.'HCAER') Lhcaer=iSP
+            if(trim(species).eq.'HCAER2') lhcaer2=iSP
+            if(trim(species).eq.'S2') ls2=iSP
+            if(trim(species).eq.'S3') ls3=iSP
+            if(trim(species).eq.'S4') ls4=iSP
+            if(trim(species).eq.'NO') lno=iSP
+            if(trim(species).eq.'O') lo=iSP
             ! Return to previous line in species.dat file
             backspace 4
 

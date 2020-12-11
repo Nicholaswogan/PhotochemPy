@@ -13,7 +13,7 @@
         character(len=*), intent(in) :: atmosphere_txt
         character(len=10000) :: line
         character(len=8), dimension(1000) :: arr1
-        character(len=15),allocatable, dimension(:) :: arr2
+        character(len=24),allocatable, dimension(:) :: arr2
         real*8,allocatable, dimension(:) :: temp
         integer :: i, n, io, j, k, ii, iii
 

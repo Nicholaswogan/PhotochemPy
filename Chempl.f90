@@ -1,47 +1,59 @@
-      SUBROUTINE CHEMPL(D,XP,XL,K,NZ,NSP2)
-      implicit none
+
+      SUBROUTINE CHEMPL(D,Xp,Xl,K)
+
+      IMPLICIT NONE
 
       ! module variables
-      ! integer, allocatable, dimension(:) :: NUML, NUMP
+
 
       ! local variables
-      integer i,l
-      integer, intent(in) :: nz, nsp2, k
+      real*8, dimension(nz), intent(out) :: XP
+      real*8, dimension(nz), intent(out) :: XL
       real*8, dimension(nsp2,nz), intent(in) :: D
-      real*8,dimension(nz),intent(out) :: XP, XL
+      integer, intent(in) :: k
+
+      integer i, l, m, n, j, nl, nprx
 
 
-! C
-! C   THIS SUBROUTINE CALCULATES CHEMICAL PRODUCTION AND LOSS RATES
-! C   USING THE INFORMATION IN THE MATRICES JCHEM, ILOSS, AND IPROD.
-! C   CALLED BY SUBROUTINE DOCHEM.
-! C
-      DO I=1,NZ
-        XP(I) = 0.
-        XL(I) = 0.
-      enddo
-! C
-! C   LOSS FREQUENCY XL
-      NL = NUML(K)        !chempl is called with given species (K)- NUML is how many reactions involve K
-      DO L=1,NL
-        J = ILOSS(1,K,L)    !reaction number for loss process
-        M = ILOSS(2,K,L)    !reactant number for loss process
-        DO I=1,NZ
-          XL(I) = XL(I) + A(J,I)*D(M,I) !rate*density of reactant 1
-        enddo
-      enddo
+
+
+
+!
+!   THIS SUBROUTINE CALCULATES CHEMICAL PRODUCTION AND LOSS RATES
+!   USING THE INFORMATION IN THE MATRICES JCHEM, ILOSS, AND IPROD.
+!   CALLED BY SUBROUTINE DOCHEM.
+!
+      DO i = 1 , nz
+         Xp(i) = 0.
+         Xl(i) = 0.
+      ENDDO
+!
+!   LOSS FREQUENCY XL
+      nl = NUML(K)        !chempl is called with given species (K)- NUML is how many reactions involve K
+      DO l = 1 , nl
+         j = ILOSS(1,K,l) !reaction number for loss process
+         m = ILOSS(2,K,l) !reactant number for loss process
+         DO i = 1 , nz
+            Xl(i) = Xl(i) + A(j,i)*D(m,i)
+                                    !rate*density of reactant 1
+         ENDDO
+      ENDDO
 !XL has units of s^-1
-! C
-! C   PRODUCTION RATE XP
-      NPRX = NUMP(K)
-      DO L=1,NPRX
-        J = IPROD(K,L)   !reaction number
-        M = JCHEM(1,J)   !reactant 1 for reaction number J
-        N = JCHEM(2,J)   !reactant 2 for reaction number J
-        DO I=1,NZ      !loop over height (also for each reaction)
-          XP(I) = XP(I) + A(J,I)*D(M,I)*D(N,I) !rate*density1*density2
-        enddo
-      enddo
+!
+!   PRODUCTION RATE XP
+      nprx = NUMP(K)
+      DO l = 1 , nprx
+         j = IPROD(K,l)
+                       !reaction number
+         m = JCHEM(1,j)
+                       !reactant 1 for reaction number J
+         n = JCHEM(2,j)
+                       !reactant 2 for reaction number J
+         DO i = 1 , nz !loop over height (also for each reaction)
+            Xp(i) = Xp(i) + A(j,i)*D(m,i)*D(n,i)
+                                           !rate*density1*density2
+         ENDDO
+      ENDDO
 !HV has a density of 1, so rates make up for this
 !XP in units of mol/cm^3/s
-      end subroutine
+      END

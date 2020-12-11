@@ -38,10 +38,11 @@
       RGAS = 8.3143E7             !erg/mol/K
 
       ! NEED molecular wt of atmosphere
-      wt = FCO2*44.+ FN2*28.
-      do i=1,nq
-        wt = wt + usol(i,1)*mass(i)
-      enddo
+      ! wt = FCO2*44.+ FN2*28.
+      ! do i=1,nq
+      !   wt = wt + usol(i,1)*mass(i)
+      ! enddo
+      wt = 
       ! should work for every case (whether N2 and CO2 are inert or not)
 
       RMG = RGAS/(WT*G)           !gm cm^2/s^2/mol/K  / g *s^2/cm ->  cm/mol/K

@@ -41,7 +41,8 @@
         real*8, allocatable, dimension(:) :: mass
         integer LSO2, LH2CO, lh2so4, lso4aer, lh2s ! indexes of a few things
         integer LCO, LH2O, LH2, LCH4, LO2
-        ! make all these atoms things local someday
+        integer Ls8aer, Lhcaer, Lhcaer2, ls2, ls3, ls4
+        integer lno, lo
 
         ! Defined in reactions.rx
         Character(len=8), allocatable, dimension(:,:) :: chemj
@@ -63,6 +64,10 @@
         real*8, allocatable, dimension(:,:) :: aersol ! aersol parameter
         real*8, allocatable, dimension(:,:) :: wfall ! aersol parameter
         real*8, allocatable, dimension(:,:) :: rpar ! aersol parameter
+
+        ! needed in Densty.f90
+        real*8, allocatable, dimension(:) :: Press ! pressure in dynes
+        real*8, allocatable, dimension(:) :: P ! pressure in bars
 
         ! needed in read_planet.f90
         real*8 :: G, Fscale, Alb, ztrop,far,R0,P0
@@ -105,9 +110,7 @@
         real*8, allocatable, dimension(:,:,:) :: QEXTT, W0T, GFT
 
         ! needed in dochem.f90
-        ! real*8, allocatable, dimension(:,:) :: D ! density of every species
-        real*8, allocatable, dimension(:,:) :: YP
-        real*8, allocatable, dimension(:,:) :: YL
+        real*8, allocatable, dimension(:,:) :: SL
 
         ! needed in rates.f90
         real*8, allocatable, dimension(:,:) :: A ! reaction rate coefficients
@@ -120,6 +123,19 @@
 
         ! needed in ltning.f90
         real*8 :: ZAPNO,ZAPO2,PRONOP,ZAPCO,ZAPH2,ZAPO
+
+        ! needed in Difco.f90
+        real*8, allocatable, dimension(:) :: HSCALE
+        real*8, allocatable, dimension(:) :: tauedd
+        real*8, allocatable, dimension(:) :: H_ATM, BHN2, BH2N2
+        real*8, allocatable, dimension(:,:) :: SCALE_H
+
+        ! needed in PhotSatrat.f90
+        real*8, allocatable, dimension(:) :: h2osat
+
+
+
+
 
         ! some planet parameters and constants
 
@@ -144,14 +160,19 @@
         include "Aqueous.f90"
         include "Ltning.f90" ! Needs work for time dependent model
         include "Aertab.f90"
+        include "Densty.f90"
+        include "Aercon.f90"
+        include "PhotSatrat.f90"
+        include "Difco.f90"
+        include "Sedmnt.f90"
         ! ALL THESE WORK!!!
 
         ! in progress is below
-        subroutine test
-          use reading_vars
+        include "Dochem.f90"
+        include "Chempl.f90"
+        
 
-          print*,atomsO
-        end subroutine
+
 
 
         subroutine allocate_memory(nnz, nnq, nnp, nnsp,&
@@ -219,6 +240,10 @@
             allocate(numl(nsp))
             allocate(nump(nsp))
 
+            ! needed in Densty.f90
+            allocate(Press(nz))
+            allocate(P(nz))
+
             ! needed in photogrid.f90
             allocate(z(nz))
             allocate(dz(nz))
@@ -242,9 +267,12 @@
             allocate(GFT(kw,nz,np))
 
             ! needed in dochem.f90
-            ! allocate(D(NSP2,NZ))
-            allocate(YP(NQ1,NZ))
-            allocate(YL(NQ1,NZ))
+            allocate(SL(NSP,NZ))
+            do i =1,nsp
+              do j=1,nz
+                sl(i,j) = 0.0
+              enddo
+            enddo
 
             ! needed in rates.f90
             allocate(A(NR,NZ))
@@ -260,6 +288,18 @@
             allocate(RAINGC(NQ,NZ))
             allocate(RAIN(NZ))
             allocate(XSAVE(naq,nz))
+
+            ! needed in Difco.f90
+            allocate(tauedd(nz))
+            allocate(hscale(nz))
+            allocate(H_ATM(nz))
+            allocate(SCALE_H(nq,nz))
+            allocate(BHN2(nz))
+            allocate(BH2N2(nz))
+
+            ! needed in PhotSatrat.f90
+            allocate(h2osat(nz))
+
 
           else
             print*, "Memory has already been allocated"
