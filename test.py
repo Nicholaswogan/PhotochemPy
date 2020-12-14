@@ -30,11 +30,11 @@ photochem.initmie(photochem.nw,photochem.wavl,1,0)
 
 # in the loop
 start = time.time()
-for i in range(1000):
+for i in range(100):
     prates = photochem.photo(photochem.zy,photochem.agl,photochem.io2\
                     ,photochem.ino,photochem.usol_init,photochem.kj)
 end = time.time()
-print('photo',(end-start)/1000)
+print('photo',(end-start)/10)
 
 start = time.time()
 photochem.rainout(22,0,photochem.usol_init)

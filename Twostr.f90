@@ -341,8 +341,8 @@
       DO n = 1 , NZP1
          IF ( amean(n).LT.0.0 ) THEN
          !ACK - check LUN
-            WRITE (13,99006) Wav , n , amean(n)
-99006       FORMAT ('WAVE =',F6.1,' AMEAN(',I3,')=',1PE11.3)
+!             WRITE (13,99006) Wav , n , amean(n)
+! 99006       FORMAT ('WAVE =',F6.1,' AMEAN(',I3,')=',1PE11.3)
             amean(n) = ABS(amean(n))
          ENDIF
       ENDDO

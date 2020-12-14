@@ -7108,6 +7108,8 @@
      &  'DATA/XSECTIONS/',&
      &  trim(species),'/',trim(species),'_mpi.abs'
 
+      ! XsecFile = 'DATA/XSECTIONS/'//trim(species)&
+      ! //'/'//trim(species)//'_mpi.abs'
       if (option.eq.1) then  !MPI
       OPEN(UNIT=kin,file=XsecFile,Status='old')
 
