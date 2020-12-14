@@ -158,7 +158,7 @@
               !    S + S -> S2
               if (CHEMJ(1,J).EQ.'S'.AND.CHEMJ(2,J).EQ.'S') THEN
                 ! A(J,I) = 1.2e-29 * DEN(I)   ! in H2S, but its much 1e4 slower in Ar
-                ! A(J,I) = min(5.E-11, 3* A(JOO_O2,I))      ! reported rate is 3X larger for S+S in Ar than for O+O in Ar
+                ! A(J,I) = min(5.D-11, 3* A(JOO_O2,I))      ! reported rate is 3X larger for S+S in Ar than for O+O in Ar
 
                 A(J,I) = 1.87E-33 * EXP(-206/T(I))*DEN(I) !updated from D-G 2011 gna
               endif
@@ -281,7 +281,7 @@
               !   CH2OOH + M -> OH + H2CO              WEIRD     !Vaghjinai et al. 1989 (via NIST) as 1st order -(yuk 278) has 1e-10 as 2body
               if (CHEMJ(1,J).EQ.'CH2OOH'.AND.CHEMJ(2,J).EQ.'M') THEN
                 A(J,I)=5E4/Den(i) !1st order rate, will be multiplied by DEN(i) so net is 5e4*[CH2OOH]
-                ! A(J,I) = 1.e-10   !yuks rate
+                ! A(J,I) = 1.D-10   !yuks rate
               endif
 
 
@@ -526,7 +526,7 @@
               !in reactions list as "WEIRD" but wasn't here...
               if ((CHEMJ(1,J).EQ.'NH2'.AND.CHEMJ(2,J).EQ.'H'.AND. &
                 CHEMJ(3,J).EQ.'NH3') )THEN
-                A(J,I) = (6.E-30*DEN(I))/(1.+3.E-20*DEN(I))    ! Gordon 1971
+                A(J,I) = (6.D-30*DEN(I))/(1.+3.D-20*DEN(I))    ! Gordon 1971
               endif
 
               !gna
@@ -534,7 +534,7 @@
               !in reactions list as "WEIRD" but wasn't here...
               if ((CHEMJ(1,J).EQ.'NH'.AND.CHEMJ(2,J).EQ.'H'.AND. &
                 CHEMJ(3,J).EQ.'NH2') )THEN
-                A(J,I) =  (6.E-30*DEN(I))/(1.+3.E-20*DEN(I))   ! Kasting 1982
+                A(J,I) =  (6.D-30*DEN(I))/(1.+3.D-20*DEN(I))   ! Kasting 1982
               endif
 
               !gna
@@ -607,20 +607,20 @@
               !  C2H + H -> C2H2
               if (CHEMJ(1,J).EQ.'C2H'.AND.CHEMJ(2,J).EQ.'H') THEN
                 B0 = 1.26E-18 * EXP(-721./T(I)) / T(I)**3.1
-                BI = 3.E-10
+                BI = 3.D-10
                 A(J,I) = B0*BI*DEN(I)/(B0*DEN(I) + BI)
 
                 !gna - shawn has diff:
                 !B0 = 2.64E-26 * EXP(-721./T(I)) / (T(I)/300.)**3.1
-                !BI = 3.E-10
+                !BI = 3.D-10
                 !A(J,I) = B0*BI*DEN(I)/(B0*DEN(I) + BI)
               endif
 
               !  CH23 + CO -> CH2CO
 
               if (CHEMJ(1,J).EQ.'CH23'.AND.CHEMJ(2,J).EQ.'CO') THEN
-                B0 = 1.E-28
-                BI = 1.E-15
+                B0 = 1.D-28
+                BI = 1.D-15
                 A(J,I) = B0*BI*DEN(I)/(B0*DEN(I) + BI)
               endif
 
@@ -701,7 +701,7 @@
               !  CH2CCH2 + H -> CH3 + C2H2              WEIRD                                                            ! Yung et al. [1984]
               !  CH2CCH2 + H -> C3H5                        WEIRD                                                            ! Yung et al. [1984]
               if (CHEMJ(1,J).EQ.'CH2CCH2'.AND.CHEMJ(2,J).EQ.'H') THEN
-                B0 = 8.E-24/T(I)**2 * EXP(-1225./T(I))
+                B0 = 8.D-24/T(I)**2 * EXP(-1225./T(I))
                 if (CHEMJ(3,J).EQ.'CH3')   BI=9.7E-13 * EXP(-1550./T(I))
                 if (CHEMJ(3,J).EQ.'CH3H5') BI=1.4E-11 * EXP(-1000./T(I))
 
@@ -720,8 +720,8 @@
               !  C3H5 + H -> C3H6                        WEIRD                                                            ! Yung et al. [1984] !has another branch!
               if (CHEMJ(1,J).EQ.'C3H5'.AND.CHEMJ(2,J).EQ.'H'.AND.CHEMJ(3,J) &
                 .EQ.'C3H6') THEN
-                B0 = 1.E-28
-                BI = 1.E-11
+                B0 = 1.D-28
+                BI = 1.D-11
                 A(J,I) = B0*BI*DEN(I)/(B0*DEN(I) + BI)
               endif
 
@@ -742,7 +742,7 @@
               !  CH3C2H + H -> CH3 + C2H2              WEIRD                                                            ! Whytock et al [1976] and Von Wagner and Zellner [1972]
               !  CH3C2H + H -> C3H5                        WEIRD                                                            ! Yung et al. [1984], same as RXN 303
               if (CHEMJ(1,J).EQ.'CH3C2H'.AND.CHEMJ(2,J).EQ.'H') THEN
-                B0 = 8.E-24/T(I)**2 * EXP(-1225./T(I))
+                B0 = 8.D-24/T(I)**2 * EXP(-1225./T(I))
                 BI = 9.7E-12 * EXP(-1550./T(I))
                 A(J,I) = B0*BI*DEN(I)/(B0*DEN(I) + BI)
               endif
@@ -872,19 +872,19 @@
               !   NH + N  ->  N2 + H
               if (CHEMJ(1,J).EQ.'NH'.AND.CHEMJ(2,J).EQ.'N'.AND.CHEMJ(3,J) &
                 .EQ.'N2') THEN
-                A(J,I) = 1.95E-11 *(T(i)/298.)**0.51 * exp(-9.63/T(i))
+                A(J,I) = 1.95D-11 *(T(i)/298.)**0.51 * exp(-9.63/T(i))
               endif
 
               !   HCN + O  ->  NH + CO
               if (CHEMJ(1,J).EQ.'HCN'.AND.CHEMJ(2,J).EQ.'O'.AND.CHEMJ(3,J)  &
                 .EQ.'NH') THEN
-                A(J,I) = 8.88E-13 *(T(i)/298.)**1.21 * exp(-3851./T(i))
+                A(J,I) = 8.88D-13 *(T(i)/298.)**1.21 * exp(-3851./T(i))
               endif
 
               !   HCN + O  ->  CN + OH
               if (CHEMJ(1,J).EQ.'HCN'.AND.CHEMJ(2,J).EQ.'O'.AND.CHEMJ(3,J) &
                 .EQ.'CN') THEN
-                A(J,I) = 1.43E-12 *(T(i)/298.)**1.47 * exp(-3801./T(i))
+                A(J,I) = 1.43D-12 *(T(i)/298.)**1.47 * exp(-3801./T(i))
               endif
             enddo
 
