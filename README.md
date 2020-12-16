@@ -1,5 +1,5 @@
 # PhotochemPy
-PhotochemPy will be a photochemical model of terrestrial atmospheres. But its not done yet. Hopefully it will be soon!
+PhotochemPy will be a photochemical model of terrestrial atmospheres. it is almost done. The code can now reproduce the old `Atmos` code. 
 
 ## History
 PhotochemPy is an updated version of the `Atmos` photochemical model, originally developed by Jim Kasting and Kevin Zahnle and further developed by many of their students and colleges. The code was originally written in Fortran 77. This version of the code is written in Fortran 90. It has been restructured so that it can be easily compliled as a Python package using `f2py`.
