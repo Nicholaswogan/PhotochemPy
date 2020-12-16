@@ -59,6 +59,8 @@
     KL = KD + NQ
 
 
+
+
     ! start the time-stepping loop
     do n = 1,nsteps
       print'(3e20.4)',time,dt,emax
@@ -188,10 +190,7 @@
 
       call dochem(Fval,0,jtrop,isl,usol,nq,nz)
 
-      ! do i=1,nq
-      !   print*,fval(i,nz),fval(i,1)
-      ! enddo
-      ! stop
+
 
       ! print*,fval
 

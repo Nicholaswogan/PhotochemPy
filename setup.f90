@@ -29,6 +29,24 @@
     call difco
     call photsatrat(jtrop,nz,h2o)
     call dochem(Fval,-1,jtrop,isl,usol_init,nq,nz)
+
+    if (mbound(LH2) .gt. 0) then
+      do i=1,nz
+!        !don't use molecular diffusion
+        bHN2(i) = 0.0d0
+        bH2N2(i) = 0.0d0
+
+      enddo
+    else
+!      !use effusion velocity formulation of diffusion limited flux
+      Veff(LH) = 1.0*bhN2(nz)/DEN(NZ)*(1./Hscale(nz) &
+       - 1./scale_H(LH,nz))
+!      !diff lim flux
+      Veff(LH2) = 1.0*bH2N2(nz)/DEN(NZ)*(1./Hscale(nz) &
+      - 1./scale_H(LH2,nz))
+
+    endif
+
     if (planet .eq. 'EARTH') call ltning(usol_init,nq,nz)
     call aertab
     call initphoto(flux_txt)
