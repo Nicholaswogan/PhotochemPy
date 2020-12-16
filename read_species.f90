@@ -77,8 +77,11 @@
             if(trim(species).eq.'S2') ls2=iSP
             if(trim(species).eq.'S3') ls3=iSP
             if(trim(species).eq.'S4') ls4=iSP
+            if(trim(species).eq.'S') ls=iSP
             if(trim(species).eq.'NO') lno=iSP
             if(trim(species).eq.'O') lo=iSP
+            if(trim(species).eq.'H') lh=iSP
+            if(trim(species).eq.'CO2') lco2=iSP
             ! Return to previous line in species.dat file
             backspace 4
 
@@ -145,5 +148,10 @@
    96   CONTINUE
         ! close the file
         close(4)
+
+        do i=1,NQ
+          VDEP(i) = VDEP0(i)
+          VEFF(i) = VEFF0(i)
+        enddo
 
       end subroutine

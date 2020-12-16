@@ -469,7 +469,7 @@
 
       DO i = nh1 , nz
          DO j = 1 , nq
-            RAINGC(j,i) = 0.
+            RAINGC(j,i) = 0.d0
          ENDDO
       ENDDO
 

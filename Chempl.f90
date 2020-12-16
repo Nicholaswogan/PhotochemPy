@@ -24,12 +24,13 @@
 !   CALLED BY SUBROUTINE DOCHEM.
 !
       DO i = 1 , nz
-         Xp(i) = 0.
-         Xl(i) = 0.
+         Xp(i) = 0.d0
+         Xl(i) = 0.d0
       ENDDO
 !
 !   LOSS FREQUENCY XL
       nl = NUML(K)        !chempl is called with given species (K)- NUML is how many reactions involve K
+
       DO l = 1 , nl
          j = ILOSS(1,K,l) !reaction number for loss process
          m = ILOSS(2,K,l) !reactant number for loss process
@@ -37,11 +38,15 @@
             Xl(i) = Xl(i) + A(j,i)*D(m,i)
                                     !rate*density of reactant 1
          ENDDO
+
       ENDDO
+
+
 !XL has units of s^-1
 !
 !   PRODUCTION RATE XP
       nprx = NUMP(K)
+
       DO l = 1 , nprx
          j = IPROD(K,l)
                        !reaction number
@@ -51,9 +56,14 @@
                        !reactant 2 for reaction number J
          DO i = 1 , nz !loop over height (also for each reaction)
             Xp(i) = Xp(i) + A(j,i)*D(m,i)*D(n,i)
+
+
                                            !rate*density1*density2
          ENDDO
       ENDDO
 !HV has a density of 1, so rates make up for this
 !XP in units of mol/cm^3/s
+
+
+
       END

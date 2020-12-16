@@ -7,6 +7,7 @@
       ! HSCALE
       ! tauedd
       ! H_ATM, SCALE_H, BHN2, BH2N2
+      ! real*8, dimension(nz) :: DK
 
 
       ! local variables
@@ -15,7 +16,7 @@
       real*8 h, tav
       integer i,j
 
-      real*8, dimension(nz) :: DK
+
 
       wt = usol_init(lO2,1)*32. + fco2*44. + far*40. + (1.-usol_init(lO2,1)-fco2-far)*28.
       bkmg = 1.38E-16/(1.67E-24*wt*g)    !a good pressure

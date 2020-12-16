@@ -24,6 +24,8 @@
           DZ(I)=Z(I)-Z(I-1)
         enddo
 
+        JTROP=minloc(Z,1, Z .ge. ztrop)-1
+
       end subroutine
 
 

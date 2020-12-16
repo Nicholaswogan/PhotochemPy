@@ -77,7 +77,7 @@
           DO M=1,5
             JCHEM(M,J) = 0 ! this is important!
             IF (CHEMJ(M,J).EQ.' ') then
-              exit
+              cycle
             else
               DO I=1,NSP2
                 if (CHEMJ(M,J).eq.ISPEC(I)) then
@@ -118,7 +118,7 @@
             I = JCHEM(M,J)
             !skips 0 (i.e. nothing) and NSP1 (HV)
             IF(I.LT.1.OR.I.GT.NSP) then
-              exit
+              cycle
             else
               !counter for how many reactions species I is involved with
               NUML(I) = NUML(I) + 1
@@ -142,7 +142,7 @@
           DO J=1,NR
             I = JCHEM(M,J)
             IF(I.LT.1.OR.I.GT.NSP) then
-              exit
+              cycle
             else
               NUMP(I) = NUMP(I) + 1
               K = NUMP(I)
@@ -155,7 +155,6 @@
             endif
           enddo
         enddo
-
 
         ! check mass balance of chemical reactions
         do i=1,nr

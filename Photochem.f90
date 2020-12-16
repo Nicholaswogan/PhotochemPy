@@ -17,6 +17,8 @@
         integer, parameter :: naq = 10 !number of aqueous species
         integer, parameter :: nt = 50 !number of temperatures in sulfate/H2O vapor pressure file (DATA/aerosol.table)
         integer, parameter :: nf = 50 !NT=number of pressures per temperature in DATA/aerosol.table
+        integer lda
+        integer neq
 
         ! Defined in species.dat
         integer :: iSL ! number of sl species
@@ -25,6 +27,7 @@
         character(len=8), allocatable, dimension(:) :: ISPEC
         integer, allocatable, dimension(:) :: LBOUND
         real*8, allocatable, dimension(:) :: VDEP0
+        real*8, allocatable, dimension(:) :: VDEP
         real*8, allocatable, dimension(:) :: FIXEDMR
         real*8, allocatable, dimension(:) :: distflux
         real*8, allocatable, dimension(:) :: SGFLUX
@@ -32,6 +35,7 @@
         integer, allocatable, dimension(:) :: MBOUND
         real*8, allocatable, dimension(:) :: SMFLUX
         real*8, allocatable, dimension(:) :: VEFF0
+        real*8, allocatable, dimension(:) :: VEFF
         ! integer, allocatable, dimension(:) :: atomsO
         ! integer, allocatable, dimension(:) :: atomsH
         ! integer, allocatable, dimension(:) :: atomsC
@@ -40,9 +44,9 @@
         ! integer, allocatable, dimension(:) :: atomsCL
         real*8, allocatable, dimension(:) :: mass
         integer LSO2, LH2CO, lh2so4, lso4aer, lh2s ! indexes of a few things
-        integer LCO, LH2O, LH2, LCH4, LO2
+        integer LCO, LH2O, LH2, LCH4, LO2, LH
         integer Ls8aer, Lhcaer, Lhcaer2, ls2, ls3, ls4
-        integer lno, lo
+        integer lno, lo, LCO2, ls
 
         ! Defined in reactions.rx
         Character(len=8), allocatable, dimension(:,:) :: chemj
@@ -80,6 +84,7 @@
         ! needed in subroutine photgrid (in photgrid.f90)
         real*8, allocatable, dimension(:) :: z ! altitude of middle of grid
         real*8, allocatable, dimension(:) :: dz ! Delta_z of each altitude grid
+        integer JTROP
 
         ! needed in initphoto.f90.
         real*8, dimension(kw) :: Flux ! Solar flux photons/(cm2 s)
@@ -128,11 +133,18 @@
         ! needed in Difco.f90
         real*8, allocatable, dimension(:) :: HSCALE
         real*8, allocatable, dimension(:) :: tauedd
+        real*8, allocatable, dimension(:) :: DK
         real*8, allocatable, dimension(:) :: H_ATM, BHN2, BH2N2
         real*8, allocatable, dimension(:,:) :: SCALE_H
 
         ! needed in PhotSatrat.f90
         real*8, allocatable, dimension(:) :: h2osat
+
+        ! needed in setup.f90
+        real*8, allocatable, dimension(:,:) :: DD,DL,DU,ADL,ADU,ADD
+
+        ! needed in integrate.f90
+        real*8, allocatable, dimension(:,:) :: usol_out
 
         ! some planet parameters and constants
 
@@ -162,18 +174,16 @@
         include "PhotSatrat.f90"
         include "Difco.f90"
         include "Sedmnt.f90"
-        ! ALL THESE WORK!!!
-
-        ! in progress is below
         include "Dochem.f90"
         include "Chempl.f90"
         include "Photo.f90" ! need to deal with precision problem
         include "Rayleigh.f90"
         include "Twostr.f90"
+        ! ALL THESE WORK!!!
 
-
-
-
+        ! in progress is below
+        include "setup.f90"
+        include "integrate.f90"
 
         subroutine allocate_memory(nnz, nnq, nnp, nnsp,&
            nnr, kks, kkj)
@@ -194,6 +204,8 @@
           ks = kks
           kj = kkj
           nr = nnr
+          LDA=3*NQ+1
+          NEQ=NQ*NZ
 
           ! allocate memory
           ! safeguard against allocating twice
@@ -203,6 +215,7 @@
             allocate(ISPEC(nsp2)) ! issue with this one
             allocate(LBOUND(nq))
             allocate(vdep0(nq))
+            allocate(vdep(nq))
             allocate(fixedmr(nq))
             allocate(distflux(nq))
             allocate(sgflux(nq))
@@ -210,6 +223,7 @@
             allocate(MBOUND(nq))
             allocate(SMFLUX(nq))
             allocate(VEFF0(nq))
+            allocate(VEFF(nq))
             allocate(atomsO(nsp2))
             allocate(atomsH(nsp2))
             allocate(atomsC(nsp2))
@@ -271,7 +285,7 @@
             allocate(SL(NSP,NZ))
             do i =1,nsp
               do j=1,nz
-                sl(i,j) = 0.0
+                sl(i,j) = 0.0d0
               enddo
             enddo
 
@@ -280,7 +294,7 @@
             ! zero out
             do i =1,nr
               do j=1,nz
-                A(i,j) = 0.0
+                A(i,j) = 0.0d0
               enddo
             enddo
 
@@ -294,6 +308,7 @@
             allocate(tauedd(nz))
             allocate(hscale(nz))
             allocate(H_ATM(nz))
+            allocate(DK(nz))
             allocate(SCALE_H(nq,nz))
             allocate(BHN2(nz))
             allocate(BH2N2(nz))
@@ -301,6 +316,16 @@
             ! needed in PhotSatrat.f90
             allocate(h2osat(nz))
 
+            ! needed in setup.f90
+            allocate(DD(NQ1,NZ))
+            allocate(DL(NQ1,NZ))
+            allocate(DU(NQ1,NZ))
+            allocate(ADL(NQ,NZ))
+            allocate(ADU(NQ,NZ))
+            allocate(ADD(NQ,NZ))
+
+            ! integrate.f90
+            allocate(usol_out(nq,nz))
 
           else
             print*, "Memory has already been allocated"

@@ -5,6 +5,9 @@ gfortran -c modules/reading_vars.f90
 
 # compile main module
 gfortran -c Photochem.f90 lin_alg.f
+gfortran -c PhotoMain.f90
+
+# gfortran PhotoMain.o -o testrun
 
 # clean stuff up
 rm rainout_vars.mod Rainout_vars.o

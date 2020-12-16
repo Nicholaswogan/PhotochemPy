@@ -552,11 +552,11 @@
 
 ! C ***** FILL UP RATE MATRIX *****
 
-      ! do j=1,kj
-      !   do i=1,nz
-      !     A(INT(photonums(j)),i)=prates(j,i)
-      !   enddo
-      ! enddo
+      do j=1,kj
+        do i=1,nz
+          A(INT(photonums(j)),i)=prates(j,i)
+        enddo
+      enddo
 
 
 

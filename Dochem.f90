@@ -20,7 +20,7 @@
       real*8, dimension(nq1,nz) :: YP, YL
       real*8 xp(nz), xl(nz), conso4(nz)
       real*8 aq, bq, cq, dls4, xlj, confac, scale
-      integer jt1, changel, ls
+      integer jt1, changel
       real*8 rhcold, h2ocrt, zap, CONDEN1
 
 
@@ -38,7 +38,7 @@
 
       do i=1,nz
         do j=1,nsp2
-          D(j,i) = 0.
+          D(j,i) = 0.d0
         enddo
       enddo
 
@@ -63,14 +63,13 @@
 
 
 
-        if (CO2_inert.eq.1) D(nsp+1,j) = FCO2*Den(j) !If CO2 is inert, then put it in D
+        if (CO2_inert.eq.1) D(LCO2,j) = FCO2*Den(j) !If CO2 is inert, then put it in D
         if (N2_inert.eq.1) D(NSP,j) = (1. - USOL(LO2,J) - FCO2 - USOL(LCO,J))* DEN(J) !if N2 is inert, then it is rest of atmosphere.
 
 
 
          d(nsp2-1,j) = 1.         ! HV has density of 1 for photorate calculations
          d(nsp2,j) = DEN(j)     ! M - background density for three body reactions
-
       ENDDO
 
 
@@ -90,10 +89,14 @@
             IF ( ISPEC(i).EQ.'S4' ) iss4sl = i
 
             CALL CHEMPL(d,xp,xl,i)
+
             DO j = 1 , nz
                d(i,j) = xp(j)/xl(j)
             ENDDO
          ENDDO
+
+
+
 
 !-mab Uncomment below to help with short-lived species XP/XL/D debugging
 !      print*,'NQ1+1 = ',NQ1+1
@@ -125,8 +128,7 @@
                             !S4+S4 -> S8Aer loss term
                bq = A(149,j)
                             ! S4+ Hv -> S2 + S2 loss term
-               cq = A(146,j)*d(ls2,j)*d(ls2,j) + A(147,j)*d(ls,j)       &
-                  & *d(ls3,j)                                         ! production terms
+               cq = A(146,j)*d(ls2,j)*d(ls2,j) + A(147,j)*d(ls,j)*d(ls3,j)                                         ! production terms
 
 !        CQ=0.0
 
@@ -150,6 +152,7 @@
          ENDIF
 
 
+
 !
 ! ***** LONG-LIVED SPECIES CHEMISTRY *****
          DO i = 1 , nq
@@ -170,6 +173,7 @@
                YL(i,j) = xlj
 !      IF (ISPEC(I).EQ.'H2SO4') print *, J,XL(J),RAINGC(I,J),XP(j),XLJ
             ENDDO
+
          ENDDO
 
 

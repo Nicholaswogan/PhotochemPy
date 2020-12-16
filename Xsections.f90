@@ -233,7 +233,7 @@
 
       IF (option .eq. 1) then
 ! HNO3 cross section parameters from Burkholder et al. 1993
-
+      kin = 644
       OPEN(UNIT=kin,&
      &  file='DATA/XSECTIONS/HNO3/HNO3_burk.abs',&
      &  STATUS='old')
@@ -285,7 +285,7 @@
       ENDDO
       endif  !end option 1
 
-
+      kin = 4321
       if (option .eq. 2) then  !use Kevin's data, which is from "some old JPL recommendation"
       OPEN(UNIT=kin,&
      &  file='DATA/XSECTIONS/HNO3/HNO3_zahnle.abs',&
@@ -418,7 +418,7 @@
       option=2
 
       if (option.eq.1) then
-
+      kin = 645
       OPEN(unit=kin,&
      &  file='DATA/XSECTIONS/HO2/HO2_jpl94.abs',&
      &  STATUS='OLD')
@@ -464,7 +464,7 @@
       ENDDO
 
       endif  !end option 1
-
+      kin = 646
       if (option .eq. 2) then  !use Kevin's data, which is from "some old JPL recommendation"
       OPEN(UNIT=kin,&
      &  file='DATA/XSECTIONS/HO2/HO2_zahnle.abs',&
@@ -614,7 +614,7 @@
 ! JPL 97 recommendation is identical
 
       if (option .eq. 1) then
-
+      kin = 647
          OPEN(UNIT=kin,&
      &  file='DATA/XSECTIONS/NO2/NO2_jpl94.abs',&
      &  STATUS='old')
@@ -661,7 +661,7 @@
 
 
       elseif (option .eq. 2) then
-
+      kin = 648
          OPEN(UNIT=kin,&
      &  file='DATA/XSECTIONS/NO2/NO2_Har.abs',&
      &  status='old')
@@ -687,7 +687,7 @@
          ENDDO
 
       elseif (option .eq. 3) then
-
+      kin = 879
       OPEN(UNIT=kin,&
      &  file='DATA/XSECTIONS/NO2/NO2_zahnle.abs',&
      &  STATUS='old')
@@ -744,7 +744,7 @@
       if (option.eq.1 .or. option.eq.2) then
 ! quantum yield
 ! from Gardiner, Sperry, and Calvert
-
+      kin = 39
       OPEN(UNIT=kin,&
      &  file='DATA/XSECTIONS/NO2/NO2_calvert.yld',&
      &  STATUS='old')
@@ -770,7 +770,7 @@
 
       else if (option.eq.3) then   !Kevin's quantum yield
 ! - qy needs to be called yg1
-
+      kin = 567
       OPEN(UNIT=kin,&
      &  file='DATA/XSECTIONS/NO2/NO2qy_zahnle.yld',&
      &  STATUS='old')
@@ -902,7 +902,7 @@
       if (option.eq.1) then
 ! cross section from JPL94 (identical to JPL97)
 ! tabulated data up to 260 nm
-
+      kin = 568
       OPEN(UNIT=kin,&
      &  file='DATA/XSECTIONS/H2O2/H2O2_jpl94.abs',&
      &  STATUS='old')
@@ -985,6 +985,7 @@
 !         print*,"HJtest",HJtest
 
       if (option.eq.2) then  !Kevin's data
+      kin = 569
       OPEN(UNIT=kin,&
      &  file='DATA/XSECTIONS/H2O2/H2O2_zahnle.abs',&
      &  STATUS='old')
@@ -1098,6 +1099,7 @@
       option=1
 
       if (option.eq.1) then  !Kevin's data
+      kin = 570
       OPEN(UNIT=kin,&
      &  file='DATA/XSECTIONS/OCS/OCS_zahnle.abs',&
      &  STATUS='old')
@@ -1209,6 +1211,7 @@
       option=1
 
       if (option.eq.1) then  !Kevin's data
+        kin = 571
       OPEN(UNIT=kin,&
      &  file='DATA/XSECTIONS/SO3/SO3_zahnle.abs',&
      &  STATUS='old')
@@ -1325,6 +1328,7 @@
       option=1
 
       if (option.eq.1) then  !Kevin's data
+      kin = 572
       OPEN(UNIT=kin,&
      &  file='DATA/XSECTIONS/S2/S2_zahnle.abs',&
      &  STATUS='old')
@@ -1456,7 +1460,7 @@
       option=1
 
       if (option.eq.1) then  !Kevin's data
-
+      kin = 573
       OPEN(UNIT=kin,&
      &  file='DATA/XSECTIONS/S8/S8L_zahnle.abs',&
      &  STATUS='old')
@@ -1494,7 +1498,7 @@
          STOP
       ENDIF
 
-
+      kin = 574
       OPEN(UNIT=kin,&
      &  file='DATA/XSECTIONS/S8/S8R_zahnle.abs',&
      &  STATUS='old')
@@ -1629,6 +1633,7 @@
 
 
       if (option.eq.1) then  !Kevin's data
+      kin = 575
       OPEN(UNIT=kin,&
      &  file='DATA/XSECTIONS/H2S/H2S_zahnle.abs',&
      &  STATUS='old')
@@ -1682,6 +1687,7 @@
       endif  !end option 1
 
       if (option.eq.2) then  !mpi data and extending into the far uv
+      kin = 576
       OPEN(UNIT=kin,&
      &  file='DATA/XSECTIONS/H2S/H2S_mpi.abs',&
      &  STATUS='old')
@@ -1962,7 +1968,7 @@
 !         print*,"HJtest",HJtest
 
       if (option.eq.2) then
-
+        kin = 578
       OPEN(UNIT=kin,&
      &  file='DATA/XSECTIONS/H2O/H2O_zahnle.abs',&
      &  STATUS='old')
@@ -2007,7 +2013,7 @@
       endif   !end option 2
 
       if (option.eq.3) then !Ranjan et al. 2020 cross sections
-
+        kin = 579
       OPEN(UNIT=kin,&
      &  file='DATA/XSECTIONS/H2O/H2O_ranjan.XS.dat',&
      &  STATUS='old')
@@ -2115,6 +2121,7 @@
 
 
       if (option.eq.1) then  !Kevin's data
+      kin = 580
       OPEN(UNIT=kin,&
      &  file='DATA/XSECTIONS/SO/SO_zahnle.abs',&
      &  STATUS='old')
@@ -2242,7 +2249,7 @@
       option=1
 
       if (option.eq.1) then  !Kevin's data
-
+      kin = 581
       OPEN(UNIT=kin,&
      &  file='DATA/XSECTIONS/CO2/CO2_zahnle.abs',&
      &  STATUS='old')
@@ -2270,7 +2277,7 @@
          WRITE(*,*) ierr, ' ***Something wrong in XS_CO2***'
          STOP
       ENDIF
-
+      kin = 582
       OPEN(UNIT=kin,&
      &  file='DATA/XSECTIONS/CO2/CO2D_zahnle.abs',&
      &  STATUS='old')
@@ -2318,7 +2325,7 @@
 
 
 
-
+      kin = 583
       OPEN(UNIT=kin,&
      &  file='DATA/XSECTIONS/CO2/CO2_claire1.abs',&
      &  STATUS='old')
@@ -2431,7 +2438,7 @@
       option=1
 
       if (option.eq.1) then  !Kevin's data
-
+      kin = 584
       OPEN(UNIT=kin,&
      &  file='DATA/XSECTIONS/H2CO/H2CO_zahnle.abs',&
      &  STATUS='old')
@@ -2616,7 +2623,7 @@
 !         print*,"HJtest",HJtest
 
       if (option.eq.1) then  !Kevin's data
-
+      kin = 585
       OPEN(UNIT=kin,&
      &  file='DATA/XSECTIONS/SO2/SO2_zahnle.abs',&
      &  STATUS='old')
@@ -2684,8 +2691,9 @@
       if (LGRID.eq.1) then   !on fine wavelength grid, use Danielache data
 
       newspec=1  !use Sebastian's corrected spectrum
-
+      kin = 587
       if (newspec.eq.0) then
+      kin = 587
       OPEN(UNIT=kin,&
      &  file='DATA/XSECTIONS/SO2/2007jd009695-ds01.txt',&
      &  STATUS='old')
@@ -2872,7 +2880,7 @@
          if (ISPEC(i).eq.'HE') HJtest=1  !temp solution to get 3 reactions for hot jupiters at Ly alpha
       enddo
 !         print*,"HJtest",HJtest
-
+      kin = 4356
       OPEN(UNIT=kin,&
      &  file='DATA/XSECTIONS/O3/O3_zahnle.abs',&
      &  STATUS='old')
@@ -3067,6 +3075,7 @@
 
 
       if (option.eq.1) then  !Kevin's data
+      kin = 583
       OPEN(UNIT=kin,&
      &  file='DATA/XSECTIONS/HCL/HCL_zahnle.abs',&
      &  STATUS='old')
@@ -3122,6 +3131,7 @@
 
 
       if (option.eq.2) then  !JPL-06
+      kin = 583
       OPEN(UNIT=kin,&
      & file='DATA/XSECTIONS/HCL/HCL_JPL06.abs',STATUS='old')
 
@@ -3263,7 +3273,7 @@
 
 ! - actually, option 1 should only be called for the LR grid. it's easier that way.
 ! - eventually, i should enforce this somewhere in the main code.
-
+      kin = 589
       OPEN(UNIT=kin,&
      &  file='DATA/XSECTIONS/O2/O2D_zahnle.abs',&
      &  STATUS='old')
@@ -3306,7 +3316,7 @@
          WRITE(*,*) ierr, ' ***Something wrong in XS_O2***'
          STOP
       endif
-
+      kin = 590
       OPEN(UNIT=kin,&
      &  file='DATA/XSECTIONS/O2/O2_zahnle.abs',&
      &  STATUS='old')
@@ -3346,7 +3356,7 @@
 !   so now, yg1 is SO2HZ
 !      print *, yg1
 !      stop
-
+      kin = 591
       OPEN(UNIT=kin,&
      &  file='DATA/XSECTIONS/O2/AllenFrederick1982.coeff',&
      &  STATUS='old')
@@ -3395,7 +3405,7 @@
 !            REPEAT THIS SECTION ONLY IF SOLAR ZENITH ANGLE OR O2 VARIES
 !            WITH TIME
 ! (i.e. call this subroutine when it needs to be called...)
-
+      kin = 592
       OPEN(UNIT=kin,&
      &  file='DATA/XSECTIONS/O2/AllenFrederick1982.coeff',&
      &  STATUS='old')
@@ -3494,6 +3504,7 @@
          print *,'using high resolution O2 cross section'
 
 !still use the old shortwave cross-section for O2 + hv -> O1D+O
+      kin = 594
       OPEN(UNIT=kin,&
      &  file='DATA/XSECTIONS/O2/O2D_zahnle.abs',&
      &  STATUS='old')
@@ -3521,6 +3532,7 @@
 
 
 !but use high resolution for the S-R bands...
+      kin = 595
       OPEN(UNIT=kin,&
      &  file='DATA/XSECTIONS/O2/Yoshino92.abs',&
      &  STATUS='old')
@@ -3545,6 +3557,7 @@
 
 !**Yoshino goes from 1792-2025*** so,i need to put the rest of the grid back on in order to better compare these photo rates
 !laire grid is same as old to 1770-1786 and after 2248-2273
+      kin = 596
       OPEN(UNIT=kin,&
      &  file='DATA/XSECTIONS/O2/O2_zahnle.abs',&
      &  STATUS='old')
@@ -3662,6 +3675,7 @@
 
 !         print*,"HJtest",HJtest
       if (option.eq.1) then  !Kevin's data
+      kin = 597
       OPEN(UNIT=kin,&
      &  file='DATA/XSECTIONS/CH4/CH4_zahnle.abs',&
      &  STATUS='old')
@@ -3800,6 +3814,7 @@
 
 
       if (option.eq.1) then  !Kevin's data
+      kin = 598
       OPEN(UNIT=kin,&
      &  file='DATA/XSECTIONS/C2H6/C2H6_zahnle.abs',&
      &  STATUS='old')
@@ -4117,6 +4132,7 @@
       option=1
 
       if (option.eq.1) then  !JPL data
+      kin = 599
       OPEN(UNIT=kin,&
      &  file='DATA/XSECTIONS/NO3/NO3.abs',&
      &  STATUS='old')
@@ -4145,7 +4161,7 @@
 
 
 ! Quantum yield (is temperature dependent)
-
+      kin = 599
       OPEN(UNIT=kin,&
      &  file='DATA/XSECTIONS/NO3/NO3QY.dat',&
      &  STATUS='old')
@@ -4332,7 +4348,7 @@
       if (option.eq.1) then  !JPL data
 
 !just use formula below..
-
+      kin = 600
       OPEN(UNIT=kin,&
      &  file='DATA/XSECTIONS/N2O/N2O_JPL06.abs',&
      &  STATUS='old')
@@ -4459,6 +4475,7 @@
 
 
       if (option.eq.1) then  !JPL-06
+      kin = 601
       OPEN(UNIT=kin,&
      &  file='DATA/XSECTIONS/CLO/CLO_JPL06.abs',&
      &  STATUS='old')
@@ -4564,6 +4581,7 @@
 
 
       if (option.eq.1) then  !JPL-06
+      kin = 601
       OPEN(UNIT=kin,&
      &  file='DATA/XSECTIONS/HOCL/HOCL_JPL06.abs',&
      &  STATUS='old')
@@ -4739,6 +4757,7 @@
 
 
       if (option.eq.1) then  !JPL-06
+      kin = 602
       OPEN(UNIT=kin,&
      &  file='DATA/XSECTIONS/CLOO/CLOO_JPL06.abs',&
      &  STATUS='old')
@@ -4834,6 +4853,7 @@
 
 
       if (option.eq.1) then  !JPL-06
+      kin = 604
       OPEN(UNIT=kin,&
      &  file='DATA/XSECTIONS/OCLO/OCLO_JPL06.abs',&
      &  STATUS='old')
@@ -4931,6 +4951,7 @@
 
 
       if (option.eq.1) then  !JPL-06
+      kin = 605
       OPEN(UNIT=kin,&
      &  file='DATA/XSECTIONS/CLONO/CLONO_JPL06.abs',&
      &  STATUS='old')
@@ -5027,6 +5048,7 @@
 
 
       if (option.eq.1) then  !JPL-06
+              kin = 606
       OPEN(UNIT=kin,&
      &  file='DATA/XSECTIONS/CLONO2/CLONO2_JPL06.abs',&
      &  STATUS='old')
@@ -5176,6 +5198,7 @@
 
 
       if (option.eq.1) then  !JPL-06
+              kin = 607
       OPEN(UNIT=kin,&
      &  file='DATA/XSECTIONS/CLNO/CLNO_JPL06.abs',&
      &  STATUS='old')
@@ -5270,6 +5293,7 @@
 
 
       if (option.eq.1) then  !JPL-06
+      kin = 601
       OPEN(UNIT=kin,&
      &  file='DATA/XSECTIONS/CLNO2/CLNO2_JPL06.abs',&
      &  STATUS='old')
@@ -5365,6 +5389,7 @@
 
 
       if (option.eq.1) then  !JPL-06
+      kin = 608
       OPEN(UNIT=kin,&
      &  file='DATA/XSECTIONS/CHCLO/CHCLO_JPL06.abs',&
      &  STATUS='old')
@@ -5477,7 +5502,7 @@
       option=1
 
       if (option.eq.1) then  !JPL data
-
+      kin = 610
       OPEN(UNIT=kin,&
      &  file='DATA/XSECTIONS/CH3CL/CH3CL_JPL06.abs',&
      &  STATUS='old')
@@ -5622,7 +5647,7 @@
       option=1
 
       if (option.eq.1) then  !JPL data
-
+      kin = 611
       OPEN(UNIT=kin,&
      &  file='DATA/XSECTIONS/CCL4/CCL4_JPL06.abs',&
      &  STATUS='old')
@@ -5751,6 +5776,7 @@
 
 
       if (option.eq.1) then  !JPL-06
+      kin = 612
       OPEN(UNIT=kin,&
      &  file='DATA/XSECTIONS/COCL2/COCL2_JPL06.abs',&
      &  STATUS='old')
@@ -5845,6 +5871,8 @@
 
 
       if (option.eq.1) then  !JPL-06
+
+      kin = 613
       OPEN(UNIT=kin,&
      &  file='DATA/XSECTIONS/CL2O2/CL2O2_JPL06.abs',&
      &  STATUS='old')
@@ -5952,6 +5980,7 @@
 
 
       if (option.eq.1) then  !JPL-06
+      kin = 615
       OPEN(UNIT=kin,&
      &  file='DATA/XSECTIONS/CH3O2NO2/CH3O2NO2_IUPAC2006.abs',&
      &  STATUS='old')
@@ -6045,6 +6074,7 @@
 
 
       if (option.eq.1) then  !JPL-06
+      kin = 616
       OPEN(UNIT=kin,&
      &  file='DATA/XSECTIONS/CH3OCL/CH3OCL_IUPAC2008.abs',&
      &  STATUS='old')
@@ -6138,6 +6168,7 @@
 
 
       if (option.eq.1) then  !JPL-06
+      kin = 616
       OPEN(UNIT=kin,&
      &  file='DATA/XSECTIONS/CH3OOH/CH3OOH_JPL06.abs',&
      &  STATUS='old')
@@ -6231,6 +6262,7 @@
 
 
       if (option.eq.1) then  !JPL-06
+      kin = 617
       OPEN(UNIT=kin,&
      &  file='DATA/XSECTIONS/HO2NO2/HO2NO2_JPL06.abs',&
      &  STATUS='old')
@@ -6330,6 +6362,8 @@
 
 
       if (option.eq.1) then  !JPL-06
+
+      kin = 618
       OPEN(UNIT=kin,&
      &  file='DATA/XSECTIONS/CL2O/CL2O_JPL06.abs',&
      &  STATUS='old')
@@ -6429,6 +6463,7 @@
 
 
       if (option.eq.1) then  !JPL-06
+      kin = 619
       OPEN(UNIT=kin,&
      &  file='DATA/XSECTIONS/N2O5/N2O5_JPL06_298.abs',&
      &  STATUS='old')
@@ -6443,7 +6478,8 @@
       ENDDO
       CLOSE (kin)
 
-! open/read in temperature-dependent parameters
+! open/read in temperature-dependent parameter
+      kin = 620
       OPEN(UNIT=kin,&
      &  file='DATA/XSECTIONS/N2O5/N2O5td.abs',&
      &  STATUS='old')
@@ -6597,6 +6633,7 @@
 
 
       if (option.eq.1) then  !
+      kin = 621
       OPEN(UNIT=kin,&
      &  file='DATA/XSECTIONS/CLO3/CLO3_Kopitzky_MC.abs',&
      &  STATUS='old')
@@ -6691,6 +6728,7 @@
 
 
       if (option.eq.1) then  !
+      kin = 620
       OPEN(UNIT=kin,&
      &  file='DATA/XSECTIONS/CL2O3/CL2O3_JPL06.abs',&
      &  STATUS='old')
@@ -6782,6 +6820,7 @@
 
 
       if (option.eq.1) then  !
+              kin = 620
       OPEN(UNIT=kin,&
      &  file='DATA/XSECTIONS/CL2O4/CL2O4_JPL06.abs',&
      &  STATUS='old')
@@ -6873,7 +6912,7 @@
       option=1
 
       if (option.eq.1) then  !MPI
-
+      kin = 622
       OPEN(UNIT=kin,&
      &  file='DATA/XSECTIONS/CS2/CS2_mpi.abs',&
      &  STATUS='old')
@@ -6887,7 +6926,7 @@
          x1(i)=x1(i)*10.  !convert to Angstroms
       ENDDO
       CLOSE (kin)
-
+      kin = 629
       OPEN(UNIT=kin,&
      &  file='DATA/XSECTIONS/CS2/CS2X_mpi.abs',&
      &  STATUS='old')
@@ -6998,6 +7037,7 @@
 
 
       if (option.eq.1) then  !MPI
+              kin = 630
       OPEN(UNIT=kin,&
      &  file='DATA/XSECTIONS/CH3SH/CH3SH_mpi.abs',&
      &  STATUS='old')
@@ -7111,6 +7151,7 @@
       ! XsecFile = 'DATA/XSECTIONS/'//trim(species)&
       ! //'/'//trim(species)//'_mpi.abs'
       if (option.eq.1) then  !MPI
+      kin = 324
       OPEN(UNIT=kin,file=XsecFile,Status='old')
 
 
@@ -7126,7 +7167,7 @@
       ALLOCATE (y1(kdata)) ! set length of y1
       CLOSE(kin)
 
-
+      kin = 631
       OPEN(UNIT=kin,file=XsecFile,Status='old')
       DO i = 1,3
          READ(kin,*)
@@ -7232,7 +7273,7 @@
 !     1)JPL-06 rec
 
       option=1
-
+      kin = 631
       if (option.eq.1) then  !hybrid
       OPEN(UNIT=kin,&
      &  file='DATA/XSECTIONS/CHOCHO/CHOCHO_hybrid.abs',&
@@ -7259,7 +7300,7 @@
       ENDIF
 
 
-
+      kin = 633
 ! Quantum yield depends on wavelength and is read in from a table in JPL-06
       OPEN(UNIT=kin,&
      &  file='DATA/XSECTIONS/CHOCHO/CHOCHO.qy',&
@@ -7412,7 +7453,7 @@
 
       option=1
 
-
+      kin = 634
       if (option.eq.1) then  !Kevin's data
       OPEN(UNIT=kin,&
      &  file='DATA/XSECTIONS/C2H2/C2H2_mpi.abs',&
@@ -7527,7 +7568,7 @@
 
       option=1
 
-
+      kin = 635
       if (option.eq.1) then  !mpi data
       OPEN(UNIT=kin,&
      &  file='DATA/XSECTIONS/CH3CHO/CH3CHO_mpi.abs',&
@@ -7631,7 +7672,7 @@
 
       option=1
 
-
+      kin = 636
       if (option.eq.1) then  !Kevin's data
       OPEN(UNIT=kin,&
      &  file='DATA/XSECTIONS/C3H6/C3H6_mpi.abs',&
@@ -7744,7 +7785,7 @@
 
       option=1
 
-
+      kin = 637
       if (option.eq.1) then  !Kevin's data
       OPEN(UNIT=kin,&
      &  file='DATA/XSECTIONS/CH3C2H/CH3C2H_mpi.abs',&
@@ -7851,7 +7892,7 @@
 !     1)MPI data
 
       option=1
-
+      kin = 638
 
       if (option.eq.1) then  !Kevin's data
       OPEN(UNIT=kin,&
@@ -7957,7 +7998,7 @@
 
       option=1
 
-
+      kin = 639
       if (option.eq.1) then  !Kevin's data
       OPEN(UNIT=kin,&
      &  file='DATA/XSECTIONS/C2H4/C2H4_kasting.abs',&
@@ -8067,7 +8108,7 @@
 
       option=1
 
-
+      kin = 640
       if (option.eq.1) then  !Kevin's data
       OPEN(UNIT=kin,&
      &  file='DATA/XSECTIONS/C3H8/C3H8_mpi.abs',&
@@ -8186,7 +8227,7 @@
 !     1)Data in Atmos folder
 
       option=1
-
+      kin = 641
 
       if (option.eq.1) then
       OPEN(UNIT=kin,&
@@ -8292,7 +8333,7 @@
 
 ! options
 !     1)Data in Atmos folder
-
+      kin = 641
       option=1
       if (option.eq.1) then
       OPEN(UNIT=kin,&
@@ -8394,7 +8435,7 @@
 
 ! options
 !     1)Data in Atmos folder
-
+      kin = 642
       option=1
       if (option.eq.1) then
       OPEN(UNIT=kin,&
@@ -8496,7 +8537,7 @@
 
 ! options
 !     1)Data in Atmos folder
-
+      kin = 643
       option=1
       if (option.eq.1) then
       OPEN(UNIT=kin,&

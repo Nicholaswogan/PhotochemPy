@@ -2,9 +2,10 @@
     use Photochem
     implicit none
     integer :: nnw, nnz, nnq, nnp, nnsp, nnr, kks, kkj
+    integer i
 
     nnz = 200
-    nnq = 63
+    nnq = 61
     nnp = 4
     nnsp = 74
     nnr = 392
@@ -12,13 +13,14 @@
     kkj = 60
 
     call allocate_memory(nnz,nnq,nnp,nnsp,nnr,kks,kkj)
-    call read_species("input/species.dat")
-    call read_reactions("input/reactions.rx")
-    call read_atmosphere("input/atmosphere.txt")
-    call photgrid(100.0D5)
-    ! call initphoto
+    call setup('input/speciesOG.dat', &
+               'input/reactions.rx', &
+               'input/planet.dat', &
+               'input/input_photchem.dat', &
+               'input/atmosphere.txt', &
+               'input/Sun_2.7Ga.txt')
 
-    call rates
-    ! etc....
+
+    call integrate
 
   end Program
