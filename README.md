@@ -7,7 +7,10 @@ I'm working on it right now. It isn't quite done, but is usable. The current ver
 
 1. **Parallel Processing:** This version of the code can be run in Parallel. On my computer a calculation take about 60% of the time it did in serial. This speedup will be better for some problems and worse for others.
 
-<div style="text-align:center"><img src="Parallel_speed.jpg" width="400" /></div>
+<p align="center">
+<img src="Parallel_speed.jpg " width="450">
+</p>
+
 
 2. **Integration with Python:** The code interfaces with Python really well. To try this out run `./compile_parallel` (or `./compile` for serial processing). This will use the tool `f2py` to generate a python module of the fortran code. To test the code run `python test_integrate.py` to integrate to an atmosphere at photochemical equilibrium. Also check out the file `PhotochemPy.py`
 
