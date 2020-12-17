@@ -14,7 +14,7 @@ I'm working on it right now. It isn't quite done, but is usable. The current ver
 
 2. **Integration with Python:** The code interfaces with Python really well. To try this out run `./compile_parallel` (or `./compile` for serial processing). This will use the tool `f2py` to generate a python module of the fortran code. To test the code run `python test_integrate.py` to integrate to an atmosphere at photochemical equilibrium. Also check out the file `PhotochemPy.py`
 
-3. **Fortran 90 features:** The code is more modern syntax. Variables are dynamically allocated (the code only needs to be compiled once for all problems).
+3. **Fortran 90 features:** The code is more modern syntax. Variables are dynamically allocated (the code only needs to be compiled once for all problems). No variables are implicit.
 
 ## Ideas that I will work on
 
