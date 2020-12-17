@@ -15,13 +15,14 @@ pt.integrate()
 end = time.time()
 print('Time to find equilibrium =',end-start,'seconds')
 
+
 plot = True
 
 if plot:
     out = pt.out_dict()
     plt.rcParams.update({'font.size': 15})
     fig,ax = plt.subplots(1,1,figsize=[9,5])
-    specs = ['CH4']
+    specs = ['CH4','CO','O2','H2']
     for sp in specs:
         ax.plot(out[sp],out['alt'],label=sp)
 
