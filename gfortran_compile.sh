@@ -4,8 +4,8 @@ gfortran -c modules/Rainout_vars.f90
 gfortran -c modules/reading_vars.f90
 
 # compile main module
-gfortran -c Photochem.f90 lin_alg.f
-gfortran -c PhotoMain.f90
+gfortran -c src/Photochem.f90 src/lin_alg.f
+
 
 # gfortran PhotoMain.o -o testrun
 

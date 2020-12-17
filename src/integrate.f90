@@ -63,7 +63,8 @@
 
     ! start the time-stepping loop
     do n = 1,nsteps
-      print'(3e20.4)',time,dt,emax
+      print"(2x,'N =',i6,3x,'Time = ',es10.2,3x,'DT = ',es10.2)", &
+      n,time,dt
       TIME = TIME + DT
       nn = nn+1
 
@@ -205,6 +206,18 @@
         enddo
       enddo
 
+      !$OMP PARALLEL PRIVATE(i,j,R,usol,mm,m,k,fv)
+      DO I=1,NQ
+        DO J=1,NZ
+          USOL(I,J) = USAVE(I,J)
+        enddo
+      enddo
+
+
+      ! print*,usol(1,1)
+
+
+      !$OMP DO
       DO I=1,NQ
       ! Loop through all vertical atmospheric layers
         DO J=1,NZ
@@ -235,7 +248,9 @@
           USOL(I,J) = USAVE(I,J)
         enddo
       enddo
-
+      !$OMP END DO
+      !$OMP END PARALLEL
+      ! stop
 
 
 !     COMPUTE TRANSPORT TERMS AT INTERIOR GRID POINTS

@@ -11,7 +11,7 @@ ks = 33
 kj = 60
 photochem.allocate_memory(nz,nq,nnp,nsp,nr,ks,kj)
 # now read input files
-photochem.read_species('input/speciesOG.dat')
+photochem.read_species('input/species.dat')
 photochem.read_reactions('input/reactions.rx')
 photochem.read_planet('input/planet.dat')
 photochem.read_photochem('input/input_photchem.dat')
@@ -30,22 +30,12 @@ photochem.initmie(photochem.nw,photochem.wavl,1,0)
 
 # in the loop
 start = time.time()
-for i in range(100):
+for i in range(1):
     prates = photochem.photo(photochem.zy,photochem.agl,photochem.io2\
                     ,photochem.ino,photochem.usol_init,photochem.kj)
 end = time.time()
 print('photo',(end-start)/10)
 
-start = time.time()
-photochem.rainout(22,0,photochem.usol_init)
-end = time.time()
-
-
-start = time.time()
-photochem.aercon(photochem.usol_init)
-end = time.time()
-
-
-start = time.time()
-conver = photochem.sedmnt(photochem.frak,photochem.hcdens, photochem.ihztype,photochem.nz,photochem.np)
-end = time.time()
+data = np.loadtxt('prates.dat')
+for i in range(kj):
+    print(i+1,'%.4e'%(prates[i,-1]/data[i]),'%.4e'%(prates[i,-1]),'%.4e'%(data[i]))

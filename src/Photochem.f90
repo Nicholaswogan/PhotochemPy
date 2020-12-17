@@ -161,10 +161,10 @@
         include "read_planet.f90" ! reads planet.dat
         include "read_photochem.f90" ! reads input_photochem.dat
         include "photgrid.f90" ! step up grid for photolysis calculations
-        include "rates.f90" ! calculates reaction rates
+        include "Rates.f90" ! calculates reaction rates
         include "Initphoto.f90"
         include "Xsections.f90"
-        include "initmie.f90"
+        include "Initmie.f90"
         include "Rainout.f90"
         include "Aqueous.f90"
         include "Ltning.f90" ! Needs work for time dependent model

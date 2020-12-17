@@ -44,7 +44,7 @@
 !c eventually, this will die...
 
 
-      OPEN (3,FILE='data/photo.dat',STATUS='OLD')
+      OPEN (3,FILE='DATA/photo.dat',STATUS='OLD')
 
       READ (3,99001)
 99001 FORMAT (/)

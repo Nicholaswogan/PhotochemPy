@@ -3708,7 +3708,7 @@
 ! Quantum yields and reactions depend on wavelength and presence of hydrocarbons
 
       DO iw = 1, nw
-         if (wl(iw).eq.1216) then  !ack hardcoded wavelength
+         if (wl(iw).le.1216) then  !ack hardcoded wavelength
 !-mab: November 2016: Switched qy2 and qy3 values from original due to comparison with a previous person.
 !-mab: A discussion within the GSFC group (following discrepancy with Kopparapu et al 2012 code) suggested they must've gotten switched somewhere accidentally?
             qy=0.24
@@ -3858,7 +3858,7 @@
       enddo
 
       DO iw = 1, nw
-            if (wl(iw).eq.1216) then !wl dependent quantum yield just at ly a
+            if (wl(iw).le.1216) then !wl dependent quantum yield just at ly a
               qy  = 0.0
               qy2 = 0.25
               qy3  = 0.25
@@ -7487,7 +7487,7 @@
 
 ! Quantum yields
       DO iw = 1, nw
-       if (wl(iw).ge.1216 .and. wl(iw).le.1754) then  !for C2H2 in Shawns "shortwave" loop,which has some absorbtion in lya where ours doesn't
+       if (wl(iw).ge.1210 .and. wl(iw).le.1754) then  !for C2H2 in Shawns "shortwave" loop,which has some absorbtion in lya where ours doesn't
           qy=0.3
           qy2=0.1
        else  !for 1754-2532
@@ -8139,7 +8139,7 @@
 
       DO iw = 1, nw
 
-       if (wl(iw).eq.1216) then  !for C3H8 at Ly a
+       if (wl(iw).le.1216) then  !for C3H8 at Ly a
         qy1 = 0.33
         qy2 = 0.08
         qy3 = 0.39

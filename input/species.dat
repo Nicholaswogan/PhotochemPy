@@ -1,7 +1,5 @@
 ***** SPECIES DEFINITIONS *****
-* nq = 63
-* np = 4
-* nsp = 74
+*
 *define LL,SL,TD, etc here
 * Note - if you change the species order in LL or TD, you will need to change in.dist as well.
 *
@@ -75,26 +73,29 @@ HSO        LL  1 1 0 1 0 0    0     1.00E+00 0.       0.        0.      0      0
 H2SO4      LL  4 2 0 1 0 0    0     1.00E+00 0.       0.        0.      0      0.      0.
 SO2        LL  2 0 0 1 0 0    3     1.00E+00 0.       1.000E+05 10.     0      0.      0.
 SO         LL  1 0 0 1 0 0    0     0.       0.       0.        0.      0      0.      0.
-CO2        LL  2 0 1 0 0 0    1     1.0E-4   0.       0.        0.      0      0.      0.
-N2         LL  0 0 0 0 2 0    1     0.80     0.       0.        0.      0      0.      0.
 SO4AER     LL  4 2 0 1 0 0    0     1.00E-02 0.       0.        0.      0      0.      0.            !turbulent depostion velocity for particles (hardcoded for td)
 S8AER      LL  0 0 0 8 0 0    0     1.00E-02 0.       0.        0.      0      0.      0.            !turbulent depostion velocity for particles
 HCAER      LL  0 2 4 0 0 0    0     1.00E-02 0.       0.        0.      0      0.      0.            !turbulent depostion velocity for particles
 HCAER2     LL  0 4 5 0 0 0    0     1.00E-02 0.       0.        0.      0      0.      0.            !turbulent depostion velocity for particles
 * NQ should be the number above
+* note that species that have isotopes (only S for now) need to be the final entries in species.dat for proper functioning of the isotope code.
+*   TRIDIAGONAL SOLVER
+*NQ1 should be the number directly above
 *   SHORT-LIVED SPECIES
 HNO2       SL  2 1 0 0 1 0
 O1D        SL  1 0 0 0 0 0
-CH21       SL  0 2 1 0 0 0
+CH21       SL  0 2 1 0 0 0    0     0.       0.       0.        0.      0      0.      0.
 C          SL  0 0 1 0 0 0
 SO21       SL  2 0 0 1 0 0
 SO23       SL  2 0 0 1 0 0
 HSO3       SL  3 1 0 1 0 0
 OCS2       SL  1 0 1 2 0 0
 CS2X       SL  0 0 1 2 0 0
-S3         SL  0 0 0 3 0 0
-S4         SL  0 0 0 4 0 0
-*   INERT SPECIES
+S3         SL  0 0 0 3 0 0    0     0.       0.       0.        0.      0      0.      0.
+S4         SL  0 0 0 4 0 0    0     0.       0.       0.        0.      0      0.      0.
+*   INERT SPECIES             Fixed MR
+CO2        IN  2 0 1 0 0 0    1.0E-4       !must be second to last IN
+N2         IN  0 0 0 0 2 0    0.80          !must be last IN  (FIXED MR NOT YET USED...)
 * NSP should be the number directly above
 HV         HV  0 0 0 0 0 0		    !must be second to last
 M          M   0 0 0 0 0 0		    !must be last

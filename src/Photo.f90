@@ -21,6 +21,8 @@
       real*8, dimension(nq,nz), intent(in) :: usol
       real*8, dimension(kj,nz), intent(out) :: prates
 
+      real*8, dimension(kj,nz) :: partial_prates
+
       real*8 :: SIGR(NZ)
       real*8 :: volmix(10,nz)
       integer :: ncomp(nz)
@@ -41,6 +43,8 @@
       integer NZP1, nz2
       real*8 absorbers(kj,nz)
       integer lpolyscount
+      ! real*8 start, finish
+      ! call cpu_time(start)
 
       NZP1=NZ+1
       nz2 = 2*nz
@@ -78,15 +82,15 @@
       QKNO = 1.5D-9               ! used for old NO
       DIJ = 1.65D9                ! used for old NO
 
+
       ! zero out prates
       do j=1,kj
         do i=1,nz
           prates(j,i)=0.0D0
         enddo
       enddo
-      do i=1,nz
-        SIGR(i) = 0.
-      enddo
+
+
 
 ! C ***** CALCULATE COLUMN DEPTHS ABOVE EACH COLLOCATION POINT FOR
 ! C ***** EACH SPECIES THAT ABSORBS PHOTONS
@@ -225,6 +229,19 @@
        endif
 
 ! ***** ***** ***** START WAVELENGTH LOOP   ***** ***** *****
+      !$OMP PARALLEL PRIVATE(Lold,KN,ncomp,volmix,icomp,SIGR,ALP,S, &
+      !$OMP& tempcount,RN2,partial_prates,L,FLX,i,j,k)
+      ! zero out prates
+      do j=1,kj
+        do i=1,nz
+          ! prates(j,i)=0.0D0
+          partial_prates(j,i) = 0.0D0
+        enddo
+      enddo
+      do i=1,nz
+        SIGR(i) = 0.D0
+      enddo
+      !$OMP DO
       do L=1,nw
 
         Lold=L-10
@@ -325,6 +342,7 @@
           call RAYLEIGH(wavl(l)*1e-4,ncomp,icomp,volmix,nz,SIGR)
 
 
+
           endif   !end case for Rayleigh loop
 
           if (IO2 .EQ. 1) then   !re-compute O2 cross section via exponential sums
@@ -346,6 +364,7 @@
 
           CALL TWOSTR(SIGR,U0,sq,WAV(L),L,nzp1,nz2,absorbers,S)  !two stream radiative tranfer
 
+
   ! this returns the Source function S to this code
 
           FLX = FLUX(L)*AGL*ALP*FSCALE
@@ -360,13 +379,11 @@
           !FSCALE=1 is Earth, FSCALE=0.43 is Mars
 
 ! c compute photlysis rates for each reaction at each height (summed over wavelength)
-
           do j=1,kj
             do i=1,nz
-              prates(j,i) = prates(j,i) + FLX*sq(j,i,L)*S(i)
+              partial_prates(j,i) = partial_prates(j,i) + FLX*sq(j,i,L)*S(i)
             enddo
           enddo
-
         ! print*,S(1),flx,flux(l),agl,alp,fscale
 
 ! c save wavelength dependence of SO2 photolysis and optical depth
@@ -374,7 +391,6 @@
         !   PSO2MC(L,I) = FLX*sq(JSO2,I,L)*S(I)
         !   SALL(L,I) = S(I)
         ! enddo
-
           if (INO.LE.1) then
 ! C   NO PREDISSOCIATION IN THE D00 (1910 A) AND D10 (1830 A) BANDS
             if (wavl(L).LE.2500.0 .AND. wavl(L).GE.1754.) then
@@ -385,14 +401,16 @@
                 IF (INO .EQ. 1) THEN
 ! C             old (cieslik and nicolet) method with intensities updated to
 ! C              frederick and hudson (1979)
+
                   do I=1,NZ
                     RN2 = DIJ/(ALNO + DIJ + QKNO*DEN(I))
-                    prates(JNO,I)=prates(JNO,I)+ 0.5*D0(NOL)*S(I)*RN2*AGL*ALP
+                    partial_prates(JNO,I)=partial_prates(JNO,I)+ 0.5*D0(NOL)*S(I)*RN2*AGL*ALP
                   enddo
+
                 ELSE
 ! C               frederick and allen method (effective cross sections)
                   do I=1,NZ
-                    prates(JNO,I)=prates(JNO,I) + FLX*SIGNO(I,NOL)*S(I)
+                    partial_prates(JNO,I)=partial_prates(JNO,I) + FLX*SIGNO(I,NOL)*S(I)
                   enddo
                 ENDIF
 
@@ -440,6 +458,19 @@
 ! C ***** ***** ***** END WAVELENGTH LOOP ***** ***** *****
         enddo
       enddo
+      !$OMP END DO
+
+      !$OMP CRITICAL
+      do j=1,kj
+        do i=1,nz
+          prates(j,i) = prates(j,i) + partial_prates(j,i)
+        enddo
+      enddo
+      !$OMP END CRITICAL
+
+      !$OMP END PARALLEL
+
+
 
 
 
@@ -566,6 +597,7 @@
 ! c      stop
 
       ! LTIMES = LTIMES + 1
+
 
       end subroutine
 
