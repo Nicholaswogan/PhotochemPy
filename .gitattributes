@@ -1,0 +1,3 @@
+* linguist-vendored
+*.ipynb linguist-vendored=false
+*.3 linguist-language=text
