@@ -7,8 +7,7 @@ I'm working on it right now. It isn't quite done, but is usable. The current ver
 
 1. **Parallel Processing:** This version of the code can be run in Parallel. On my computer a calculation take about 60% of the time it did in serial. This speedup will be better for some problems and worse for others.
 
-<img src="Parallel_speed.jpg " width="400" align="center">
-<br/><br/>
+<div style="text-align:center"><img src="Parallel_speed.jpg" width="400" /></div>
 
 2. **Integration with Python:** The code interfaces with Python really well. To try this out run `./compile_parallel` (or `./compile` for serial processing). This will use the tool `f2py` to generate a python module of the fortran code. To test the code run `python test_integrate.py` to integrate to an atmosphere at photochemical equilibrium. Also check out the file `PhotochemPy.py`
 
@@ -22,7 +21,7 @@ I'm working on it right now. It isn't quite done, but is usable. The current ver
 
 3. **Estimating the solution with a 0-D model.** To find a atmosphere in steady-state, you need to start with an intial atmosphere. You will find the steady state faster if the initial atmosphere is close to the solution. If the intial condtions are far from the solution, then the solution may never be found. This is often a problem! One possible way to deal with it though is to estimate the intial atmosphere with simple 0-D photochemical model.
 
-4. **Time-accurate ODE integration**. The code uses the backward euler method to evolve foward in time. This is fine for finding the steady-state, but it isn't ideal for tracking the atmosphere accurately with time. To deal with this I'd like to evolve the atmosphere with the CVODE integration method. 
+4. **Time-accurate ODE integration**. The code uses the backward euler method to evolve foward in time. This is fine for finding the steady-state, but it isn't ideal for tracking the atmosphere accurately with time. To deal with this I'd like to evolve the atmosphere with the CVODE integration method.
 
 ## History
 PhotochemPy is an updated version of the `Atmos` photochemical model, originally developed by Jim Kasting and Kevin Zahnle and further developed by many of their students and colleges. The code was originally written in Fortran 77. This version of the code is written in Fortran 90.
