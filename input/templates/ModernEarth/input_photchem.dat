@@ -1,4 +1,4 @@
-*** Set parameters for the Neoarchean photochemical model ***
+*** Set parameters for the modern Earth (HCSNO) photochemical model ***
 * Write the number after the 11th space
 *2345678901Here      
 
@@ -6,14 +6,14 @@ AGL=       0.5
 ISEASON=   1
 IZYO2=     0
 LGRID=     0
-IO2=       1
+IO2=       0
 INO=       1
 EPSJ=      1.E-9
 PRONO=     1.E9
-frak=      1
+frak=      0
 HCDENS=    0.63
 ICOUPLE=   0
-ihztype=   0
+monsize=   0
 ZY=	   50.
 
 C ***** SET MODEL PARAMETERS *****
@@ -41,7 +41,7 @@ C            = 0.8 g/cm^3 (titan tholins - Trainer et al 2006)
 C 	     = 1.0 g/cm^3 (old suspicious default value)
 C     ICOUPLE = 0 to turn off coupling / 1 to turn on coupling
 C             = 0 to use old formatting (E7.2 for VDEP and FIXEDMR)
-C     IHZTYPE = 0 for 0.05 um monomers for fractal particles
+C     MONSIZE = 0 for 0.05 um monomers for fractal particles
 C      	      = 1 for 0.01 um monomers for fractal particles
 C	      = 2 for 0.02 um monomers for fractal particles
 C	      = 3 for 0.07 um monomers for fractal particles

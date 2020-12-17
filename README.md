@@ -1,7 +1,7 @@
 # PhotochemPy
-PhotochemPy will be a photochemical model of terrestrial atmospheres. Given inputs, like the stellar UV flux, the atmospheric temperature structure, etc., this code will find the **steady-state** chemical composition of an atmosphere.
+PhotochemPy will be a photochemical model of terrestrial atmospheres. Given inputs, like the stellar UV flux, the atmospheric temperature structure, etc., this code will find the steady-state chemical composition of an atmosphere.
 
-I'm working on it right now. It isn't quite done, but is usable. The current version of the code can reproduce older calculations.
+I'm working on it right now. It isn't quite done, but is usable. The current version of the code can reproduce older calculations (for example, see `input/templates/Archean+haze/validation.jpg`)
 
 ## New things
 

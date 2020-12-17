@@ -3,12 +3,12 @@ from matplotlib import pyplot as plt
 from PhotochemPy import PhotochemPy
 import time
 
-pt = PhotochemPy('input/species.dat', \
-                 'input/reactions.rx', \
-                 'input/planet.dat', \
-                 'input/input_photchem.dat', \
-                 'input/atmosphere.txt', \
-                 'input/Sun_2.7Ga.txt')
+pt = PhotochemPy('input/templates/Hadean+HCN/species.dat', \
+                 'input/templates/Hadean+HCN/reactions.rx', \
+                 'input/templates/Hadean+HCN/planet.dat', \
+                 'input/templates/Hadean+HCN/input_photchem.dat', \
+                 'input/templates/Hadean+HCN/atmosphere.txt', \
+                 'input/templates/Hadean+HCN/Sun_4.0Ga.txt')
 
 start = time.time()
 pt.integrate()
@@ -16,7 +16,7 @@ end = time.time()
 print('Time to find equilibrium =',end-start,'seconds')
 
 
-plot = True
+plot = False
 
 if plot:
     out = pt.out_dict()

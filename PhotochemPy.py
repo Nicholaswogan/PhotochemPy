@@ -71,7 +71,6 @@ class PhotochemPy:
         self.int_count = 0
 
     def integrate(self):
-        print('Integrating to photochemical equilibrium...')
         self.photo.integrate()
         self.int_count = 1
 
