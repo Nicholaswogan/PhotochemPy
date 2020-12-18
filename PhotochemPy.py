@@ -6,12 +6,14 @@ class PhotochemPy:
     def __init__(self,species_dat,reactions_rx,planet_dat,\
                       photochem_dat, atmosphere_txt, flux_txt):
         self.photo = photochem
-        # In init we will allocate all memory to fortran
-        # and get data (xsection, rates etc.) all loaded
-        # into memory.
+        self.species_dat = species_dat
+        self.reactions_rx = reactions_rx
+        self.planet_dat = planet_dat
+        self.photochem_dat = photochem_dat
+        self.atmosphere_txt = atmosphere_txt
+        self.flux_txt = flux_txt
 
         self.nz = 200 # number of vertical grid points
-
         # read species.dat to find nq, np, isl
         fil = open(species_dat,'r')
         lines = fil.readlines()
@@ -68,17 +70,20 @@ class PhotochemPy:
                          atmosphere_txt, \
                          flux_txt)
         # self.photo.flux = np.loadtxt('flux.dat') # noooooo
-        self.int_count = 0
+        self.code_run = False
 
-    def integrate(self):
-        self.photo.integrate()
-        self.int_count = 1
+    def integrate(self,nsteps=1000):
+        converged = self.photo.integrate(nsteps)
+        if converged == 0:
+            sys.exit('Photochemical model did not converge in '\
+                     +str(nsteps)+' steps')
+        else:
+            self.code_run = True
 
     def out_dict(self):
-        if self.int_count == 0:
-            print('Need to integrate before outputting a solution!')
-            return None
-        else:
+        if not self.code_run:
+            sys.exit('Need to integrate before outputting a solution!')
+        elif self.code_run:
             out = {}
             out['alt'] = self.photo.z/1e5
             out['den'] = self.photo.den
@@ -88,18 +93,31 @@ class PhotochemPy:
                 out[self.ispec[i]] = self.photo.usol_out[i,:]
             return out
 
+    def surf_flux(self):
+        if not self.code_run:
+            sys.exit('Need to integrate before outputing surface flux!')
+        elif self.code_run:
+            out = {}
+            for i in range(self.nq):
+                out[self.ispec[i]] = self.photo.flow[i]
+            return out
+
     def reset(self):
-        self.photo.setup(species_dat, \
-                         reactions_rx, \
-                         planet_dat, \
-                         photochem_dat, \
-                         atmosphere_txt, \
-                         flux_txt)
+        self.photo.setup(self.species_dat, \
+                         self.reactions_rx, \
+                         self.planet_dat, \
+                         self.photochem_dat, \
+                         self.atmosphere_txt, \
+                         self.flux_txt)
+        self.code_run = False
 
     def out2in(self):
-        self.photo.usol_init = self.photo.usol_out
+        if not self.code_run:
+            sys.exit('Need to integrate before setting the output as input!')
+        else:
+            self.photo.usol_init = self.photo.usol_out
 
-    def set_flux(self,spec,flx):
+    def set_surfflux(self,spec,flx):
         try:
             ind = self.ispec.index(spec)
         except:
@@ -109,8 +127,7 @@ class PhotochemPy:
         else:
             print('mbound set to',self.photo.lbound[ind],'so the flux will not change')
 
-
-    def set_mix(self,spec,mix):
+    def set_surfmr(self,spec,mix):
         try:
             ind = self.ispec.index(spec)
         except:
@@ -119,3 +136,21 @@ class PhotochemPy:
             self.photo.fixedmr[ind] = mix
         else:
             print('mbound set to',self.photo.lbound[ind],'so the mixing ratio will not change')
+
+    def set_lbound(self,spec,lbound):
+        try:
+            ind = self.ispec.index(spec)
+            self.photo.lbound[ind] = lbound
+        except:
+            sys.exit('species not in the model')
+
+    def set_mbound(spec,mbound):
+        try:
+            ind = self.ispec.index(spec)
+            self.photo.mbound[ind] = mbound
+        except:
+            sys.exit('species not in the model')
+
+
+
+    # include method that makes atmosphere.txt

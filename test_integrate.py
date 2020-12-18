@@ -3,17 +3,18 @@ from matplotlib import pyplot as plt
 from PhotochemPy import PhotochemPy
 import time
 
-pt = PhotochemPy('input/templates/Hadean+HCN/species.dat', \
-                 'input/templates/Hadean+HCN/reactions.rx', \
-                 'input/templates/Hadean+HCN/planet.dat', \
-                 'input/templates/Hadean+HCN/input_photchem.dat', \
-                 'input/templates/Hadean+HCN/atmosphere.txt', \
-                 'input/templates/Hadean+HCN/Sun_4.0Ga.txt')
+pt = PhotochemPy('input/templates/Archean+haze/species.dat', \
+                 'input/templates/Archean+haze/reactions.rx', \
+                 'input/templates/Archean+haze/planet.dat', \
+                 'input/templates/Archean+haze/input_photchem.dat', \
+                 'input/templates/Archean+haze/atmosphere.txt', \
+                 'input/templates/Archean+haze/Sun_2.7Ga.txt')
 
-start = time.time()
+
 pt.integrate()
-end = time.time()
-print('Time to find equilibrium =',end-start,'seconds')
+
+
+print('%.2e'%pt.surf_flux()['CH4'])
 
 
 plot = False

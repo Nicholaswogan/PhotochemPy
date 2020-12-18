@@ -1,7 +1,7 @@
 
 # compile sub-modules
-gfortran -c modules/Rainout_vars.f90
-gfortran -c modules/reading_vars.f90
+gfortran -c src/modules/Rainout_vars.f90
+gfortran -c src/modules/reading_vars.f90
 
 # compile main module
 gfortran -c src/Photochem.f90 src/lin_alg.f

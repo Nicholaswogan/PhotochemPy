@@ -14,10 +14,10 @@
       integer, intent(in) :: nz
       real*8, dimension(nq,nz),intent(in) :: usol
       real*8, dimension(nq,nz),intent(out) :: Fval
+      ! real*8, dimension(nq,nz) :: YP, YL
 
       integer i, j, iss4sl, ll, lla
       real*8, dimension(nsp2,nz) :: D
-      real*8, dimension(nq1,nz) :: YP, YL
       real*8 xp(nz), xl(nz), conso4(nz)
       real*8 aq, bq, cq, dls4, xlj, confac, scale
       integer jt1, changel

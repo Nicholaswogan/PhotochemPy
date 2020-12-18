@@ -12,7 +12,7 @@
         integer, parameter :: nmax = 300 ! max number of reactions a species can be involved in
         integer :: ks ! number of photo species
         integer :: kj ! number of photo reactions
-        integer, parameter :: kw = 2900 ! max number of wavelength bins
+        integer, parameter :: kw = 1000 ! max number of wavelength bins
         integer :: nw
         integer, parameter :: naq = 10 !number of aqueous species
         integer, parameter :: nt = 50 !number of temperatures in sulfate/H2O vapor pressure file (DATA/aerosol.table)
@@ -145,6 +145,11 @@
 
         ! needed in integrate.f90
         real*8, allocatable, dimension(:,:) :: usol_out
+        real*8, allocatable, dimension(:) :: flow
+        real*8, allocatable, dimension(:,:) :: fluxo
+        real*8, allocatable, dimension(:,:) :: yp
+        real*8, allocatable, dimension(:,:) :: yl
+
 
         ! some planet parameters and constants
 
@@ -326,6 +331,11 @@
 
             ! integrate.f90
             allocate(usol_out(nq,nz))
+            allocate(flow(nq))
+            allocate(fluxo(nq,nz))
+            allocate(yp(nq,nz))
+            allocate(yl(nq,nz))
+
 
           else
             print*, "Memory has already been allocated"

@@ -1,9 +1,12 @@
-  subroutine integrate
+  subroutine integrate(nsteps,converged)
     implicit none
     ! module variables
     ! all of them?
 
     ! local variables
+    integer,intent(in) :: nsteps
+    integer,intent(out) :: converged
+
     real*8, dimension(nq,nz) :: usol
     real*8, dimension(nq,nz) :: usaveold
     real*8, dimension(nq,nz) :: usave
@@ -11,7 +14,7 @@
     real*8, dimension(nq,nz) :: REL
     real*8 Ha
     real*8 Dt,dtinv, time, tstop
-    integer nn, i, j, k, jj, nparti, nsteps
+    integer nn, i, j, k, jj, nparti
     integer jh2o,JO2_O1D,JO3_O1D,JCO2,JO1D,JO2, JCO2_O1D
     real*8 absorbers(kj,nz)
     real*8,dimension(nz) :: H2O, O2, O3, CO2
@@ -24,15 +27,16 @@
     real*8, dimension(nz) :: R
     real*8, dimension(nz,np) :: conver
     real*8, dimension(nq) :: U
-    integer LB, MB, L, is, m, n
+    integer LB, MB, L, is, m, n, LL
     real*8 disth, dtsave, emax, erel, smallest, RMAX, UMAX
     integer jdisth, js, kd, ku, kl, info
     integer j15, j25, j70, j50
     integer lcountso4, lcounts8, lcountHC, lcountHC2, lpolyscount
-    real*8 ZTOP, ZTOP1
+    real*8 ZTOP, ZTOP1, WNF
     real*8 DPU(NZ,NP),DPL(NZ,NP)
     real*8, dimension(nq,nz) :: Fval, fv
-
+    integer cr, cm, c1, c2
+    converged = 1
 
     do i=1,nq
       do j=1,nz
@@ -52,7 +56,7 @@
     DTINV = 1./DT
     TIME = 0.
     TSTOP = 1.D17
-    NSTEPS = 50000
+    ! NSTEPS = 50000
     nn = 0
     KD = 2*NQ + 1
     KU = KD - NQ
@@ -62,6 +66,7 @@
 
 
     ! start the time-stepping loop
+    call system_clock(count = c1, count_rate = cr, count_max = cm)
     do n = 1,nsteps
       print"(2x,'N =',i6,3x,'Time = ',es10.2,3x,'DT = ',es10.2)", &
       n,time,dt
@@ -554,22 +559,71 @@
 
       IF (INFO.NE.0) STOP
       IF (NN.EQ.NSTEPS) then
+        converged = 0
         exit
       endif
 
       IF (TIME.GT.TSTOP) then
+        converged = 1
         exit
       endif
-
+    ! should never finish the loop if converged
+    converged = 0
     enddo
 ! ***** END THE TIME-STEPPING LOOP *****
+    call system_clock(count = c2)
 
-  ! the output
-  do i=1,nq
-    do j=1,nz
-      usol_out(i,j) = usol(i,j)
+    if (converged .eq. 1) then
+      print"('Time to find equilibrium =',f10.3,' seconds')", &
+            (c2-c1)/real(cr)
+    endif
+
+    ! the output
+    do i=1,nq
+      do j=1,nz
+        usol_out(i,j) = usol(i,j)
+      enddo
     enddo
-  enddo
+
+    ! the flux
+    call dochem(Fval,0,jtrop,isl,usol,nq,nz)
+    DO K=1,NQ
+      DO I=1,NZ
+      SL(K,I) = USOL(K,I)*DEN(I)
+      enddo
+      DO I=1,NZ-1
+        FLUXO(K,I) = - DK(I)*(USOL(K,I+1) - USOL(K,I))/DZ(I)
+      enddo
+    enddo
+
+    if(NP.GT.0) THEN
+      do k=1,np
+        do I=1,NZ1
+          LL=NQ-NP+K
+          WNF = 0.5*(WFALL(I,K)*DEN(I)*USOL(LL,I) + WFALL(I+1,K)*DEN(I+1) &
+            *USOL(LL,I+1))
+          FLUXO(LL,I) = FLUXO(LL,I) - WNF
+        enddo
+      enddo
+    endif
 
 
-  end subroutine
+    do i=1,NZ-1
+      fluxo(LH,i) = fluxo(LH,i) &
+        - bHN2(i)*(usol(LH,i+1) - usol(LH,i))/dz(i) &
+        + bHN2(i)*0.5*(usol(LH,i) + usol(LH,i+1)) &
+        *(1./H_atm(i) - 1./scale_H(LH,i))
+      fluxo(LH2,i) =fluxo(LH2,i) &
+        - bH2N2(i)*(usol(LH2,i+1) - usol(LH2,i))/dz(i) &
+        + bH2N2(i)*0.5*(usol(LH2,i) + usol(LH2,i+1)) &
+        *(1./H_atm(i) - 1./scale_H(LH2,i))
+    enddo
+
+
+    DO K=1,NQ
+      FLOW(K) = FLUXO(K,1) - (YP(K,1) - YL(K,1)*SL(K,1))*DZ(1)
+    enddo
+    FLOW(LH2O) = FLUXO(LH2O,jtrop)   ! jim had 11 hard-wired
+
+
+    end subroutine

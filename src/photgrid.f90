@@ -67,7 +67,7 @@
       ! none!
 
       ! local variables
-      integer, parameter :: kw = 2900
+      integer, parameter :: kw = 1000
       integer, intent(in) :: LGRID ! input:
       real*8, dimension(kw), intent(out) :: wl, wc, wu ! output
       integer, intent(out) :: nw
@@ -180,7 +180,7 @@
 
       ! local variables
       real*8, PARAMETER :: deltax = 1.E-4, biggest=1.E+36, zero=0.0
-      integer, parameter :: kdata = 26500, kw=2900
+      integer, parameter :: kdata = 26500, kw=1000
       ! * input: (wavelength grid)
       INTEGER, intent(in) :: nw
       REAL*8, intent(in) :: wl(kw)
