@@ -69,7 +69,7 @@ class PhotochemPy:
                          photochem_dat, \
                          atmosphere_txt, \
                          flux_txt)
-        # self.photo.flux = np.loadtxt('flux.dat') # noooooo
+
         self.code_run = False
 
     def integrate(self,nsteps=1000):
@@ -116,6 +116,10 @@ class PhotochemPy:
             sys.exit('Need to integrate before setting the output as input!')
         else:
             self.photo.usol_init = self.photo.usol_out
+            if self.np > 0:
+                self.photo.rpar_init = self.photo.rpar
+                self.photo.wfall_init = self.photo.wfall
+                self.photo.aersol_init = self.photo.aersol
 
     def set_surfflux(self,spec,flx):
         try:
@@ -150,7 +154,5 @@ class PhotochemPy:
             self.photo.mbound[ind] = mbound
         except:
             sys.exit('species not in the model')
-
-
 
     # include method that makes atmosphere.txt

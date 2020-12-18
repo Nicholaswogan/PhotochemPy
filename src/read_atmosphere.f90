@@ -90,12 +90,14 @@
         rewind(4)
         read(4,*)
         ! reads in aersol parameters
+        if (np.gt.0) then
         do j=1,n
           do i=1,np
             if (trim(arr2(j)).eq.trim(ISPEC(size(ISPEC)-(nsp2-nq)-np+i))//'_AERSOL') then
               do k=1,nz
                 read(4,*) (temp(ii),ii=1,n)
                 aersol(k,i) = temp(j)
+                aersol_init(k,i) = temp(j)
               enddo
               rewind(4)
               read(4,*)
@@ -104,6 +106,7 @@
               do k=1,nz
                 read(4,*) (temp(ii),ii=1,n)
                 wfall(k,i) = temp(j)
+                wfall_init(k,i) = temp(j)
               enddo
               rewind(4)
               read(4,*)
@@ -112,6 +115,7 @@
               do k=1,nz
                 read(4,*) (temp(ii),ii=1,n)
                 rpar(k,i) = temp(j)
+                rpar_init(k,i) = temp(j)
               enddo
               rewind(4)
               read(4,*)
@@ -119,6 +123,7 @@
             endif
           enddo
         enddo
+        endif
         close(4)
-
+        
       end subroutine

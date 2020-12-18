@@ -17,8 +17,8 @@
         integer, parameter :: naq = 10 !number of aqueous species
         integer, parameter :: nt = 50 !number of temperatures in sulfate/H2O vapor pressure file (DATA/aerosol.table)
         integer, parameter :: nf = 50 !NT=number of pressures per temperature in DATA/aerosol.table
-        integer lda
-        integer neq
+        integer :: lda
+        integer :: neq
 
         ! Defined in species.dat
         integer :: iSL ! number of sl species
@@ -68,6 +68,9 @@
         real*8, allocatable, dimension(:,:) :: aersol ! aersol parameter
         real*8, allocatable, dimension(:,:) :: wfall ! aersol parameter
         real*8, allocatable, dimension(:,:) :: rpar ! aersol parameter
+        real*8, allocatable, dimension(:,:) :: aersol_init ! aersol parameter
+        real*8, allocatable, dimension(:,:) :: wfall_init ! aersol parameter
+        real*8, allocatable, dimension(:,:) :: rpar_init ! aersol parameter
 
         ! needed in Densty.f90
         real*8, allocatable, dimension(:) :: Press ! pressure in dynes
@@ -184,11 +187,9 @@
         include "Photo.f90" ! need to deal with precision problem
         include "Rayleigh.f90"
         include "Twostr.f90"
-        ! ALL THESE WORK!!!
-
-        ! in progress is below
         include "setup.f90"
         include "integrate.f90"
+        ! ALL THESE WORK!!!
 
         subroutine allocate_memory(nnz, nnq, nnp, nnsp,&
            nnr, kks, kkj)
@@ -256,8 +257,12 @@
             allocate(aersol(nz,np))
             allocate(wfall(nz,np))
             allocate(rpar(nz,np))
+            allocate(aersol_init(nz,np))
+            allocate(wfall_init(nz,np))
+            allocate(rpar_init(nz,np))
             allocate(numl(nsp))
             allocate(nump(nsp))
+
 
             ! needed in Densty.f90
             allocate(Press(nz))

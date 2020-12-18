@@ -36,13 +36,27 @@
     real*8 DPU(NZ,NP),DPL(NZ,NP)
     real*8, dimension(nq,nz) :: Fval, fv
     integer cr, cm, c1, c2
+
     converged = 1
 
+    ! set atmosphere to inital atmosphere
     do i=1,nq
       do j=1,nz
         usol(i,j) = usol_init(i,j)
       enddo
     enddo
+
+    ! aersol parameters to initial parameters
+    if (np.gt.0) then
+      do i=1,nz
+        do j=1,np
+          rpar(i,j) = rpar_init(i,j)
+          wfall(i,j) = wfall_init(i,j)
+          aersol(i,j) = aersol_init(i,j)
+        enddo
+      enddo
+    endif
+
     do i=1,nq
       if (LBOUND(i).EQ.1) USOL(i,1)=fixedmr(i)
     enddo

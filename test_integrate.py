@@ -14,7 +14,7 @@ pt = PhotochemPy('input/templates/Archean+haze/species.dat', \
 pt.integrate()
 
 
-print('%.2e'%pt.surf_flux()['CH4'])
+print('CH4 flux =','%.2e'%pt.surf_flux()['CH4'])
 
 
 plot = False
