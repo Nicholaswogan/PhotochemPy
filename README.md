@@ -1,7 +1,10 @@
 # PhotochemPy
 PhotochemPy will be a photochemical model of terrestrial atmospheres. Given inputs, like the stellar UV flux, the atmospheric temperature structure, etc., this code will find the steady-state chemical composition of an atmosphere.
 
-I'm working on it right now. It isn't quite done, but is usable. The current version of the code can reproduce older calculations (for example, see `input/templates/Archean+haze/validation.jpg`)
+I'm working on it right now. It isn't quite done, but is usable. For a brief tutorial see the jupyter notebook `Tutorial.ipynb`.
+
+## Compliation
+Download the repository and run the bash command `./compile_parallel.sh`. For now, you will only be able to use PhotochemPy when your working directory is the root directory of this repository.
 
 ## New things
 
