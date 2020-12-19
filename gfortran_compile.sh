@@ -13,3 +13,5 @@ gfortran -c src/Photochem.f90 src/lin_alg.f
 rm rainout_vars.mod Rainout_vars.o
 rm reading_vars.mod reading_vars.o
 rm lin_alg.o
+rm photochem.mod
+rm photochem.o

@@ -574,6 +574,8 @@
       IF (INFO.NE.0) STOP
       IF (NN.EQ.NSTEPS) then
         converged = 0
+        print"('Photochemical model did not converge in ',i6,' steps')",&
+                nsteps
         exit
       endif
 
@@ -590,7 +592,6 @@
     if (converged .eq. 1) then
       print"('Time to find equilibrium =',f10.3,' seconds')", &
             (c2-c1)/real(cr)
-    endif
 
     ! the output
     do i=1,nq
@@ -637,7 +638,9 @@
     DO K=1,NQ
       FLOW(K) = FLUXO(K,1) - (YP(K,1) - YL(K,1)*SL(K,1))*DZ(1)
     enddo
-    FLOW(LH2O) = FLUXO(LH2O,jtrop)   ! jim had 11 hard-wired
+    FLOW(LH2O) = FLUXO(LH2O,jtrop)
+
+    endif ! end if converged
 
 
     end subroutine

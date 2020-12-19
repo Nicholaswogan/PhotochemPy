@@ -1,6 +1,10 @@
 import numpy as np
 from Photochem import photochem
 import sys
+import os
+
+# rootdir = os.path.dirname(os.path.realpath(__file__))+'/'
+# photochem.rootdir = "{:500}".format(rootdir)
 
 class PhotochemPy:
     def __init__(self,species_dat,reactions_rx,planet_dat,\
@@ -61,8 +65,8 @@ class PhotochemPy:
                     temp_spec.append(line.split()[0])
 
         self.photo.allocate_memory(self.nz,self.nq,\
-                                  self.np,self.nsp,self.nr,\
-                                  self.ks,self.kj)
+                                   self.np,self.nsp,self.nr,\
+                                   self.ks,self.kj)
         self.photo.setup(species_dat, \
                          reactions_rx, \
                          planet_dat, \
@@ -75,8 +79,7 @@ class PhotochemPy:
     def integrate(self,nsteps=1000):
         converged = self.photo.integrate(nsteps)
         if converged == 0:
-            sys.exit('Photochemical model did not converge in '\
-                     +str(nsteps)+' steps')
+            self.code_run = False
         else:
             self.code_run = True
 
@@ -92,6 +95,16 @@ class PhotochemPy:
             for i in range(self.nq):
                 out[self.ispec[i]] = self.photo.usol_out[i,:]
             return out
+
+    def in_dict(self):
+        out = {}
+        out['alt'] = self.photo.z/1e5
+        out['den'] = self.photo.den
+        out['press'] = self.photo.p
+        out['T'] = self.photo.t
+        for i in range(self.nq):
+            out[self.ispec[i]] = self.photo.usol_init[i,:]
+        return out
 
     def surf_flux(self):
         if not self.code_run:
@@ -131,7 +144,7 @@ class PhotochemPy:
         else:
             print('mbound set to',self.photo.lbound[ind],'so the flux will not change')
 
-    def set_surfmr(self,spec,mix):
+    def set_mr(self,spec,mix):
         try:
             ind = self.ispec.index(spec)
         except:
@@ -148,11 +161,61 @@ class PhotochemPy:
         except:
             sys.exit('species not in the model')
 
-    def set_mbound(spec,mbound):
+    def set_mbound(self,spec,mbound):
         try:
             ind = self.ispec.index(spec)
             self.photo.mbound[ind] = mbound
         except:
             sys.exit('species not in the model')
 
-    # include method that makes atmosphere.txt
+    def right_hand_side(self,usol_flat):
+        rhs = self.photo.right_hand_side(usol_flat)
+        return rhs
+
+    def jacobian(self,usol_flat):
+        jac = self.photo.jacobian(usol_flat,self.photo.lda)
+        return jac
+
+    def out2atmosphere_txt(self,filename = 'atmosphere.txt', overwrite = False):
+        if not self.code_run:
+            sys.exit('Need to integrate before writting a file!')
+        if os.path.isfile(filename) and not overwrite:
+            sys.exit(filename+' is already a file. Choose a different name, or set overwrite = True.')
+        if os.path.isdir(filename):
+            sys.exit(filename+' is already a directory. Choose a different name.')
+
+        # make dict
+        out = self.out_dict()
+        f = {}
+        f['alt'] = out['alt']
+        f['press'] = out['press']
+        f['temp'] = out['T']
+        f['density'] = out['den']
+        f['eddy'] = self.photo.edd
+
+        for spec in self.ispec:
+            f[spec] = out[spec]
+
+        # particle stuff
+        if self.np>0:
+            particles  = ['SO4AER','S8AER','HCAER','HCAER2']
+            params = ['AERSOL','WFALL','RPAR']
+            for j in range(len(params)):
+                for i in range(self.np):
+                    if params[j] == 'AERSOL':
+                        f[particles[i]+'_'+params[j]] =  self.photo.aersol[:,i]
+                    if params[j] == 'WFALL':
+                        f[particles[i]+'_'+params[j]] =  self.photo.wfall[:,i]
+                    if params[j] == 'RPAR':
+                        f[particles[i]+'_'+params[j]] =  self.photo.rpar[:,i]
+
+        # write the file
+        fil = open(filename,'w')
+        for key in f.keys():
+            fil.write('{:25}'.format(key))
+        fil.write('\n')
+        for i in range(len(f['alt'])):
+            for key in f.keys():
+                fil.write('{:25}'.format('%.16e'%f[key][i]))
+            fil.write('\n')
+        fil.close()

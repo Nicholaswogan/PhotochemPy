@@ -1,5 +1,8 @@
       module photochem
         implicit none
+        ! location of files
+        ! character(len=500) :: rootdir
+
         ! Module variables (shared between subroutines)
         integer :: nz ! number of vertical grid points
         integer :: nz1 !nz-1
@@ -191,6 +194,10 @@
         include "integrate.f90"
         ! ALL THESE WORK!!!
 
+        ! in progress
+        include "right_hand_side.f90"
+        include "jacobian.f90"
+
         subroutine allocate_memory(nnz, nnq, nnp, nnsp,&
            nnr, kks, kkj)
           use reading_vars
@@ -340,6 +347,12 @@
             allocate(fluxo(nq,nz))
             allocate(yp(nq,nz))
             allocate(yl(nq,nz))
+            do i =1,nq
+              do j=1,nz
+                usol_out(i,j) = 0.0d0
+              enddo
+            enddo
+
 
 
           else
@@ -349,103 +362,5 @@
           ! Define constants
 
         end subroutine allocate_memory
-
-        subroutine right_hand_side(ttt, usol_flat, neq, rhs)
-          implicit none
-          integer :: i
-          integer :: neq
-          real*8, dimension(neq) :: usol_flat
-          real*8, dimension(neq) :: rhs
-          real*8 :: ttt
-!f2py     intent(hide) :: neq
-!f2py     intent(in), depend(neq) :: usol_flat
-!f2py     intent(in) :: ttt
-!f2py     intent(out), depend(neq) :: rhs
-
-          ! ---INPUT---
-          ! t (s)
-          ! Time. Doesn't do anything. Required format for ODE integration.
-          ! usol_flat (molecules/cm3)
-          ! The first nq elements of usol_flat should be the ground level
-          ! densities. The next nq elements are layer above the ground level
-          ! densities etc.
-          ! ---OUTPUT---
-          ! rhs (molecules/cm3/s)
-          ! right-hand-size of the ODEs. Same organization as usol_flat.
-
-          ! Return error if essential module variables are not defined
-
-          ! Define P and T structure. These will change as atmosphere is lost.
-          ! For now follow what is done in the 0-D code. Do it in a subroutine
-          ! so I can take it out easily and make it better.
-
-          ! I need to figure how the PDE changes when volume change is
-          ! accounted for caused by chemical reactions. This confuses me.
-
-          ! calculate prates
-          ! call photo(usol_flat)
-
-          ! calculate reaction rates
-          ! call rates
-
-          ! calculate chemistry
-          ! call dochem(usol_flat,rhs)
-
-          ! calculate eddy and molecular diffusion and volume changes.
-
-          ! return rhs
-
-          do i=1,neq
-            rhs(i) = usol_flat(i)
-          enddo
-
-        end subroutine right_hand_side
-
-
-        subroutine jacobian(ttt, usol_flat, neq, lda, jacob)
-          implicit none
-          ! This subroutine APPROXIMATES the non-zero elements of the Jacobian
-          ! of the system of ODEs.
-          ! We will NOT calculate photolysis rates (prates) in the jacobian
-          ! and assume the prates module varible, which is calculate everytime
-          ! right_hand_side is called, is good enough.
-          integer :: i, j
-          integer :: neq
-          integer :: lda ! "width" of the non-zero diagonal in jacobian. lda = nq*3 + 1
-          real*8, dimension(neq) :: usol_flat
-          real*8, dimension(lda,neq) :: jacob
-          real*8 :: ttt
-!f2py     intent(hide) :: neq
-!f2py     intent(in), depend(neq) :: usol_flat
-!f2py     intent(in) :: ttt
-!f2py     intent(in) :: lda
-!f2py     intent(out), depend(neq) :: jacob
-
-          ! ---INPUT---
-          ! t (seconds)
-          ! Time. Doesn't do anything. don't worry about it.
-          ! usol_flat(neq) (molecules/cm3)
-          ! composition of the atmosphere, flattened into an array
-          ! ---OUTPUT---
-          ! jacob(lda,neq) (1/s)
-          ! non-zero diagonal of the jacobian. The diagonal is lda = nq*3 + 1 wide
-          ! because each layer in the atmosphere can only communicate with the
-          ! layers above and below it
-
-          ! Return error if essential module variables are not defined
-
-          ! Return error if prates is not defined.
-          ! another option is to call photo once to determine prates if
-          ! prates is not defined.
-
-          ! use finite difference approximation to the jacobian
-
-          do i=1,lda
-            do j=1,neq
-              jacob(i,j) = usol_flat(i)
-            enddo
-          enddo
-
-        end subroutine jacobian
 
       end module
