@@ -1,5 +1,5 @@
 # PhotochemPy
-PhotochemPy will be a photochemical model of terrestrial atmospheres. Given inputs, like the stellar UV flux, the atmospheric temperature structure, etc., this code will find the steady-state chemical composition of an atmosphere.
+PhotochemPy will be a photochemical model of rocky planet's atmospheres. Given inputs, like the stellar UV flux, the atmospheric temperature structure, etc., this code will find the steady-state chemical composition of an atmosphere.
 
 I'm working on it right now. It isn't quite done, but is usable. For a brief tutorial see the jupyter notebook `Tutorial.ipynb`.
 
@@ -34,4 +34,4 @@ Download the repository and run the bash command `./compile_parallel.sh`. For no
 1. **Time-accurate ODE integration**. The code uses the backward euler method to evolve foward in time. This is fine for finding the steady-state, but it isn't ideal for tracking the atmosphere accurately with time. To deal with this I'd like to evolve the atmosphere with the CVODE integration method.
 
 ## History
-PhotochemPy is an updated version of the `Atmos` photochemical model, originally developed by Jim Kasting and Kevin Zahnle and further developed by many of their students and colleges. The code was originally written in Fortran 77.
+PhotochemPy is an updated version of the [Atmos](https://github.com/VirtualPlanetaryLaboratory/atmos) photochemical model, originally developed by Jim Kasting and Kevin Zahnle and further developed by many of their students and colleges.
