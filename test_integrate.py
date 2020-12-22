@@ -11,10 +11,10 @@ pt = PhotochemPy('input/templates/Archean+haze/species.dat', \
                  'input/templates/Archean+haze/Sun_2.7Ga.txt')
 
 
-pt.integrate()
+pt.integrate(nsteps=1000)
 
 
-print('CH4 flux =','%.2e'%pt.surf_flux()['CH4'])
+# print('CH4 flux =','%.2e'%pt.surf_flux()['CH4'])
 
 
 plot = False

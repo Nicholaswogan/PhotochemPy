@@ -28,7 +28,7 @@
       integer :: ncomp(nz)
       integer :: l,i,j
 
-      real*8 S(NZ),SALL(kw,NZ), STAU(kw),smax(kw)
+      real*8 S(NZ) ! ,SALL(kw,NZ), STAU(kw),smax(kw)
       real*8 D0(2)
       integer LLNO(35)
       integer icomp(10,nz)
@@ -583,11 +583,11 @@
 
 ! C ***** FILL UP RATE MATRIX *****
 
-      do j=1,kj
-        do i=1,nz
-          A(INT(photonums(j)),i)=prates(j,i)
-        enddo
-      enddo
+      ! do j=1,kj
+      !   do i=1,nz
+      !     A(INT(photonums(j)),i)=prates(j,i)
+      !   enddo
+      ! enddo
 
 
 

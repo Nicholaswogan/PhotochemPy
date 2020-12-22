@@ -122,6 +122,11 @@
       enddo
 
       call photo(zy, agl, io2, ino, usol, nq, nz, kj, prates)
+      do j=1,kj
+        do i=1,nz
+          A(INT(photonums(j)),i)=prates(j,i)
+        enddo
+      enddo
 
 
       if (n.eq.1) then
