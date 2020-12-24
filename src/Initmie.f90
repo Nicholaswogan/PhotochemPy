@@ -20,7 +20,8 @@
       !C-GA because the fractals were recalculated for a wide wavelength range
       real*8 :: WAVLSF(118), WAVUSF(118), QEXTSTANDF(118,51)
       real*8 :: W0STANDF(118,51), GSTANDF(118,51)
-      CHARACTER*31 root,filenames(51)
+      CHARACTER*31 filenames(51)
+      character(len=600) root
       REAL*8 deltax,biggest,zero
       PARAMETER (deltax = 1.E-4,biggest=1.E+36, zero=0.0)
       ! * data arrays
@@ -64,7 +65,7 @@
           RSTAND(k) = RSTAND(k)/10000.
         ENDDO
 
-        root='DATA/MIE/fitmythol'
+        root=trim(rootdir)//'DATA/MIE/fitmythol'
             ! print *,'using spherical MIE data'
         filenames=[ &
          '0001.DAT','0002.DAT','0003.DAT','0004.DAT','0005.DAT', &
@@ -185,31 +186,31 @@
 ! C-GA fractal files read in from different folders compared to
 ! C-   spherical particles
         if (ihztype.eq.0.) then
-          root = 'DATA/MIE/f0/fractopts'
+          root = trim(rootdir)//'DATA/MIE/f0/fractopts'
           ! print *,'using ihztype 0: 0.05 um particles (Khare)'
 
         else if (ihztype.eq.1.) then
-          root = 'DATA/MIE/f1/fractopts'
+          root = trim(rootdir)//'DATA/MIE/f1/fractopts'
           ! print *,'using ihztype 1: 0.01 um particles (Khare)'
 
         else if (ihztype.eq.2.) then
-          root = 'DATA/MIE/f2/fractopts'
+          root = trim(rootdir)//'DATA/MIE/f2/fractopts'
           ! print *,'using ihztype 2: 0.02 um particles (Khare)'
 
         else if (ihztype.eq.3.) then
-          root = 'DATA/MIE/f3/fractopts'
+          root = trim(rootdir)//'DATA/MIE/f3/fractopts'
           ! print *,'using ihztype 3: 0.07 um particles (Khare)'
 
         else if (ihztype.eq.4.) then
-          root = 'DATA/MIE/f4/fractopts'
+          root = trim(rootdir)//'DATA/MIE/f4/fractopts'
           ! print *,'using ihztype 4: 0.10 um particles (Khare)'
 
         else if (ihztype.eq.5.) then
-          root = 'DATA/MIE/f5/fractopts'
+          root = trim(rootdir)//'DATA/MIE/f5/fractopts'
           ! print *,'ihztype 5: 0.05 um particles (Khare+Mahjoub+Tran)'
 
         else if (ihztype.eq.6.) then
-          root = 'DATA/MIE/f6/fractopts'
+          root = trim(rootdir)//'DATA/MIE/f6/fractopts'
           ! print *,'ihztype 6: 0.05 um (Khare shifted to Hasenkopf)'
         end if
 

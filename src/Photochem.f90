@@ -1,7 +1,7 @@
       module photochem
         implicit none
         ! location of files
-        ! character(len=500) :: rootdir
+        character(len=500) :: rootdir = ' '
 
         ! Module variables (shared between subroutines)
         integer :: nz ! number of vertical grid points

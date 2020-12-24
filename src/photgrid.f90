@@ -116,7 +116,7 @@
       ! read in wogan's grid here. THis is the same as kevins but extended down
       ! to 121.0 nm instead of 121.6 nm
       nw = 118
-      OPEN(kin, file='DATA/GRIDS/wogan.grid',status='old')
+      OPEN(kin, file=trim(rootdir)//'DATA/GRIDS/wogan.grid',status='old')
 
       DO i = 1,2
         READ(kin,*)  !skip header

@@ -24,7 +24,7 @@
 !  to replace this i want a simple function
 !
 !   READ DATAFILE (VAPOR PRESSURES IN MM HG)
-      open(2, file='DATA/aerosol.table',status='OLD')
+      open(2, file=trim(rootdir)//'DATA/aerosol.table',status='OLD')
       DO i = 1 , nt
          DO j = 1 , nf
             READ (2,99001) ph2o(i,j) , ph2so4(i,j) , ttab(i) , ftab(j)

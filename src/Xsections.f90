@@ -235,7 +235,7 @@
 ! HNO3 cross section parameters from Burkholder et al. 1993
       kin = 644
       OPEN(UNIT=kin,&
-     &  file='DATA/XSECTIONS/HNO3/HNO3_burk.abs',&
+     &  file=trim(rootdir)//'DATA/XSECTIONS/HNO3/HNO3_burk.abs',&
      &  STATUS='old')
       DO i = 1, 6
          READ(kin,*)
@@ -288,7 +288,7 @@
       kin = 4321
       if (option .eq. 2) then  !use Kevin's data, which is from "some old JPL recommendation"
       OPEN(UNIT=kin,&
-     &  file='DATA/XSECTIONS/HNO3/HNO3_zahnle.abs',&
+     &  file=trim(rootdir)//'DATA/XSECTIONS/HNO3/HNO3_zahnle.abs',&
      &  STATUS='old')
 
       HJtest=0 !HOT JUPITER TEST
@@ -420,7 +420,7 @@
       if (option.eq.1) then
       kin = 645
       OPEN(unit=kin,&
-     &  file='DATA/XSECTIONS/HO2/HO2_jpl94.abs',&
+     &  file=trim(rootdir)//'DATA/XSECTIONS/HO2/HO2_jpl94.abs',&
      &  STATUS='OLD')
       READ(kin,*) idum, n
 
@@ -467,7 +467,7 @@
       kin = 646
       if (option .eq. 2) then  !use Kevin's data, which is from "some old JPL recommendation"
       OPEN(UNIT=kin,&
-     &  file='DATA/XSECTIONS/HO2/HO2_zahnle.abs',&
+     &  file=trim(rootdir)//'DATA/XSECTIONS/HO2/HO2_zahnle.abs',&
      &  STATUS='old')
 
       HJtest=0 !HOT JUPITER TEST
@@ -616,7 +616,7 @@
       if (option .eq. 1) then
       kin = 647
          OPEN(UNIT=kin,&
-     &  file='DATA/XSECTIONS/NO2/NO2_jpl94.abs',&
+     &  file=trim(rootdir)//'DATA/XSECTIONS/NO2/NO2_jpl94.abs',&
      &  STATUS='old')
          READ(kin,*) idum, n
          DO i = 1, idum-2
@@ -663,7 +663,7 @@
       elseif (option .eq. 2) then
       kin = 648
          OPEN(UNIT=kin,&
-     &  file='DATA/XSECTIONS/NO2/NO2_Har.abs',&
+     &  file=trim(rootdir)//'DATA/XSECTIONS/NO2/NO2_Har.abs',&
      &  status='old')
          DO i = 1, 9
             READ(kin,*)
@@ -689,7 +689,7 @@
       elseif (option .eq. 3) then
       kin = 879
       OPEN(UNIT=kin,&
-     &  file='DATA/XSECTIONS/NO2/NO2_zahnle.abs',&
+     &  file=trim(rootdir)//'DATA/XSECTIONS/NO2/NO2_zahnle.abs',&
      &  STATUS='old')
 
       HJtest=0 !HOT JUPITER TEST
@@ -746,7 +746,7 @@
 ! from Gardiner, Sperry, and Calvert
       kin = 39
       OPEN(UNIT=kin,&
-     &  file='DATA/XSECTIONS/NO2/NO2_calvert.yld',&
+     &  file=trim(rootdir)//'DATA/XSECTIONS/NO2/NO2_calvert.yld',&
      &  STATUS='old')
       DO i = 1, 8
          READ(kin,*)
@@ -772,7 +772,7 @@
 ! - qy needs to be called yg1
       kin = 567
       OPEN(UNIT=kin,&
-     &  file='DATA/XSECTIONS/NO2/NO2qy_zahnle.yld',&
+     &  file=trim(rootdir)//'DATA/XSECTIONS/NO2/NO2qy_zahnle.yld',&
      &  STATUS='old')
 
       DO i = 1, 2
@@ -904,7 +904,7 @@
 ! tabulated data up to 260 nm
       kin = 568
       OPEN(UNIT=kin,&
-     &  file='DATA/XSECTIONS/H2O2/H2O2_jpl94.abs',&
+     &  file=trim(rootdir)//'DATA/XSECTIONS/H2O2/H2O2_jpl94.abs',&
      &  STATUS='old')
       READ(kin,*) idum,n
       DO i = 1, idum-2
@@ -987,7 +987,7 @@
       if (option.eq.2) then  !Kevin's data
       kin = 569
       OPEN(UNIT=kin,&
-     &  file='DATA/XSECTIONS/H2O2/H2O2_zahnle.abs',&
+     &  file=trim(rootdir)//'DATA/XSECTIONS/H2O2/H2O2_zahnle.abs',&
      &  STATUS='old')
 
       HJtest=0 !HOT JUPITER TEST
@@ -1101,7 +1101,7 @@
       if (option.eq.1) then  !Kevin's data
       kin = 570
       OPEN(UNIT=kin,&
-     &  file='DATA/XSECTIONS/OCS/OCS_zahnle.abs',&
+     &  file=trim(rootdir)//'DATA/XSECTIONS/OCS/OCS_zahnle.abs',&
      &  STATUS='old')
 
       HJtest=0 !HOT JUPITER TEST
@@ -1213,7 +1213,7 @@
       if (option.eq.1) then  !Kevin's data
         kin = 571
       OPEN(UNIT=kin,&
-     &  file='DATA/XSECTIONS/SO3/SO3_zahnle.abs',&
+     &  file=trim(rootdir)//'DATA/XSECTIONS/SO3/SO3_zahnle.abs',&
      &  STATUS='old')
 
       HJtest=0 !HOT JUPITER TEST
@@ -1330,7 +1330,7 @@
       if (option.eq.1) then  !Kevin's data
       kin = 572
       OPEN(UNIT=kin,&
-     &  file='DATA/XSECTIONS/S2/S2_zahnle.abs',&
+     &  file=trim(rootdir)//'DATA/XSECTIONS/S2/S2_zahnle.abs',&
      &  STATUS='old')
 
       HJtest=0 !HOT JUPITER TEST
@@ -1462,7 +1462,7 @@
       if (option.eq.1) then  !Kevin's data
       kin = 573
       OPEN(UNIT=kin,&
-     &  file='DATA/XSECTIONS/S8/S8L_zahnle.abs',&
+     &  file=trim(rootdir)//'DATA/XSECTIONS/S8/S8L_zahnle.abs',&
      &  STATUS='old')
 
       HJtest=0 !HOT JUPITER TEST
@@ -1500,7 +1500,7 @@
 
       kin = 574
       OPEN(UNIT=kin,&
-     &  file='DATA/XSECTIONS/S8/S8R_zahnle.abs',&
+     &  file=trim(rootdir)//'DATA/XSECTIONS/S8/S8R_zahnle.abs',&
      &  STATUS='old')
 
       HJtest=0 !HOT JUPITER TEST
@@ -1635,7 +1635,7 @@
       if (option.eq.1) then  !Kevin's data
       kin = 575
       OPEN(UNIT=kin,&
-     &  file='DATA/XSECTIONS/H2S/H2S_zahnle.abs',&
+     &  file=trim(rootdir)//'DATA/XSECTIONS/H2S/H2S_zahnle.abs',&
      &  STATUS='old')
 
       HJtest=0 !HOT JUPITER TEST
@@ -1689,7 +1689,7 @@
       if (option.eq.2) then  !mpi data and extending into the far uv
       kin = 576
       OPEN(UNIT=kin,&
-     &  file='DATA/XSECTIONS/H2S/H2S_mpi.abs',&
+     &  file=trim(rootdir)//'DATA/XSECTIONS/H2S/H2S_mpi.abs',&
      &  STATUS='old')
 
 !      DO i = 1, 2
@@ -1970,7 +1970,7 @@
       if (option.eq.2) then
         kin = 578
       OPEN(UNIT=kin,&
-     &  file='DATA/XSECTIONS/H2O/H2O_zahnle.abs',&
+     &  file=trim(rootdir)//'DATA/XSECTIONS/H2O/H2O_zahnle.abs',&
      &  STATUS='old')
 
       DO i = 1, 2
@@ -2015,7 +2015,7 @@
       if (option.eq.3) then !Ranjan et al. 2020 cross sections
         kin = 579
       OPEN(UNIT=kin,&
-     &  file='DATA/XSECTIONS/H2O/H2O_ranjan.XS.dat',&
+     &  file=trim(rootdir)//'DATA/XSECTIONS/H2O/H2O_ranjan.XS.dat',&
      &  STATUS='old')
 
       DO i = 1, 4 !skip first 4 rows
@@ -2123,7 +2123,7 @@
       if (option.eq.1) then  !Kevin's data
       kin = 580
       OPEN(UNIT=kin,&
-     &  file='DATA/XSECTIONS/SO/SO_zahnle.abs',&
+     &  file=trim(rootdir)//'DATA/XSECTIONS/SO/SO_zahnle.abs',&
      &  STATUS='old')
 
       HJtest=0 !HOT JUPITER TEST
@@ -2251,7 +2251,7 @@
       if (option.eq.1) then  !Kevin's data
       kin = 581
       OPEN(UNIT=kin,&
-     &  file='DATA/XSECTIONS/CO2/CO2_zahnle.abs',&
+     &  file=trim(rootdir)//'DATA/XSECTIONS/CO2/CO2_zahnle.abs',&
      &  STATUS='old')
 
       DO i = 1, 2
@@ -2279,7 +2279,7 @@
       ENDIF
       kin = 582
       OPEN(UNIT=kin,&
-     &  file='DATA/XSECTIONS/CO2/CO2D_zahnle.abs',&
+     &  file=trim(rootdir)//'DATA/XSECTIONS/CO2/CO2D_zahnle.abs',&
      &  STATUS='old')
 
       DO i = 1, 2
@@ -2327,7 +2327,7 @@
 
       kin = 583
       OPEN(UNIT=kin,&
-     &  file='DATA/XSECTIONS/CO2/CO2_claire1.abs',&
+     &  file=trim(rootdir)//'DATA/XSECTIONS/CO2/CO2_claire1.abs',&
      &  STATUS='old')
 
       DO i = 1, 2
@@ -2440,7 +2440,7 @@
       if (option.eq.1) then  !Kevin's data
       kin = 584
       OPEN(UNIT=kin,&
-     &  file='DATA/XSECTIONS/H2CO/H2CO_zahnle.abs',&
+     &  file=trim(rootdir)//'DATA/XSECTIONS/H2CO/H2CO_zahnle.abs',&
      &  STATUS='old')
 
 ! pointer
@@ -2625,7 +2625,7 @@
       if (option.eq.1) then  !Kevin's data
       kin = 585
       OPEN(UNIT=kin,&
-     &  file='DATA/XSECTIONS/SO2/SO2_zahnle.abs',&
+     &  file=trim(rootdir)//'DATA/XSECTIONS/SO2/SO2_zahnle.abs',&
      &  STATUS='old')
 
       DO i = 1, 2
@@ -2695,14 +2695,14 @@
       if (newspec.eq.0) then
       kin = 587
       OPEN(UNIT=kin,&
-     &  file='DATA/XSECTIONS/SO2/2007jd009695-ds01.txt',&
+     &  file=trim(rootdir)//'DATA/XSECTIONS/SO2/2007jd009695-ds01.txt',&
      &  STATUS='old')
       n4 = 3360
 !the default used for the sulfur mif calculations in the 2013 paper - from Danielace 2012 JGR paper
       else
 
       OPEN(UNIT=kin,file=&
-     & 'DATA/XSECTIONS&
+     & trim(rootdir)//'DATA/XSECTIONS&
      &/SO2/data-non-systematic-errors-corrections.txt',&
      &  STATUS='old')
       n4 = 1184
@@ -2710,13 +2710,13 @@
 
 ! longward1.txt is non-systematic + 2007data to 320nm
 !      OPEN(UNIT=kin,file=
-!     & 'DATA/XSECTIONS/SO2/longward1.txt',STATUS='old')
+!     & trim(rootdir)//'DATA/XSECTIONS/SO2/longward1.txt',STATUS='old')
 !      n4 = 3025
 !      endif
 
 ! longward2.txt is non-systematic + 2007data to 250nm + 2013data from 250-320
 !      OPEN(UNIT=kin,file=
-!     & 'DATA/XSECTIONS/SO2/longward2.txt',STATUS='old')
+!     & trim(rootdir)//'DATA/XSECTIONS/SO2/longward2.txt',STATUS='old')
 !      n4 = 4159
 
 
@@ -2852,7 +2852,7 @@
 
 !$$$C below here is temp to bin the far uv data from MPI to our grid...
 !$$$      OPEN(UNIT=kin,
-!$$$     &  file='DATA/XSECTIONS/O3/O3_mpi_SW_Mason96.abs',
+!$$$     &  file=trim(rootdir)//'DATA/XSECTIONS/O3/O3_mpi_SW_Mason96.abs',
 !$$$     &  STATUS='old')
 !$$$c      DO i = 1, 2
 !$$$c         READ(kin,*)
@@ -2882,7 +2882,7 @@
 !         print*,"HJtest",HJtest
       kin = 4356
       OPEN(UNIT=kin,&
-     &  file='DATA/XSECTIONS/O3/O3_zahnle.abs',&
+     &  file=trim(rootdir)//'DATA/XSECTIONS/O3/O3_zahnle.abs',&
      &  STATUS='old')
 
       DO i = 1, 2
@@ -3077,7 +3077,7 @@
       if (option.eq.1) then  !Kevin's data
       kin = 583
       OPEN(UNIT=kin,&
-     &  file='DATA/XSECTIONS/HCL/HCL_zahnle.abs',&
+     &  file=trim(rootdir)//'DATA/XSECTIONS/HCL/HCL_zahnle.abs',&
      &  STATUS='old')
 
       HJtest=0 !HOT JUPITER TEST
@@ -3133,7 +3133,7 @@
       if (option.eq.2) then  !JPL-06
       kin = 583
       OPEN(UNIT=kin,&
-     & file='DATA/XSECTIONS/HCL/HCL_JPL06.abs',STATUS='old')
+     & file=trim(rootdir)//'DATA/XSECTIONS/HCL/HCL_JPL06.abs',STATUS='old')
 
 !      DO i = 1, 2
 !         READ(kin,*)
@@ -3275,7 +3275,7 @@
 ! - eventually, i should enforce this somewhere in the main code.
       kin = 589
       OPEN(UNIT=kin,&
-     &  file='DATA/XSECTIONS/O2/O2D_zahnle.abs',&
+     &  file=trim(rootdir)//'DATA/XSECTIONS/O2/O2D_zahnle.abs',&
      &  STATUS='old')
 
       DO i = 1, 2
@@ -3318,7 +3318,7 @@
       endif
       kin = 590
       OPEN(UNIT=kin,&
-     &  file='DATA/XSECTIONS/O2/O2_zahnle.abs',&
+     &  file=trim(rootdir)//'DATA/XSECTIONS/O2/O2_zahnle.abs',&
      &  STATUS='old')
 
       DO i = 1, 2
@@ -3358,7 +3358,7 @@
 !      stop
       kin = 591
       OPEN(UNIT=kin,&
-     &  file='DATA/XSECTIONS/O2/AllenFrederick1982.coeff',&
+     &  file=trim(rootdir)//'DATA/XSECTIONS/O2/AllenFrederick1982.coeff',&
      &  STATUS='old')
 
       DO i = 1, 4
@@ -3407,7 +3407,7 @@
 ! (i.e. call this subroutine when it needs to be called...)
       kin = 592
       OPEN(UNIT=kin,&
-     &  file='DATA/XSECTIONS/O2/AllenFrederick1982.coeff',&
+     &  file=trim(rootdir)//'DATA/XSECTIONS/O2/AllenFrederick1982.coeff',&
      &  STATUS='old')
 
       DO i = 1, 26
@@ -3506,7 +3506,7 @@
 !still use the old shortwave cross-section for O2 + hv -> O1D+O
       kin = 594
       OPEN(UNIT=kin,&
-     &  file='DATA/XSECTIONS/O2/O2D_zahnle.abs',&
+     &  file=trim(rootdir)//'DATA/XSECTIONS/O2/O2D_zahnle.abs',&
      &  STATUS='old')
 
       DO i = 1, 2
@@ -3534,7 +3534,7 @@
 !but use high resolution for the S-R bands...
       kin = 595
       OPEN(UNIT=kin,&
-     &  file='DATA/XSECTIONS/O2/Yoshino92.abs',&
+     &  file=trim(rootdir)//'DATA/XSECTIONS/O2/Yoshino92.abs',&
      &  STATUS='old')
 
 !      DO i = 1, 2
@@ -3559,7 +3559,7 @@
 !laire grid is same as old to 1770-1786 and after 2248-2273
       kin = 596
       OPEN(UNIT=kin,&
-     &  file='DATA/XSECTIONS/O2/O2_zahnle.abs',&
+     &  file=trim(rootdir)//'DATA/XSECTIONS/O2/O2_zahnle.abs',&
      &  STATUS='old')
 
       DO i = 1, 2
@@ -3677,7 +3677,7 @@
       if (option.eq.1) then  !Kevin's data
       kin = 597
       OPEN(UNIT=kin,&
-     &  file='DATA/XSECTIONS/CH4/CH4_zahnle.abs',&
+     &  file=trim(rootdir)//'DATA/XSECTIONS/CH4/CH4_zahnle.abs',&
      &  STATUS='old')
 
       DO i = 1, 2
@@ -3816,7 +3816,7 @@
       if (option.eq.1) then  !Kevin's data
       kin = 598
       OPEN(UNIT=kin,&
-     &  file='DATA/XSECTIONS/C2H6/C2H6_zahnle.abs',&
+     &  file=trim(rootdir)//'DATA/XSECTIONS/C2H6/C2H6_zahnle.abs',&
      &  STATUS='old')
 
       HJtest=0 !HOT JUPITER TEST
@@ -4134,7 +4134,7 @@
       if (option.eq.1) then  !JPL data
       kin = 599
       OPEN(UNIT=kin,&
-     &  file='DATA/XSECTIONS/NO3/NO3.abs',&
+     &  file=trim(rootdir)//'DATA/XSECTIONS/NO3/NO3.abs',&
      &  STATUS='old')
 
 !      DO i = 1, 2
@@ -4163,7 +4163,7 @@
 ! Quantum yield (is temperature dependent)
       kin = 599
       OPEN(UNIT=kin,&
-     &  file='DATA/XSECTIONS/NO3/NO3QY.dat',&
+     &  file=trim(rootdir)//'DATA/XSECTIONS/NO3/NO3QY.dat',&
      &  STATUS='old')
 
       DO i = 1, 7
@@ -4350,7 +4350,7 @@
 !just use formula below..
       kin = 600
       OPEN(UNIT=kin,&
-     &  file='DATA/XSECTIONS/N2O/N2O_JPL06.abs',&
+     &  file=trim(rootdir)//'DATA/XSECTIONS/N2O/N2O_JPL06.abs',&
      &  STATUS='old')
 
       DO i = 1, 2
@@ -4477,7 +4477,7 @@
       if (option.eq.1) then  !JPL-06
       kin = 601
       OPEN(UNIT=kin,&
-     &  file='DATA/XSECTIONS/CLO/CLO_JPL06.abs',&
+     &  file=trim(rootdir)//'DATA/XSECTIONS/CLO/CLO_JPL06.abs',&
      &  STATUS='old')
 
 !      DO i = 1, 2
@@ -4583,7 +4583,7 @@
       if (option.eq.1) then  !JPL-06
       kin = 601
       OPEN(UNIT=kin,&
-     &  file='DATA/XSECTIONS/HOCL/HOCL_JPL06.abs',&
+     &  file=trim(rootdir)//'DATA/XSECTIONS/HOCL/HOCL_JPL06.abs',&
      &  STATUS='old')
 
 !      DO i = 1, 2
@@ -4759,7 +4759,7 @@
       if (option.eq.1) then  !JPL-06
       kin = 602
       OPEN(UNIT=kin,&
-     &  file='DATA/XSECTIONS/CLOO/CLOO_JPL06.abs',&
+     &  file=trim(rootdir)//'DATA/XSECTIONS/CLOO/CLOO_JPL06.abs',&
      &  STATUS='old')
 
 !      DO i = 1, 2
@@ -4855,7 +4855,7 @@
       if (option.eq.1) then  !JPL-06
       kin = 604
       OPEN(UNIT=kin,&
-     &  file='DATA/XSECTIONS/OCLO/OCLO_JPL06.abs',&
+     &  file=trim(rootdir)//'DATA/XSECTIONS/OCLO/OCLO_JPL06.abs',&
      &  STATUS='old')
 
 !      DO i = 1, 2
@@ -4953,7 +4953,7 @@
       if (option.eq.1) then  !JPL-06
       kin = 605
       OPEN(UNIT=kin,&
-     &  file='DATA/XSECTIONS/CLONO/CLONO_JPL06.abs',&
+     &  file=trim(rootdir)//'DATA/XSECTIONS/CLONO/CLONO_JPL06.abs',&
      &  STATUS='old')
 
 !      DO i = 1, 2
@@ -5050,7 +5050,7 @@
       if (option.eq.1) then  !JPL-06
               kin = 606
       OPEN(UNIT=kin,&
-     &  file='DATA/XSECTIONS/CLONO2/CLONO2_JPL06.abs',&
+     &  file=trim(rootdir)//'DATA/XSECTIONS/CLONO2/CLONO2_JPL06.abs',&
      &  STATUS='old')
 
 !      DO i = 1, 2
@@ -5200,7 +5200,7 @@
       if (option.eq.1) then  !JPL-06
               kin = 607
       OPEN(UNIT=kin,&
-     &  file='DATA/XSECTIONS/CLNO/CLNO_JPL06.abs',&
+     &  file=trim(rootdir)//'DATA/XSECTIONS/CLNO/CLNO_JPL06.abs',&
      &  STATUS='old')
 
       DO i = 1, 4
@@ -5295,7 +5295,7 @@
       if (option.eq.1) then  !JPL-06
       kin = 601
       OPEN(UNIT=kin,&
-     &  file='DATA/XSECTIONS/CLNO2/CLNO2_JPL06.abs',&
+     &  file=trim(rootdir)//'DATA/XSECTIONS/CLNO2/CLNO2_JPL06.abs',&
      &  STATUS='old')
 
 !      DO i = 1, 4
@@ -5391,7 +5391,7 @@
       if (option.eq.1) then  !JPL-06
       kin = 608
       OPEN(UNIT=kin,&
-     &  file='DATA/XSECTIONS/CHCLO/CHCLO_JPL06.abs',&
+     &  file=trim(rootdir)//'DATA/XSECTIONS/CHCLO/CHCLO_JPL06.abs',&
      &  STATUS='old')
 
 !      DO i = 1, 4
@@ -5504,7 +5504,7 @@
       if (option.eq.1) then  !JPL data
       kin = 610
       OPEN(UNIT=kin,&
-     &  file='DATA/XSECTIONS/CH3CL/CH3CL_JPL06.abs',&
+     &  file=trim(rootdir)//'DATA/XSECTIONS/CH3CL/CH3CL_JPL06.abs',&
      &  STATUS='old')
 
 !      DO i = 1, 2
@@ -5649,7 +5649,7 @@
       if (option.eq.1) then  !JPL data
       kin = 611
       OPEN(UNIT=kin,&
-     &  file='DATA/XSECTIONS/CCL4/CCL4_JPL06.abs',&
+     &  file=trim(rootdir)//'DATA/XSECTIONS/CCL4/CCL4_JPL06.abs',&
      &  STATUS='old')
 
 !      DO i = 1, 2
@@ -5778,7 +5778,7 @@
       if (option.eq.1) then  !JPL-06
       kin = 612
       OPEN(UNIT=kin,&
-     &  file='DATA/XSECTIONS/COCL2/COCL2_JPL06.abs',&
+     &  file=trim(rootdir)//'DATA/XSECTIONS/COCL2/COCL2_JPL06.abs',&
      &  STATUS='old')
 
 !      DO i = 1, 4
@@ -5874,7 +5874,7 @@
 
       kin = 613
       OPEN(UNIT=kin,&
-     &  file='DATA/XSECTIONS/CL2O2/CL2O2_JPL06.abs',&
+     &  file=trim(rootdir)//'DATA/XSECTIONS/CL2O2/CL2O2_JPL06.abs',&
      &  STATUS='old')
 
 !      DO i = 1, 2
@@ -5982,7 +5982,7 @@
       if (option.eq.1) then  !JPL-06
       kin = 615
       OPEN(UNIT=kin,&
-     &  file='DATA/XSECTIONS/CH3O2NO2/CH3O2NO2_IUPAC2006.abs',&
+     &  file=trim(rootdir)//'DATA/XSECTIONS/CH3O2NO2/CH3O2NO2_IUPAC2006.abs',&
      &  STATUS='old')
 
 !      DO i = 1, 4
@@ -6076,7 +6076,7 @@
       if (option.eq.1) then  !JPL-06
       kin = 616
       OPEN(UNIT=kin,&
-     &  file='DATA/XSECTIONS/CH3OCL/CH3OCL_IUPAC2008.abs',&
+     &  file=trim(rootdir)//'DATA/XSECTIONS/CH3OCL/CH3OCL_IUPAC2008.abs',&
      &  STATUS='old')
 
 !      DO i = 1, 4
@@ -6170,7 +6170,7 @@
       if (option.eq.1) then  !JPL-06
       kin = 616
       OPEN(UNIT=kin,&
-     &  file='DATA/XSECTIONS/CH3OOH/CH3OOH_JPL06.abs',&
+     &  file=trim(rootdir)//'DATA/XSECTIONS/CH3OOH/CH3OOH_JPL06.abs',&
      &  STATUS='old')
 
 !      DO i = 1, 4
@@ -6264,7 +6264,7 @@
       if (option.eq.1) then  !JPL-06
       kin = 617
       OPEN(UNIT=kin,&
-     &  file='DATA/XSECTIONS/HO2NO2/HO2NO2_JPL06.abs',&
+     &  file=trim(rootdir)//'DATA/XSECTIONS/HO2NO2/HO2NO2_JPL06.abs',&
      &  STATUS='old')
 
 !      DO i = 1, 4
@@ -6365,7 +6365,7 @@
 
       kin = 618
       OPEN(UNIT=kin,&
-     &  file='DATA/XSECTIONS/CL2O/CL2O_JPL06.abs',&
+     &  file=trim(rootdir)//'DATA/XSECTIONS/CL2O/CL2O_JPL06.abs',&
      &  STATUS='old')
 
 !      DO i = 1, 4
@@ -6465,7 +6465,7 @@
       if (option.eq.1) then  !JPL-06
       kin = 619
       OPEN(UNIT=kin,&
-     &  file='DATA/XSECTIONS/N2O5/N2O5_JPL06_298.abs',&
+     &  file=trim(rootdir)//'DATA/XSECTIONS/N2O5/N2O5_JPL06_298.abs',&
      &  STATUS='old')
 
 !      DO i = 1, 4
@@ -6481,7 +6481,7 @@
 ! open/read in temperature-dependent parameter
       kin = 620
       OPEN(UNIT=kin,&
-     &  file='DATA/XSECTIONS/N2O5/N2O5td.abs',&
+     &  file=trim(rootdir)//'DATA/XSECTIONS/N2O5/N2O5td.abs',&
      &  STATUS='old')
 
       n2=20
@@ -6635,7 +6635,7 @@
       if (option.eq.1) then  !
       kin = 621
       OPEN(UNIT=kin,&
-     &  file='DATA/XSECTIONS/CLO3/CLO3_Kopitzky_MC.abs',&
+     &  file=trim(rootdir)//'DATA/XSECTIONS/CLO3/CLO3_Kopitzky_MC.abs',&
      &  STATUS='old')
 
       DO i = 1, 1
@@ -6730,7 +6730,7 @@
       if (option.eq.1) then  !
       kin = 620
       OPEN(UNIT=kin,&
-     &  file='DATA/XSECTIONS/CL2O3/CL2O3_JPL06.abs',&
+     &  file=trim(rootdir)//'DATA/XSECTIONS/CL2O3/CL2O3_JPL06.abs',&
      &  STATUS='old')
 
 !      DO i = 1, 1
@@ -6822,7 +6822,7 @@
       if (option.eq.1) then  !
               kin = 620
       OPEN(UNIT=kin,&
-     &  file='DATA/XSECTIONS/CL2O4/CL2O4_JPL06.abs',&
+     &  file=trim(rootdir)//'DATA/XSECTIONS/CL2O4/CL2O4_JPL06.abs',&
      &  STATUS='old')
 
 !      DO i = 1, 1
@@ -6914,7 +6914,7 @@
       if (option.eq.1) then  !MPI
       kin = 622
       OPEN(UNIT=kin,&
-     &  file='DATA/XSECTIONS/CS2/CS2_mpi.abs',&
+     &  file=trim(rootdir)//'DATA/XSECTIONS/CS2/CS2_mpi.abs',&
      &  STATUS='old')
 
       DO i = 1, 3
@@ -6928,7 +6928,7 @@
       CLOSE (kin)
       kin = 629
       OPEN(UNIT=kin,&
-     &  file='DATA/XSECTIONS/CS2/CS2X_mpi.abs',&
+     &  file=trim(rootdir)//'DATA/XSECTIONS/CS2/CS2X_mpi.abs',&
      &  STATUS='old')
 
       DO i = 1, 3
@@ -7039,7 +7039,7 @@
       if (option.eq.1) then  !MPI
               kin = 630
       OPEN(UNIT=kin,&
-     &  file='DATA/XSECTIONS/CH3SH/CH3SH_mpi.abs',&
+     &  file=trim(rootdir)//'DATA/XSECTIONS/CH3SH/CH3SH_mpi.abs',&
      &  STATUS='old')
 
       DO i = 1, 3
@@ -7134,7 +7134,7 @@
       REAL*8 qy
       INTEGER i, iw
       INTEGER ierr,option
-      CHARACTER*90 XsecFile
+      CHARACTER*600 XsecFile
       CHARACTER*8 species
       ierr = 0
 
@@ -7145,10 +7145,10 @@
 
       option=1
       write(XsecFile,'(a,a,a,a,a)')&
-     &  'DATA/XSECTIONS/',&
+     &  trim(rootdir)//'DATA/XSECTIONS/',&
      &  trim(species),'/',trim(species),'_mpi.abs'
 
-      ! XsecFile = 'DATA/XSECTIONS/'//trim(species)&
+      ! XsecFile = trim(rootdir)//'DATA/XSECTIONS/'//trim(species)&
       ! //'/'//trim(species)//'_mpi.abs'
       if (option.eq.1) then  !MPI
       kin = 324
@@ -7276,7 +7276,7 @@
       kin = 631
       if (option.eq.1) then  !hybrid
       OPEN(UNIT=kin,&
-     &  file='DATA/XSECTIONS/CHOCHO/CHOCHO_hybrid.abs',&
+     &  file=trim(rootdir)//'DATA/XSECTIONS/CHOCHO/CHOCHO_hybrid.abs',&
      &  STATUS='old')
 
 !      DO i = 1, 4
@@ -7303,7 +7303,7 @@
       kin = 633
 ! Quantum yield depends on wavelength and is read in from a table in JPL-06
       OPEN(UNIT=kin,&
-     &  file='DATA/XSECTIONS/CHOCHO/CHOCHO.qy',&
+     &  file=trim(rootdir)//'DATA/XSECTIONS/CHOCHO/CHOCHO.qy',&
      &  STATUS='old')
 
       DO i = 1, 8
@@ -7456,7 +7456,7 @@
       kin = 634
       if (option.eq.1) then  !Kevin's data
       OPEN(UNIT=kin,&
-     &  file='DATA/XSECTIONS/C2H2/C2H2_mpi.abs',&
+     &  file=trim(rootdir)//'DATA/XSECTIONS/C2H2/C2H2_mpi.abs',&
      &  STATUS='old')
 
       DO i = 1, 3
@@ -7571,7 +7571,7 @@
       kin = 635
       if (option.eq.1) then  !mpi data
       OPEN(UNIT=kin,&
-     &  file='DATA/XSECTIONS/CH3CHO/CH3CHO_mpi.abs',&
+     &  file=trim(rootdir)//'DATA/XSECTIONS/CH3CHO/CH3CHO_mpi.abs',&
      &  STATUS='old')
 
 !      DO i = 1, 3
@@ -7675,7 +7675,7 @@
       kin = 636
       if (option.eq.1) then  !Kevin's data
       OPEN(UNIT=kin,&
-     &  file='DATA/XSECTIONS/C3H6/C3H6_mpi.abs',&
+     &  file=trim(rootdir)//'DATA/XSECTIONS/C3H6/C3H6_mpi.abs',&
      &  STATUS='old')
 
       DO i = 1, 3
@@ -7788,7 +7788,7 @@
       kin = 637
       if (option.eq.1) then  !Kevin's data
       OPEN(UNIT=kin,&
-     &  file='DATA/XSECTIONS/CH3C2H/CH3C2H_mpi.abs',&
+     &  file=trim(rootdir)//'DATA/XSECTIONS/CH3C2H/CH3C2H_mpi.abs',&
      &  STATUS='old')
 
       DO i = 1, 3
@@ -7896,7 +7896,7 @@
 
       if (option.eq.1) then  !Kevin's data
       OPEN(UNIT=kin,&
-     &  file='DATA/XSECTIONS/CH2CCH2/CH2CCH2_kasting.abs',&
+     &  file=trim(rootdir)//'DATA/XSECTIONS/CH2CCH2/CH2CCH2_kasting.abs',&
      &  STATUS='old')
 
       DO i = 1, 3
@@ -8001,7 +8001,7 @@
       kin = 639
       if (option.eq.1) then  !Kevin's data
       OPEN(UNIT=kin,&
-     &  file='DATA/XSECTIONS/C2H4/C2H4_kasting.abs',&
+     &  file=trim(rootdir)//'DATA/XSECTIONS/C2H4/C2H4_kasting.abs',&
      &  STATUS='old')
 
       DO i = 1, 3
@@ -8111,7 +8111,7 @@
       kin = 640
       if (option.eq.1) then  !Kevin's data
       OPEN(UNIT=kin,&
-     &  file='DATA/XSECTIONS/C3H8/C3H8_mpi.abs',&
+     &  file=trim(rootdir)//'DATA/XSECTIONS/C3H8/C3H8_mpi.abs',&
      &  STATUS='old')
 
       DO i = 1, 3
@@ -8231,7 +8231,7 @@
 
       if (option.eq.1) then
       OPEN(UNIT=kin,&
-     &  file='DATA/XSECTIONS/NH3/NH3.XS.dat',&
+     &  file=trim(rootdir)//'DATA/XSECTIONS/NH3/NH3.XS.dat',&
      &  STATUS='old')
 
       HJtest=0 !HOT JUPITER TEST
@@ -8337,7 +8337,7 @@
       option=1
       if (option.eq.1) then
       OPEN(UNIT=kin,&
-     &  file='DATA/XSECTIONS/HCN/HCN.XS.dat',&
+     &  file=trim(rootdir)//'DATA/XSECTIONS/HCN/HCN.XS.dat',&
      &  STATUS='old')
 
       HJtest=0 !HOT JUPITER TEST
@@ -8439,7 +8439,7 @@
       option=1
       if (option.eq.1) then
       OPEN(UNIT=kin,&
-     &  file='DATA/XSECTIONS/N2H4/N2H4.XS.dat',&
+     &  file=trim(rootdir)//'DATA/XSECTIONS/N2H4/N2H4.XS.dat',&
      &  STATUS='old')
 
       HJtest=0 !HOT JUPITER TEST
@@ -8541,7 +8541,7 @@
       option=1
       if (option.eq.1) then
       OPEN(UNIT=kin,&
-     &  file='DATA/XSECTIONS/HNCO/HNCO.XS.dat',&
+     &  file=trim(rootdir)//'DATA/XSECTIONS/HNCO/HNCO.XS.dat',&
      &  STATUS='old')
 
       HJtest=0 !HOT JUPITER TEST
