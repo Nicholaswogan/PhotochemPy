@@ -3,8 +3,8 @@ from Photochem import photochem
 import sys
 import os
 
-# rootdir = os.path.dirname(os.path.realpath(__file__))+'/'
-# photochem.rootdir = "{:500}".format(rootdir)
+rootdir = os.path.dirname(os.path.realpath(__file__))+'/'
+photochem.rootdir = "{:500}".format(rootdir)
 
 class PhotochemPy:
     def __init__(self,species_dat,reactions_rx,planet_dat,\

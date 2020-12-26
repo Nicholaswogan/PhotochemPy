@@ -11,7 +11,7 @@ pt = PhotochemPy('input/templates/Archean+haze/species.dat', \
                  'input/templates/Archean+haze/Sun_2.7Ga.txt')
 
 
-pt.integrate(nsteps=10)
+pt.integrate(nsteps=1000)
 
 
 
