@@ -13,6 +13,8 @@ pt = PhotochemPy('input/templates/Archean+haze/species.dat', \
 
 pt.integrate(nsteps=1000)
 
+# pt.out2atmosphere_txt()
+
 
 
 
