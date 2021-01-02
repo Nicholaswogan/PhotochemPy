@@ -8152,7 +8152,7 @@
        endif
 
          DO i = 1, nz
-              sq(jn,i,iw) = yg1(iw)*qy
+              sq(jn,i,iw) = yg1(iw)*qy1
               sq(jn+1,i,iw) = yg1(iw)*qy2
               sq(jn+2,i,iw) = yg1(iw)*qy3
               sq(jn+3,i,iw) = yg1(iw)*qy4
