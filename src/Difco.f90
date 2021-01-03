@@ -20,6 +20,7 @@
 
       wt = usol_init(lO2,1)*32. + fco2*44. + far*40. + (1.-usol_init(lO2,1)-fco2-far)*28.
       bkmg = 1.38E-16/(1.67E-24*wt*g)    !a good pressure
+      tav = 0.d0
 !
 ! ***** DK(I) = K*N AT GRID STEP I+1/2 *****
 !

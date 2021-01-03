@@ -116,6 +116,7 @@
       ! read in wogan's grid here. THis is the same as kevins but extended down
       ! to 121.0 nm instead of 121.6 nm
       nw = 118
+      kin = 797
       OPEN(kin, file=trim(rootdir)//'DATA/GRIDS/wogan.grid',status='old')
 
       DO i = 1,2
@@ -200,6 +201,7 @@
 
       nhead = 0
       ierr = 0
+      kin = 797
       OPEN(UNIT=kin, &
       file=flux_txt, &
       STATUS='old')
@@ -689,6 +691,7 @@
 !* do interpolation
 
       jstart = 1
+      jl = 0
 
       DO 30, i = 1, ng - 1
 

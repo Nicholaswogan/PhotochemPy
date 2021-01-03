@@ -7,8 +7,8 @@ PhotochemPy is a Python wrapper to Fortran source code. This makes the code very
 
 **Requirements:**
 To install PhotochemPy, you must have the following installed on your system.
-- `Python` with the `numpy` package. I suggest using [anaconda](https://www.anaconda.com/) regardless of your operating system.
-- The GNU compiler collection (includes `gfortran`, `gcc`, etc.). If you are using a mac, I suggest installing it with Homebrew: `brew install gcc`. For other operating systems [follow this GNU installation guide](https://gcc.gnu.org/install/binaries.html).
+- `Python` with the `numpy` package. I suggest using [anaconda](https://www.anaconda.com/) to install these regardless of your operating system.
+- The GNU compiler collection (includes `gfortran`, `gcc`, etc.). If you are using a Mac, I suggest installing it with Homebrew: `brew install gcc`. For other operating systems [follow this GNU installation guide](https://gcc.gnu.org/install/binaries.html).
 
 **Python Module:** After satisfying the requirements, the following command will install the PhotochemPy package to your Python installation.
 
@@ -19,7 +19,7 @@ Alternatively, you can instead compile PhotochemPy in this directory by running 
 **Fortran source:** If you prefer to use the code exclusively in Fortran, that is OK too. An example is provided in the folder `examples/fortran_example`. If you only use the Fortran source, you do not need `Python` with `numpy` installed on your system (you only need the GNU compiler collection).
 
 ## Usage
-See `examples/Tutorial.ipynb`.
+See `Tutorial.ipynb`.
 
 ## History
 PhotochemPy is an updated version of the [Atmos](https://github.com/VirtualPlanetaryLaboratory/atmos) photochemical model, originally developed by Jim Kasting and Kevin Zahnle and further developed by many of their students and colleges.

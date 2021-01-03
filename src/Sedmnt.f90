@@ -32,7 +32,7 @@
 
       real*8 nmon , rmon , df
                          !frachack
-
+      factor = 0.d0
 
 !
 !

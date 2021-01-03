@@ -20,7 +20,7 @@
 
         ! rate constant units are cm^3/molecules/s
         ! planet = 'EARTH' ! for now
-
+        bi = 0d0
         do J=1,NR
           ! Should add Cantera reaction types (https://cantera.org/science/reactions.html)
           ! Elementary (similar to 2body)

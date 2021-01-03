@@ -41,6 +41,7 @@
           D(j,i) = 0.d0
         enddo
       enddo
+      iss4sl = 0
 
 
 
@@ -305,6 +306,7 @@
 !   H2O CONDENSATION IN THE STRATOSPHERE
 !   (RHCOLD IS THE ASSUMED RELATIVE HUMIDITY AT THE COLD TRAP)
 ! dunno what to do here, I'll take it to be small
+         rhcold = 0.1d0
          IF ( planet.EQ.'EARTH' ) THEN
             rhcold = 0.1
                      ! Jim had 0.1 ; what needs to be here is something that will give the right stratospheric H2O 3ppm

@@ -23,6 +23,9 @@
       real*8 rgas, wt, rmg
 
 
+      lpolyscount = 0
+
+
       ! first thing is to allocate
 
       ! LGRID = 0

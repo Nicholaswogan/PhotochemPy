@@ -314,7 +314,7 @@
       CALL addpnt(x1,y1,kdata,n1,x1(n1)*(1.+deltax),zero)
       CALL addpnt(x1,y1,kdata,n1,            biggest,zero)
       IF (HJtest.eq.1) THEN
-      	CALL inter3(nw+1,wl,yg1,n1,x1,y1,ierr)
+        CALL inter3(nw+1,wl,yg1,n1,x1,y1,ierr)
       ELSE
       	CALL inter2(nw+1,wl,yg1,n1,x1,y1,ierr)
       ENDIF
@@ -2556,7 +2556,6 @@
       integer :: n6
       integer :: n5
       integer :: n4
-      integer :: lgrid
       integer :: hjtest
       integer :: kin
       REAL*8 deltax,biggest,zero
@@ -3249,6 +3248,7 @@
       !1 don't know why kevin had this in here. something about double precision
       e_19=2e-19
       ierr =0
+      j = 0
 
 !*************** O2 photodissociation
 ! options
@@ -3966,7 +3966,7 @@
       INTEGER i
       INTEGER ierr,option
       real*8 columndepth(KJ,NZ),PLOG(NZ),signol(NZ)
-      real*8 BK,SD,AM,zy,PI,ZYR,U0
+      real*8 BK,SD,AM,PI,ZYR,U0
       integer L,K
       real*8 SIGNO0(nz,2)
       real*8 ANO(9,2),BNO(5,2),LLNO(35),CNO(NZ)
@@ -5105,7 +5105,7 @@
 
 ! Quantum yields  (JPL-06)
 
-
+      qy1 = 0.d0
       DO iw = 1, nw-1
 
 !** quantum yields (from jpl97)

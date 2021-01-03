@@ -76,6 +76,11 @@
     KU = KD - NQ
     KL = KD + NQ
 
+    NPSO4 = 0
+    NPS8 = 0
+    NPHC = 0
+    NPHC2 = 0
+
 
 
 

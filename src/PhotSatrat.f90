@@ -23,6 +23,7 @@
 !   APPENDIX A).  IT THEN FIXES TROPOSPHERIC H2O USING A MANABE/
 !   WETHERALD RELATIVE HUMIDITY DISTRIBUTION.
 !
+      rel = 0.d0
       t0 = 273.15
       pzero = 6.103E-3          !vapor pressure at T0 I assume
       amv = 18.
