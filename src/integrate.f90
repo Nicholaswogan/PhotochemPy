@@ -80,6 +80,8 @@
     NPS8 = 0
     NPHC = 0
     NPHC2 = 0
+    is = 1
+    emax = 0.d0
 
 
 
@@ -87,8 +89,9 @@
     ! start the time-stepping loop
     call system_clock(count = c1, count_rate = cr, count_max = cm)
     do n = 1,nsteps
-      print"(2x,'N =',i6,3x,'Time = ',es10.2,3x,'DT = ',es10.2)", &
-      n,time,dt
+      print"(2x,'N =',i6,3x,'Time = ',es10.2,3x,'DT = ',es10.2"// &
+      ",3x,'emax = ',es10.2,3x,'for ',a8)", &
+      n,time,dt,emax,ispec(is)
       TIME = TIME + DT
       nn = nn+1
 
@@ -435,7 +438,7 @@
 
 !   COMPUTE NEW CONCENTRATIONS (IGNORE ERRORS IN SEVERAL SPECIES
 !    THAT VIRTUALLY DISAPPEAR UP HIGH)
-      EMAX = 0.
+      EMAX = 0.d0
       DO I=1,NQ
         DO J=1,NZ
           K = I + (J-1)*NQ

@@ -6578,6 +6578,8 @@
       photolabel(jn)='PN2O5_NO'
       jn=jn+1
 
+      close(kin)
+
       RETURN
       END
 
@@ -7446,6 +7448,7 @@
       INTEGER i, iw
       INTEGER ierr,option
       ierr = 0
+      jdum = 0
 
 !*************** C2H2 photodissociation
 ! options
@@ -7502,6 +7505,7 @@
       endif  !end option 1
 
 !      print *, jn, photolabel
+      jdum = 0
 
       if (Jdum.eq.3) photolabel(jn)='PCH'
       if (Jdum.eq.0) photolabel(jn)='PC2H2_H'

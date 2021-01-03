@@ -230,7 +230,8 @@
 
 ! ***** ***** ***** START WAVELENGTH LOOP   ***** ***** *****
       !$OMP PARALLEL PRIVATE(Lold,KN,ncomp,volmix,icomp,SIGR,ALP,S, &
-      !$OMP& tempcount,RN2,partial_prates,L,FLX,i,j,k)
+      !$OMP& tempcount,RN2,partial_prates,L,FLX,i,j,k,NOL)
+      NOL = 0
       ! zero out prates
       do j=1,kj
         do i=1,nz
@@ -272,7 +273,7 @@
           if (k.eq.1) then !compute Rayleigh scattering cross section (as a function of height?)
             do i=1,nz
 
-              SIGR(i) = SIGRAY(WAV(L)) * (1. + 1.5*FCO2)  !Old rayleigh cross section
+              ! SIGR(i) = SIGRAY(WAV(L)) * (1. + 1.5*FCO2)  !Old rayleigh cross section
 
        !set up new Rayleigh scattering vectors
               do j=1,NSP
