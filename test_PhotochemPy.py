@@ -2,29 +2,26 @@ import numpy as np
 from matplotlib import pyplot as plt
 from PhotochemPy import PhotochemPy
 import time
-
-pt = PhotochemPy('input/templates/Archean+haze/species.dat', \
-                 'input/templates/Archean+haze/reactions.rx', \
-                 'input/templates/Archean+haze/planet.dat', \
-                 'input/templates/Archean+haze/input_photchem.dat', \
-                 'input/templates/Archean+haze/atmosphere.txt', \
-                 'input/templates/Archean+haze/Sun_2.7Ga.txt')
+import sys
 
 
-pt.integrate(nsteps=1000)
+pc = PhotochemPy('input/templates/ModernEarth/species.dat', \
+              'input/templates/ModernEarth/reactions.rx', \
+              'input/templates/ModernEarth/planet.dat', \
+              'input/templates/ModernEarth/input_photchem.dat', \
+              'input/templates/ModernEarth/atmosphere.txt', \
+              'input/templates/ModernEarth/Sun_now.txt')
 
-# pt.out2atmosphere_txt()
 
-
-
-
-# print('CH4 flux =','%.2e'%pt.surf_flux()['CH4'])
+converged = pc.integrate(nsteps=500)
 
 
 plot = False
 
+
+# print(pc.out_dict()['CO2'])
 if plot:
-    out = pt.out_dict()
+    out = pc.out_dict()
     plt.rcParams.update({'font.size': 15})
     fig,ax = plt.subplots(1,1,figsize=[9,5])
     specs = ['CH4','CO','O2','H2']
