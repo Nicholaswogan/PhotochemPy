@@ -6289,7 +6289,7 @@
       ENDIF
 
 ! Quantum yield depends on wavelength
-
+      qy = 0.7d0
       DO iw = 1, nw
             if (wl(iw) .le. 2000.) qy=0.7  !QY for HO2+NO2 when < 200nm
             if (wl(iw) .gt. 2000.) qy=0.8  !QY for HO2+NO2 when > 200nm

@@ -203,7 +203,7 @@
           use reading_vars
           implicit none
           integer ::  nnz, nnq, nnp, nnsp, nnr, kks, kkj
-          integer :: i,j
+          integer :: i,j,k
 !f2py     intent(in) ::  nnz, nnq, nnp, nnsp, nnr, kks, kkj
 
           ! The dimensions.
@@ -244,6 +244,24 @@
             allocate(atomsN(nsp2))
             allocate(atomsCl(nsp2))
             allocate(mass(nsp2))
+            lbound = 0
+            vdep0 = 0.d0
+            vdep = 0.d0
+            fixedmr = 0.d0
+            distflux = 0.d0
+            sgflux = 0.d0
+            distheight = 0.d0
+            mbound = 0
+            smflux = 0.d0
+            veff0 = 0.d0
+            veff = 0.d0
+            atomso = 0
+            atomsh = 0
+            atomsc = 0
+            atomss = 0
+            atomsn = 0
+            atomscl = 0
+            mass = 0.d0
 
             ! definined in reactions.rx
             allocate(chemj(5,nr))
@@ -255,6 +273,13 @@
             allocate(photoreac(kj))
             allocate(photospec(ks))
             allocate(photonums(kj))
+            jchem = 0
+            rateparams = 0.d0
+            iloss = 0
+            iprod = 0
+            photoreac = 0
+            photospec = 0
+            photonums = 0
 
             ! needed in atmosphere.txt
             allocate(usol_init(nq,nz))
@@ -269,57 +294,80 @@
             allocate(rpar_init(nz,np))
             allocate(numl(nsp))
             allocate(nump(nsp))
+            usol_init = 0.d0
+            den = 0.d0
+            t = 0.d0
+            edd = 0.d0
+            aersol = 0.d0
+            wfall = 0.d0
+            rpar = 0.d0
+            aersol_init = 0.d0
+            wfall_init = 0.d0
+            rpar_init = 0.d0
+            numl = 0
+            nump = 0
 
 
             ! needed in Densty.f90
             allocate(Press(nz))
             allocate(P(nz))
+            press = 0.d0
+            p = 0.d0
 
             ! needed in photogrid.f90
             allocate(z(nz))
             allocate(dz(nz))
+            z = 0.d0
+            dz = 0.d0
 
             ! needed in initphoto.f90.
             allocate(photolabel(kj))
             allocate(sq(kj,nz,kw))
             allocate(SIGNO(nz,2))
+            sq = 0.d0
+            signo = 0.d0
 
             ! needed in Aertab.f90
             allocate(VH2O(Nf,nz))
             allocate(VH2SO4(Nf,nz))
+            VH2O = 0.0d0
+            VH2SO4 = 0.0d0
 
             ! needed in Aercon.f90
             allocate(FSULF(nz))
             allocate(H2SO4S(nz))
             allocate(S8S(nz))
+            fsulf = 0.0d0
+            h2so4s = 0.0d0
+            s8s = 0.0d0
 
             ! needed in Photo.f90
             allocate(QEXTT(kw,nz,np))
             allocate(W0T(kw,nz,np))
             allocate(GFT(kw,nz,np))
+            qextt = 0.0d0
+            w0t = 0.0d0
+            gft = 0.0d0
 
             ! needed in dochem.f90
             allocate(SL(NSP,NZ))
-            do i =1,nsp
-              do j=1,nz
-                sl(i,j) = 0.0d0
-              enddo
-            enddo
+            sl = 0.0d0
+
 
             ! needed in rates.f90
             allocate(A(NR,NZ))
             ! zero out
-            do i =1,nr
-              do j=1,nz
-                A(i,j) = 0.0d0
-              enddo
-            enddo
+            A = 0.0d0
 
             ! needed in rainout.f90
             allocate(H(NQ,NZ))
             allocate(RAINGC(NQ,NZ))
             allocate(RAIN(NZ))
             allocate(XSAVE(naq,nz))
+            h = 0.0d0
+            raingc = 0.0d0
+            rain = 0.0d0
+            xsave = 0.0d0
 
             ! needed in Difco.f90
             allocate(tauedd(nz))
@@ -329,9 +377,17 @@
             allocate(SCALE_H(nq,nz))
             allocate(BHN2(nz))
             allocate(BH2N2(nz))
+            tauedd = 0.0d0
+            hscale = 0.0d0
+            h_atm = 0.0d0
+            dk = 0.0d0
+            scale_h = 0.0d0
+            bhn2 = 0.0d0
+            bh2n2 = 0.0d0
 
             ! needed in PhotSatrat.f90
             allocate(h2osat(nz))
+            h2osat = 0.0d0
 
             ! needed in setup.f90
             allocate(DD(NQ1,NZ))
@@ -340,6 +396,12 @@
             allocate(ADL(NQ,NZ))
             allocate(ADU(NQ,NZ))
             allocate(ADD(NQ,NZ))
+            dd = 0.0d0
+            dl = 0.0d0
+            du = 0.0d0
+            adl = 0.0d0
+            adu = 0.0d0
+            add = 0.0d0
 
             ! integrate.f90
             allocate(usol_out(nq,nz))
@@ -347,13 +409,11 @@
             allocate(fluxo(nq,nz))
             allocate(yp(nq,nz))
             allocate(yl(nq,nz))
-            do i =1,nq
-              do j=1,nz
-                usol_out(i,j) = 0.0d0
-              enddo
-            enddo
-
-
+            usol_out(i,j) = 0.0d0
+            flow = 0.0d0
+            fluxo = 0.0d0
+            yp = 0.0d0
+            yl = 0.0d0
 
           else
             print*, "Memory has already been allocated"

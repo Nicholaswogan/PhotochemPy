@@ -48,6 +48,71 @@
       integer O
 
       O = 0
+      ! initialize everyting
+      tau = 0.d0
+      tauctstr = 0.0d0
+      gt = 0.d0
+      gam1 = 0.d0
+      gam2 = 0.d0
+      gam3 = 0.d0
+      gam4 = 0.d0
+      alam = 0.d0
+      cgam = 0.d0
+      e1 = 0.d0
+      e2 = 0.d0
+      e3 = 0.d0
+      e4 = 0.d0
+      cp0 = 0.d0
+      cpb = 0.d0
+      cm0 = 0.d0
+      cmb = 0.d0
+      y1 = 0.d0
+      y2 = 0.d0
+      w0 = 0.d0
+      tausg = 0.d0
+      tausp = 0.d0
+      direct = 0.d0
+      amean = 0.d0
+      taug = 0.d0
+      fmt = 0.d0
+      a = 0.d0
+      b = 0.d0
+      d = 0.d0
+      e = 0.d0
+      fup = 0.d0
+      fdn = 0.d0
+      w0p = 0.d0
+      qext = 0.d0
+      tauscat_part = 0.d0
+      taup = 0.d0
+      tau_part = 0.d0
+      denom = 0.d0
+      emlt = 0.d0
+      et0 = 0.d0
+      etb = 0.d0
+      facm = 0.d0
+      facp = 0.d0
+      gp = 0.d0
+      gpnew = 0.d0
+      pi = 0.d0
+      sq3 = 0.d0
+      ssfc = 0.d0
+      taua = 0.d0
+      taup1 = 0.d0
+      u0m = 0.d0
+      u0m2 = 0.d0
+      u1 = 0.d0
+      u1m = 0.d0
+
+      i = 0
+      j = 0
+      k = 0
+      l = 0
+      l1 = 0
+      mz2 = 0
+      n = 0
+      nflag = 0
+      nzm1 = 0
 
 !this FUP is different from the lower boundary flux terms in Output.f.  Should be fine here.
 

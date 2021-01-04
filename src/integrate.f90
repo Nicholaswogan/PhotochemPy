@@ -38,6 +38,7 @@
     integer cr, cm, c1, c2
 
     converged = 1
+    info = 0
 
     ! set atmosphere to inital atmosphere
     do i=1,nq

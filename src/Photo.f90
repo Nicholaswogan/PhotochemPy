@@ -232,6 +232,7 @@
       !!!$OMP PARALLEL PRIVATE(Lold,KN,ncomp,volmix,icomp,SIGR,ALP,S, &
       !!!$OMP& tempcount,RN2,partial_prates,L,FLX,i,j,k,NOL)
       NOL = 0
+      S = 0.d0
       ! zero out prates
       do j=1,kj
         do i=1,nz
