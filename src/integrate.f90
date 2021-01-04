@@ -89,8 +89,8 @@
     ! start the time-stepping loop
     call system_clock(count = c1, count_rate = cr, count_max = cm)
     do n = 1,nsteps
-      print"(2x,'N =',i6,3x,'Time = ',es10.2,3x,'DT = ',es10.2"// &
-      ",3x,'emax = ',es10.2,3x,'for ',a8)", &
+      print"(2x,'N =',i6,3x,'Time = ',es12.5,3x,'DT = ',es12.5"// &
+      ",3x,'emax = ',es12.5,3x,'for ',a8)", &
       n,time,dt,emax,ispec(is)
       TIME = TIME + DT
       nn = nn+1

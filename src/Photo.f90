@@ -37,7 +37,7 @@
       integer JO2, JNO, jso2, js8l, js8r, js8
       integer l3, tempcount
       real*8 ALNO, alp, am, anc, dij,dr, drs, flx
-      integer ikn, k, kn, lold, nol
+      integer k, kn, lold, nol
       real*8 qcol, qkno, rmg, rn2, scol, u0
       real*8 vmean, zyr
       integer NZP1, nz2
@@ -229,8 +229,8 @@
        endif
 
 ! ***** ***** ***** START WAVELENGTH LOOP   ***** ***** *****
-      !$OMP PARALLEL PRIVATE(Lold,KN,ncomp,volmix,icomp,SIGR,ALP,S, &
-      !$OMP& tempcount,RN2,partial_prates,L,FLX,i,j,k,NOL)
+      !!!$OMP PARALLEL PRIVATE(Lold,KN,ncomp,volmix,icomp,SIGR,ALP,S, &
+      !!!$OMP& tempcount,RN2,partial_prates,L,FLX,i,j,k,NOL)
       NOL = 0
       ! zero out prates
       do j=1,kj
@@ -242,7 +242,7 @@
       do i=1,nz
         SIGR(i) = 0.D0
       enddo
-      !$OMP DO
+      !!!$OMP DO
       do L=1,nw
 
         Lold=L-10
@@ -360,8 +360,8 @@
 !mc - there used to be a mechanism for a Beer's law calculation when the optical depth was high or if IO2=0.
 !removing this in favor of a permanent Twostr.f. Check the subversion archives if this ever needs to come back
 
-          IKN=1
-          IF (K.NE.KN) IKN=0   !output flag
+          ! IKN=1
+          ! IF (K.NE.KN) IKN=0   !output flag
 
           CALL TWOSTR(SIGR,U0,sq,WAV(L),L,nzp1,nz2,absorbers,S)  !two stream radiative tranfer
 
@@ -459,17 +459,17 @@
 ! C ***** ***** ***** END WAVELENGTH LOOP ***** ***** *****
         enddo
       enddo
-      !$OMP END DO
+      !!!$OMP END DO
 
-      !$OMP CRITICAL
+      !!!$OMP CRITICAL
       do j=1,kj
         do i=1,nz
           prates(j,i) = prates(j,i) + partial_prates(j,i)
         enddo
       enddo
-      !$OMP END CRITICAL
+      !!!$OMP END CRITICAL
 
-      !$OMP END PARALLEL
+      !!!$OMP END PARALLEL
 
 
 
