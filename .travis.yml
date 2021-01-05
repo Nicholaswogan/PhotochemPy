@@ -9,4 +9,5 @@ before_install:
 install:
   - pip install .
 
-script: pytest
+script:
+  - python test_PhotochemPy.py 
