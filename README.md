@@ -18,8 +18,8 @@ Alternatively, you can instead compile PhotochemPy in this directory by running 
 
 **Fortran source:** If you prefer to use the code exclusively in Fortran, that is OK too. An example is provided in the folder `examples/fortran_example`. If you only use the Fortran source, you do not need `Python` with `numpy` installed on your system (you only need the GNU compiler collection).
 
-## Documentation and usage
-Read the documentation [here](https://photochempy.readthedocs.io/en/latest/). The best way to get started is [with this Tutorial in the documentation](https://photochempy.readthedocs.io/en/latest/Tutorial.html).
+## Documentation
+Read the [documentation here](https://photochempy.readthedocs.io/en/latest/). The best way to get started is [with this Tutorial in the documentation](https://photochempy.readthedocs.io/en/latest/Tutorial.html).
 
 ## History
 PhotochemPy is an updated version of the [Atmos](https://github.com/VirtualPlanetaryLaboratory/atmos) photochemical model, originally developed by Jim Kasting and Kevin Zahnle and further developed by many of their students and colleges.
