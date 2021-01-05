@@ -1,3 +1,10 @@
+
+
+<p align="center">
+  <a href="https://photochempy.readthedocs.io/en/latest/?badge=latest"><img src="https://readthedocs.org/projects/photochempy/badge/?version=latest"></a>
+  <img src = "https://img.shields.io/badge/memcheck-clean-green.svg?style=flat">
+</p>
+
 # PhotochemPy
 PhotochemPy is a photochemical model of rocky planet's atmospheres. Given inputs, like the stellar UV flux, the atmospheric temperature structure, etc., this code will find the steady-state chemical composition of an atmosphere.
 
@@ -23,3 +30,6 @@ Read the [documentation here](https://photochempy.readthedocs.io/en/latest/). Th
 
 ## History
 PhotochemPy is an updated version of the [Atmos](https://github.com/VirtualPlanetaryLaboratory/atmos) photochemical model, originally developed by Jim Kasting and Kevin Zahnle and further developed by many of their students and colleges.
+
+## Code integrity
+I regularly check for memory issues (uninitialized variables, accessing an array beyond its bounds) with the [valgrind memcheck](http://valgrind.org) tool, and make sure all errors are dealt with.
