@@ -5,12 +5,12 @@ import time
 import sys
 
 
-pc = PhotochemPy('input/templates/ModernEarth/species.dat', \
-              'input/templates/ModernEarth/reactions.rx', \
-              'input/templates/ModernEarth/planet.dat', \
-              'input/templates/ModernEarth/input_photchem.dat', \
-              'input/templates/ModernEarth/atmosphere.txt', \
-              'input/templates/ModernEarth/Sun_now.txt')
+pc = PhotochemPy('input/templates/Archean+Haze/species.dat', \
+              'input/templates/Archean+Haze/reactions.rx', \
+              'input/templates/Archean+Haze/planet.dat', \
+              'input/templates/Archean+Haze/input_photchem.dat', \
+              'input/templates/Archean+Haze/atmosphere.txt', \
+              'input/templates/Archean+Haze/Sun_2.7Ga.txt')
 
 
 converged = pc.integrate(nsteps=500)

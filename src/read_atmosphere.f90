@@ -51,6 +51,11 @@
           print*, iii, nq
         endif
 
+        do i=1,nq
+          if (trim(ispec(i)).eq.'CO2') then
+            FCO2 = usol_init(i,1)
+          endif
+        enddo
         rewind(4)
         read(4,*)
         ! reads in temperature
@@ -125,5 +130,5 @@
         enddo
         endif
         close(4)
-        
+
       end subroutine
