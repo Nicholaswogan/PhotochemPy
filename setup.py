@@ -31,7 +31,7 @@ if option == 1:
 
     setup(name = 'PhotochemPy',
           packages=['PhotochemPy'],
-          version='1.0',
+          version='0.0.1',
           ext_modules=extensions,
           configuration=configuration)
 
@@ -46,6 +46,6 @@ if option == 2:
 
     setup(name = 'PhotochemPy',
           packages=['PhotochemPy'],
-          version='1.0',
+          version='0.0.1',
           ext_modules=extensions,
           configuration=configuration)
