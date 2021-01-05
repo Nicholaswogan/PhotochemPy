@@ -1,0 +1,9 @@
+sudo: required
+
+language: python
+
+before_install:
+  - sudo apt-get install build-essential
+
+install:
+  - pip install .
