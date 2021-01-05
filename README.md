@@ -1,11 +1,5 @@
 
-
-<p align="center">
-  <a href="https://photochempy.readthedocs.io/en/latest/?badge=latest"><img src="https://readthedocs.org/projects/photochempy/badge/?version=latest"></a>
-  <img src = "https://img.shields.io/badge/memcheck-clean-green.svg?style=flat">
-</p>
-
-# PhotochemPy
+# PhotochemPy [![Documentation Status](https://readthedocs.org/projects/photochempy/badge/?version=latest)](https://photochempy.readthedocs.io/en/latest/?badge=latest) [![Memcheck](https://img.shields.io/badge/memcheck-clean-green.svg?style=flat)]() [![Build Status](https://travis-ci.com/Nicholaswogan/PhotochemPy.svg?branch=main)](https://travis-ci.com/Nicholaswogan/PhotochemPy)
 PhotochemPy is a photochemical model of rocky planet's atmospheres. Given inputs, like the stellar UV flux, the atmospheric temperature structure, etc., this code will find the steady-state chemical composition of an atmosphere.
 
 PhotochemPy is a Python wrapper to Fortran source code. This makes the code very speedy, but also user-friendly.
