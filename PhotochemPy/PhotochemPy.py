@@ -430,7 +430,8 @@ class PhotochemPy:
         jac : rank-2 array with bounds (self.photo.neq, self.photo.lda)
             The right hand side of the model equations (change in mixing ratio/second)
         '''
-        jac = self.photo.jacobian(usol_flat,self.photo.lda)
+        ldaa = self.nq+self.nq+1
+        jac = self.photo.jacobian(usol_flat,ldaa)
         return jac
 
     def out2atmosphere_txt(self,filename = 'atmosphere.txt', overwrite = False):

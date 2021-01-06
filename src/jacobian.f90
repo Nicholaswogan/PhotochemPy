@@ -1,13 +1,14 @@
-  subroutine jacobian(usol_flat,djac,neq,lda)
+  subroutine jacobian(usol_flat,ddjac,neq,ldaa)
     implicit none
     ! module variables
     ! all of them?
 
     ! local variables
     integer, intent(in) :: neq
-    integer, intent(in) :: lda
+    integer, intent(in) :: ldaa
     real*8, dimension(neq), intent(in) :: usol_flat
-    real*8, dimension(lda,neq), intent(out) :: djac
+    real*8, dimension(lda,neq) :: djac
+    real*8, dimension(ldaa,neq), intent(out) :: ddjac ! ldaa = nq+nq+1
 
     real*8, dimension(neq) :: rhs
     real*8, dimension(nq,nz) :: fval, fv
@@ -367,6 +368,12 @@
           rhs(k) = rhs(k) + 2.*distflux(i)*(ZTOP1-Z(j))/(Den(j)*ZTOP**2)
         enddo
       endif
+    enddo
+
+    do i =1,nq+nq+1
+      do j=1,neq
+        ddjac(i,j) = djac(i+nq,j)
+      enddo
     enddo
 
     end subroutine
