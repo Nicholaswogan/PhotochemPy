@@ -16,9 +16,8 @@ only = '''only: allocate_memory right_hand_side jacobian read_species read_react
  read_photochem rainout ltning aertab densty aercon photsatrat difco sedmnt
  dochem photo setup integrate :'''
 
-option = 1 # (Default) Parallel jacobian calculation. Serial Photo.f90 calculation.
-# option = 2 # Parallel jacobian calculation. Parallel Photo.f90 calculation.
-# option = 3 # Serial jacobian calculation. Serial Photo.f90 calculation.
+option = 1 # (Default) Parallel version
+# option = 2 # Serial version
 
 if option == 1:
     extensions = [
@@ -37,22 +36,6 @@ if option == 1:
           configuration=configuration)
 
 if option == 2:
-    extensions = [
-    Extension(name="Photochem",
-              sources=['src/modules/Rainout_vars.f90', 'src/modules/reading_vars.f90','src/Photochem_PhotoParallel.f90','src/lin_alg.f'],
-              extra_f90_compile_args = ['-O3','-fopenmp', '-freal-4-real-8'],
-              extra_f77_compile_args = ['-O3', '-freal-4-real-8'],
-              libraries=['gomp'],
-              f2py_options=only.split())
-              ]
-
-    setup(name = 'PhotochemPy',
-          packages=['PhotochemPy'],
-          version='0.0.1',
-          ext_modules=extensions,
-          configuration=configuration)
-
-if option == 3:
     extensions = [
     Extension(name="Photochem",
               sources=['src/modules/Rainout_vars.f90', 'src/modules/reading_vars.f90','src/Photochem.f90','src/lin_alg.f'],

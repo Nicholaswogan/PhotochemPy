@@ -43,6 +43,7 @@
       integer NZP1, nz2
       real*8 absorbers(kj,nz)
       integer lpolyscount
+      integer tmp1
       ! real*8 start, finish
       ! call cpu_time(start)
 
@@ -229,8 +230,8 @@
        endif
 
 ! ***** ***** ***** START WAVELENGTH LOOP   ***** ***** *****
-      !!!$OMP PARALLEL PRIVATE(Lold,KN,ncomp,volmix,icomp,SIGR,ALP,S, &
-      !!!$OMP& tempcount,RN2,partial_prates,L,FLX,i,j,k,NOL)
+      !$OMP PARALLEL PRIVATE(Lold,KN,ncomp,volmix,icomp,SIGR,ALP,S, &
+      !$OMP& tempcount,RN2,partial_prates,L,FLX,i,j,k,NOL)
       NOL = 0
       S = 0.d0
       ! zero out prates
@@ -243,7 +244,7 @@
       do i=1,nz
         SIGR(i) = 0.D0
       enddo
-      !!!$OMP DO
+      !$OMP DO
       do L=1,nw
 
         Lold=L-10
@@ -460,17 +461,17 @@
 ! C ***** ***** ***** END WAVELENGTH LOOP ***** ***** *****
         enddo
       enddo
-      !!!$OMP END DO
+      !$OMP END DO
 
-      !!!$OMP CRITICAL
+      !$OMP CRITICAL
       do j=1,kj
         do i=1,nz
           prates(j,i) = prates(j,i) + partial_prates(j,i)
         enddo
       enddo
-      !!!$OMP END CRITICAL
+      !$OMP END CRITICAL
 
-      !!!$OMP END PARALLEL
+      !$OMP END PARALLEL
 
 
 
@@ -591,6 +592,13 @@
       !   enddo
       ! enddo
 
+      ! sacrafice precision for reproducibility
+      do j=1,kj
+        do i=1,nz
+          call round(prates(j,i),-8)
+        enddo
+      enddo
+
 
 
 
@@ -613,3 +621,11 @@
       SIGRAY = 4.006E-28*(1. + .0113/W2 + .00013/W4)/W4
       RETURN
       END
+
+      subroutine round(in,precision)
+        implicit none
+        real*8, intent(inout) :: in
+        integer precision, order
+        order = nint(log10(in))
+        in = nint(in * 10.d0**(-precision-order),8)*10.d0**(precision+order)
+      end subroutine
