@@ -8,7 +8,7 @@ To install PhotochemPy, you must have the following installed on your system.
 ## Python
 After satisfying the above requirements, the following command will install the PhotochemPy package to your Python installation with **default** options.
 
-`Python -m pip install git+git://github.com/Nicholaswogan/PhotochemPy.git`
+`python -m pip install git+git://github.com/Nicholaswogan/PhotochemPy.git`
 
 **Other install options:**
 
