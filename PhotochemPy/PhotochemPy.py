@@ -304,7 +304,34 @@ class PhotochemPy:
         if self.photo.lbound[ind] == 1:
             self.photo.fixedmr[ind] = mix
         else:
-            print('mbound set to',self.photo.lbound[ind],'so the mixing ratio will not change')
+            print('lbound set to',self.photo.lbound[ind],'so the mixing ratio will not change')
+
+    def set_vdep(self,spec,vdep):
+        '''
+        Sets surface deposition velocity boundary condition for a species.
+        self.photo.lbound must be 0 or 3.
+
+        Parameters
+        ----------
+        spec : string
+            Species to change surface mixing ratio
+        vdep : float
+            Surface deposition velocity of species spec (cm/s)
+
+        Raises
+        ------
+        SystemExit
+            When species spec is not in the model
+        '''
+        try:
+            ind = self.ispec.index(spec)
+        except:
+            sys.exit('species not in the model')
+        if self.photo.lbound[ind] == 0 or self.photo.lbound[ind] == 3:
+            self.photo.vdep[ind] = vdep
+            self.photo.vdep0[ind] = vdep
+        else:
+            print('lbound set to',self.photo.lbound[ind],'so the vdep will not change')
 
     def set_lbound(self,spec,lbound):
         '''
