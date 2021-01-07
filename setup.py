@@ -16,9 +16,9 @@ only = '''only: allocate_memory right_hand_side jacobian read_species read_react
  read_photochem rainout ltning aertab densty aercon photsatrat difco sedmnt
  dochem photo setup integrate :'''
 
-# option = 1 # (Default) Parallel version (fast)
+option = 1 # (Default) Parallel version (fast)
 # option = 2 # Serial version (slow)
-option = 3 # Parallel with Spike solver (super duper fast)
+# option = 3 # Parallel with Spike solver (super duper fast)
 
 # For option 3 follow these instructions: https://photochempy.readthedocs.io/en/latest/install.html
 
