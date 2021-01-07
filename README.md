@@ -15,9 +15,9 @@ To install PhotochemPy, you must have the following installed on your system.
 
 `python -m pip install git+git://github.com/Nicholaswogan/PhotochemPy.git`
 
-Alternatively, you can instead compile PhotochemPy in this directory by running `./compile.sh`. This is useful for if you are adding a new feature to the source code (`src` directory) and need to compile a bunch of times to test it.
+Alternatively, if you want maximum performance, then install PhotochemPy with the [Spike](http://www.ecs.umass.edu/~polizzi/spike/index.htm) solver following [these instructions](https://photochempy.readthedocs.io/en/latest/install.html#python).
 
-**Fortran source:** If you prefer to use the code exclusively in Fortran, that is OK too. An example is provided in the folder `examples/fortran_example`. If you only use the Fortran source, you do not need `Python` with `numpy` installed on your system (you only need the GNU compiler collection).
+**Fortran source:** If you prefer to use the code exclusively in Fortran, that is OK too. An example is provided in the folder `examples/fortran_example`.
 
 ## Documentation
 Read the [documentation here](https://photochempy.readthedocs.io/en/latest/). The best way to get started is [with this Tutorial in the documentation](https://photochempy.readthedocs.io/en/latest/Tutorial.html).

@@ -28,7 +28,7 @@ Basic Usage
 A more complete example is available in the Tutorial linked in the User Guide.
 
 .. toctree::
-   :maxdepth: 0
+   :maxdepth: 2
    :caption: User Guide:
 
    install

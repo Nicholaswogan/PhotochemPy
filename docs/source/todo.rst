@@ -14,9 +14,4 @@ There are a number of things that could be done to improve PhotochemPy. Here, I'
 
 - **Estimating the solution with a 0-D model:** To find a atmosphere in steady-state, you need to start with an initial atmosphere. You will find the steady state faster if the initial atmosphere is close to the solution. If the initial condtions are far from the solution, then the solution may never be found. This is often a problem! One possible way to deal with it is to estimate the initial atmosphere with simple 0-D photochemical model.
 
-- **Using the Spike solver instead of LINPACK:** PhotochemPy could be made a bit faster. There are 3 parts of each timestep that takes the most time: **(1)** UV radiative transfer (Photo.f90), **(2)** the jacobian calculation (in integrate.f90), and **(3)** solving the linear system (also in integrate.f90). I have made (1) and (2) parallel with OpenMP. (3) could be sped up by using the `Spike banded matrix solver <http://www.ecs.umass.edu/~polizzi/spike/index.htm>`_ instead of LINKPACK. I have tried simple examples and Spike sped things up by a bit (see figure below). But, Spike requires a bunch of intel MKL libraries, complicated linking, specific version of gcc so I wasn't able to make to get f2py to compile properly with Spike. I only managed using Spike with the photochemical model in pure fortran implementations. So, if you are good at compiling complicated things, you could add an option in setup.py and compile.sh for using Spike instead of LINPACK.
-
-.. image:: images/Parallel_spike.jpg
-  :width: 500
-  :align: center
-  :alt: Alternative text
+- **Improving the setup.py for the Spike option:** Right now installing PhotochemPy with Spike is kinda cumbersome and requires many manual steps. It could probably be improved by someone who is good at crafting setup.py files.

@@ -626,6 +626,6 @@
         implicit none
         real*8, intent(inout) :: in
         integer precision, order
-        order = nint(log10(in))
+        order = nint(log10(abs(in)))
         in = nint(in * 10.d0**(-precision-order),8)*10.d0**(precision+order)
       end subroutine
