@@ -1,18 +1,18 @@
 # Installation
 
-**Requirements:**
+## Requirements
 To install PhotochemPy, you must have the following installed on your system.
 - `Python` with the `numpy` package. I suggest using [anaconda](https://www.anaconda.com/) to install these regardless of your operating system.
 - The GNU compiler collection (includes `gfortran`, `gcc`, etc.). If you are using a Mac, I suggest installing it with Homebrew: `brew install gcc`. For other operating systems [follow this GNU installation guide](https://gcc.gnu.org/install/binaries.html).
 
 ## Python
 ### The easy way
-After satisfying the requirements, the following command will install the PhotochemPy package to your Python installation.
+After satisfying the requirements, the following command will install the standard PhotochemPy package to your Python installation.
 
 `python -m pip install git+git://github.com/Nicholaswogan/PhotochemPy.git`
 
 ### The hard way (if you need more speed)
-Another option is to install PhotochemPy with [Spike](http://www.ecs.umass.edu/~polizzi/spike/index.htm). Spike is a method for solving banded linear systems in parallel, and it is faster than the LINPACK routine used in the standard PhotochemPy installation. This is not the default installation option because installing it is complicated. Installing with Spike is only worth it if you are considering really large problems (e.g. >100 species, and >200 atmospheric layers)
+Another option is to install PhotochemPy with [Spike](http://www.ecs.umass.edu/~polizzi/spike/index.htm). Spike is a method for solving banded linear systems in parallel, and it is faster than the LINPACK routine used in the standard PhotochemPy installation. This is not the default installation option because installing it is complicated. Installing with Spike is probably only worth it if you are considering really large problems (e.g. >100 species, and >200 atmospheric layers)
 
 To install PhotochemPy with Spike follow these instructions (I think these instructions will only work for MacOS)
 1. Install gfortran 6 with the Homebrew command `brew install gcc@6`. Other version of gfortran might not work.
@@ -27,7 +27,7 @@ To install PhotochemPy with Spike follow these instructions (I think these instr
 **Two things to Note!** First, Spike is fastest when the number of threads used is the same as the number of cores. My computer has 6 cores (and 12 total threads). To guarantee 6 threads are used I add the line `export OMP_NUM_THREADS=6` to the file `~/.bash_profile`. Also, Spike will cause PhotochemPy to have thread-dependent reproducibility. In other words, the answer will be a very tiny amount different depending on the number of threads used. This isn't a bug. It is just an aspect of how the Spike algorithm works.
 
 ### For development
-You can also compile PhotochemPy in this directory by running `./compile.sh`. This is useful for if you are adding a new feature to the source code (`src` directory) and need to compile a bunch of times to test it.
+You can also compile PhotochemPy in PhotochemPy root directory by running `./compile.sh`. This is useful for if you are adding a new feature to the source code (`src` directory) and need to compile a bunch of times to test it.
 
 ## Fortran
 If you prefer to use the code exclusively in Fortran, that is OK too. Examples are provided in the folder [examples/fortran_example](https://github.com/Nicholaswogan/PhotochemPy/tree/main/examples/fortran_example).

@@ -14,4 +14,4 @@ There are a number of things that could be done to improve PhotochemPy. Here, I'
 
 - **Estimating the solution with a 0-D model:** To find a atmosphere in steady-state, you need to start with an initial atmosphere. You will find the steady state faster if the initial atmosphere is close to the solution. If the initial condtions are far from the solution, then the solution may never be found. This is often a problem! One possible way to deal with it is to estimate the initial atmosphere with simple 0-D photochemical model.
 
-- **Improving the setup.py for the Spike option:** Right now installing PhotochemPy with Spike is kinda cumbersome and requires many manual steps. It could probably be improved by someone who is good at crafting setup.py files.
+- **Improving the setup.py for the Spike option:** Right now installing PhotochemPy with Spike is kind-of cumbersome and requires many manual steps. It could probably be improved by someone who is good at crafting setup.py files.
