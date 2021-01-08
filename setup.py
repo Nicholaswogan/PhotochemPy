@@ -79,14 +79,6 @@ if option == 3: # installing with spike (fastest! But hard to install)
     if float('.'.join(np.__version__.split('.')[:2]))<1.16:
         sys.exit("Must have numpy > 1.16.0")
 
-    # need this for some reason
-    try:
-        del os.environ['LD_LIBRARY_FLAGS']
-    except:
-        pass
-    os.environ['LDFLAGS'] = '-Wl,-rpath,${MKLROOT}/lib'
-    os.environ['NPY_DISTUTILS_APPEND_FLAGS'] = '1'
-
     extensions = [
     Extension(name="Photochem",
               sources=['src/modules/Rainout_vars.f90', 'src/modules/reading_vars.f90','src/Photochem_spike.f90','src/lin_alg.f'],
