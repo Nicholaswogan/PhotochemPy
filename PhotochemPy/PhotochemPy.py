@@ -130,6 +130,30 @@ class PhotochemPy:
 
     def setup(self,species_dat,reactions_rx,planet_dat,\
                       photochem_dat, atmosphere_txt, flux_txt):
+        '''
+        In you initialize PhotochemPy with all `None` arguments, then you can run
+        This to set up the atmospheres afterwords. This is necessary for some parallel
+        applications (pickling errors).
+
+        Parameters
+        ----------
+        species_dat : string
+            Path to input file describing the species in the photochemical model,
+            and their boundary conditions.
+        reactions_rx : string
+            Path to input file describing the reactions in the atmosphere and
+            their rates.
+        planet_dat : string
+            Path to input file describing the planet (surface gravity, etc.)
+        photochem_dat : string
+            Path to input file setting a few options for the model.
+        atmosphere_txt : string
+            Path to input file describing the initial atmospheric composition,
+            temperature structure, eddy diffusion profile, and aersol parameters.
+        flux_txt : string
+            Path to input file describing the stellar flux
+        '''
+
         self.species_dat = species_dat
         self.reactions_rx = reactions_rx
         self.planet_dat = planet_dat
