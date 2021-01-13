@@ -328,9 +328,11 @@
 !using Earth 'air' for the rocky planets - better than nothing? hard to know...
                       if (wavl(L).eq.2273) then
                         if (tempcount.eq.0) then
-                          print *, ISPEC(j),'at ', Z(i)/1e5, 'km is major '// &
-                          'species without Rayleigh data - using AIR', SL(j,i)/DEN(i)
-                          tempcount=1
+                          if (verbose) then
+                            print *, ISPEC(j),'at ', Z(i)/1e5, 'km is major '// &
+                            'species without Rayleigh data - using AIR', SL(j,i)/DEN(i)
+                            tempcount=1
+                          endif
                         endif
                       endif
                     endif

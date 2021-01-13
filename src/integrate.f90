@@ -90,9 +90,11 @@
     ! start the time-stepping loop
     call system_clock(count = c1, count_rate = cr, count_max = cm)
     do n = 1,nsteps
-      print"(2x,'N =',i6,3x,'Time = ',es12.5,3x,'DT = ',es12.5"// &
-      ",3x,'emax = ',es12.5,3x,'for ',a8)", &
-      n,time,dt,emax,ispec(is)
+      if (verbose) then
+        print"(2x,'N =',i6,3x,'Time = ',es12.5,3x,'DT = ',es12.5"// &
+        ",3x,'emax = ',es12.5,3x,'for ',a8)", &
+        n,time,dt,emax,ispec(is)
+      endif
       TIME = TIME + DT
       nn = nn+1
 
@@ -591,8 +593,10 @@
       IF (INFO.NE.0) STOP
       IF (NN.EQ.NSTEPS) then
         converged = 0
-        print"('Photochemical model did not converge in ',i6,' steps')",&
-                nsteps
+        if (verbose) then
+          print"('Photochemical model did not converge in ',i6,' steps')",&
+                  nsteps
+        endif
         exit
       endif
 
@@ -607,8 +611,10 @@
     call system_clock(count = c2)
 
     if (converged .eq. 1) then
-      print"('Time to find equilibrium =',f10.3,' seconds')", &
-            (c2-c1)/real(cr)
+      if (verbose) then
+        print"('Time to find equilibrium =',f10.3,' seconds')", &
+              (c2-c1)/real(cr)
+      endif
 
     ! the output
     do i=1,nq

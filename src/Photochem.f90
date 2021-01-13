@@ -2,6 +2,7 @@
         implicit none
         ! location of files
         character(len=500) :: rootdir = 'PhotochemPy/'
+        logical :: verbose = .true.
 
         ! Module variables (shared between subroutines)
         integer :: nz ! number of vertical grid points

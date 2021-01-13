@@ -58,6 +58,78 @@ class PhotochemPy:
     def __init__(self,species_dat,reactions_rx,planet_dat,\
                       photochem_dat, atmosphere_txt, flux_txt):
         self.photo = photochem
+        if all(fil==None for fil in [species_dat,reactions_rx,planet_dat, \
+                                    photochem_dat, atmosphere_txt, flux_txt]):
+            pass
+        else:
+            self.species_dat = species_dat
+            self.reactions_rx = reactions_rx
+            self.planet_dat = planet_dat
+            self.photochem_dat = photochem_dat
+            self.atmosphere_txt = atmosphere_txt
+            self.flux_txt = flux_txt
+
+            self.nz = 200 # number of vertical grid points
+            # read species.dat to find nq, np, isl
+            fil = open(species_dat,'r')
+            lines = fil.readlines()
+            fil.close()
+            self.nq = 0
+            self.isl = 0
+            self.np = 0
+            inert = 0
+            self.ispec = []
+            for line in lines:
+                if line[0]=='*':
+                    pass
+                else:
+                    if line.split()[1] == 'LL':
+                        if line.split()[0].find('AER') != -1:
+                            self.np+=1
+                        self.nq+=1
+                        # record the species
+                        self.ispec.append(line.split()[0])
+                    if line.split()[1] == 'SL':
+                        self.isl+=1
+                    if line.split()[1] == 'IN':
+                        inert += 1
+
+            self.nsp = self.nq + self.isl + inert
+
+            # Read reactions.rx to find nr, kj, and ks
+            fil = open(reactions_rx,'r')
+            lines = fil.readlines()
+            fil.close()
+            self.nr = len(lines)
+            # also find number of photolysis reactions and species (ks,kj)
+            self.ks = 0 # number photo species
+            self.kj = 0 # number photo reactions
+            temp_spec = []
+            for line in lines:
+                if line[48:53] =='PHOTO':
+                    self.kj+=1
+                    tmp = 0
+                    for i in range(len(temp_spec)):
+                        if line.split()[0]==temp_spec[i]:
+                            tmp = 1
+                    if tmp == 0:
+                        self.ks+=1
+                        temp_spec.append(line.split()[0])
+
+            self.photo.allocate_memory(self.nz,self.nq,\
+                                       self.np,self.nsp,self.nr,\
+                                       self.ks,self.kj)
+            self.photo.setup(species_dat, \
+                             reactions_rx, \
+                             planet_dat, \
+                             photochem_dat, \
+                             atmosphere_txt, \
+                             flux_txt)
+
+            self.code_run = False
+
+    def setup(self,species_dat,reactions_rx,planet_dat,\
+                      photochem_dat, atmosphere_txt, flux_txt):
         self.species_dat = species_dat
         self.reactions_rx = reactions_rx
         self.planet_dat = planet_dat
