@@ -26,7 +26,7 @@ def wrapper(inpt):
         aersol_props_converged = [pc.photo.rpar,pc.photo.wfall,pc.photo.aersol]
         return [converged,pc.photo.usol_out,aersol_props_converged,pc.out_dict(),pc.surf_flux()]
 
-def sweep(files, params, max_processes = None, verbose=True, nsteps_list=[1000], nsteps_init = 1000):
+def sweep(files, params, max_processes = None, verbose=True, nsteps_list=[1000], nsteps_init = 1000,random_seed=True,seeds=None):
 
     species_dat,reactions_rx,planet,input_phot,atmosphere,sun = files
     pc.setup(species_dat,reactions_rx,planet,input_phot,atmosphere,sun)
@@ -79,7 +79,7 @@ def sweep(files, params, max_processes = None, verbose=True, nsteps_list=[1000],
     if not converged:
         sys.exit("Didn't converge to first grid point.\n"\
         +"Try increasing nsteps_init, or starting with an atmosphere.txt closer to the grid.")
-    print('Successful. Now starting the parameter sweep.')
+    print('Successful.')
     pc.out2in()
     pc.photo.verbose = False
 
@@ -90,6 +90,42 @@ def sweep(files, params, max_processes = None, verbose=True, nsteps_list=[1000],
     fluxes[closest] = pc.surf_flux()
     aersol_props[closest] = [pc.photo.rpar,pc.photo.wfall,pc.photo.aersol]
 
+
+    if random_seed:
+        if seeds==None:
+            seeds = max_processes
+        if seeds>len(np.where(progress==-0)[0]):
+            seeds = len(np.where(progress==0)[0])
+        print('Randomly seeding space with',seeds,'seeds')
+        indexes = []
+        for j in range(seeds):
+            duplicates = True
+            while duplicates:
+                index  = []
+                for i in range(len(param_space[0].shape)):
+                    ind = np.random.randint(param_space[0].shape[i])
+                    index.append(ind)
+                index = tuple(index)
+                duplicates = any([index==ind for ind in indexes])
+                if len(indexes)==0:
+                    duplicates=False
+            indexes.append(index)
+
+        inpts = [[indexes[i],closest,solutions,aersol_props,params,param_space,nsteps_init] for i in range(seeds)]
+        with Pool(max_processes) as p:
+            outs = p.map(wrapper,inpts)
+
+        for i,out in enumerate(outs):
+            if not out[0]: # if no convergence
+                progress[indexes[i]] = 0
+            elif out[0]: # if convergence
+                progress[indexes[i]] = 1
+                solutions[indexes[i]] = out[1]
+                aersol_props[indexes[i]] = out[2]
+                solutions_dict[indexes[i]] = out[3]
+                fluxes[indexes[i]] = out[4]
+
+        print('Done seeding.')
     # now start the algorithm
     track_progress = [progress.copy()]
     Epoch = 0

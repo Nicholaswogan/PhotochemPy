@@ -399,6 +399,8 @@ class PhotochemPy:
             sys.exit('species not in the model')
         if self.photo.lbound[ind] == 1:
             self.photo.fixedmr[ind] = mix
+            if spec=='CO2':
+                self.photo.fco2=mix
         else:
             print('lbound set to',self.photo.lbound[ind],'so the mixing ratio will not change')
 
