@@ -246,7 +246,7 @@ class PhotochemPy:
 
             # check redox conservation
             self.redox_factor = self.photo.redox_factor
-            if self.redox_factor > 1e-3:
+            if np.abs(self.redox_factor) > 1e-3:
                 print('Warning, redox conservation is not very good.')
                 print('redox factor =','%.2e'%self.redox_factor)
 
