@@ -46,6 +46,8 @@
         ! integer, allocatable, dimension(:) :: atomsS
         ! integer, allocatable, dimension(:) :: atomsN
         ! integer, allocatable, dimension(:) :: atomsCL
+        real*8, allocatable, dimension(:) :: redoxstate
+        double precision :: redox_factor
         real*8, allocatable, dimension(:) :: mass
         integer LSO2, LH2CO, lh2so4, lso4aer, lh2s ! indexes of a few things
         integer LCO, LH2O, LH2, LCH4, LO2, LH
@@ -193,11 +195,10 @@
         include "Twostr.f90"
         include "setup.f90"
         include "integrate.f90"
-        ! ALL THESE WORK!!!
-
-        ! in progress
         include "right_hand_side.f90"
         include "jacobian.f90"
+
+        include "redox_conservation.f90"
 
         subroutine allocate_memory(nnz, nnq, nnp, nnsp,&
            nnr, kks, kkj)
@@ -244,6 +245,7 @@
             allocate(atomsS(nsp2))
             allocate(atomsN(nsp2))
             allocate(atomsCl(nsp2))
+            allocate(redoxstate(nsp2))
             allocate(mass(nsp2))
             lbound = 0
             vdep0 = 0.d0
@@ -262,6 +264,8 @@
             atomss = 0
             atomsn = 0
             atomscl = 0
+            redoxstate = 0.d0
+            redox_factor = 0.d0
             mass = 0.d0
 
             ! definined in reactions.rx

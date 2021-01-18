@@ -36,6 +36,7 @@
     real*8 DPU(NZ,NP),DPL(NZ,NP)
     real*8, dimension(nq,nz) :: Fval, fv
     integer cr, cm, c1, c2
+    real*8,dimension(nq1) :: SR, FUP
 
     converged = 1
     info = 0
@@ -660,8 +661,19 @@
 
     DO K=1,NQ
       FLOW(K) = FLUXO(K,1) - (YP(K,1) - YL(K,1)*SL(K,1))*DZ(1)
+      FUP(K) = FLUXO(K,NZ1) + (YP(K,NZ) - YL(K,NZ)*SL(K,NZ))*DZ(NZ)
     enddo
     FLOW(LH2O) = FLUXO(LH2O,jtrop)
+
+    DO I=1,NQ
+      SR(I) = 0.
+      DO J=1,JTROP
+        SR(I) = SR(I) + RAINGC(I,J)*USOL(I,J)*DEN(J)*DZ(J)
+      enddo
+    enddo
+
+    ! redox state
+    call redox_conservation(FLOW,FUP,SR)
 
     endif ! end if converged
 

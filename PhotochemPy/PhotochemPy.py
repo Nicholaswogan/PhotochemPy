@@ -219,6 +219,7 @@ class PhotochemPy:
                          flux_txt)
 
         self.code_run = False
+        self.redox_factor = np.nan
 
     def integrate(self,nsteps=1000):
         '''
@@ -243,8 +244,15 @@ class PhotochemPy:
         else:
             self.code_run = True
 
-        converged = self.code_run
-        return converged
+            # check redox conservation
+            self.redox_factor = self.photo.redox_factor
+            if self.redox_factor > 1e-3:
+                print('Warning, redox conservation is not very good.')
+                print('redox factor =','%.2e'%self.redox_factor)
+
+
+
+        return self.code_run
 
     def out_dict(self):
         '''

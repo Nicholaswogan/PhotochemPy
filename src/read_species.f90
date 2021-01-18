@@ -149,6 +149,9 @@
         ! close the file
         close(4)
 
+        redoxstate = atomsO*1.0 + atomsH*(-0.5) + atomsS*(-2.) + &
+                     atomsCL*(-1.0) + atomsC*(-2)
+
         do i=1,NQ
           VDEP(i) = VDEP0(i)
           VEFF(i) = VEFF0(i)
