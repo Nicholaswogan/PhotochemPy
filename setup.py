@@ -11,6 +11,8 @@ import subprocess
 import os
 import sys
 
+version = '0.0.2'
+
 only = '''only: allocate_memory right_hand_side jacobian read_species read_reactions
  read_atmosphere photgrid rates gridw readflux initphoto initmie read_planet
  read_photochem rainout ltning aertab densty aercon photsatrat difco sedmnt
@@ -34,7 +36,7 @@ if option == 1: # installing with parallel computation
 
     setup(name = 'PhotochemPy',
           packages=['PhotochemPy'],
-          version='0.0.1',
+          version=version,
           ext_modules=extensions,
           configuration=configuration)
 
@@ -49,7 +51,7 @@ if option == 2: # istalling with serial compuation
 
     setup(name = 'PhotochemPy',
           packages=['PhotochemPy'],
-          version='0.0.1',
+          version=version,
           ext_modules=extensions,
           configuration=configuration)
 
@@ -93,6 +95,6 @@ if option == 3: # installing with spike (fastest! But hard to install)
 
     setup(name = 'PhotochemPy',
           packages=['PhotochemPy'],
-          version='0.0.1',
+          version=version,
           ext_modules=extensions,
           configuration=configuration)
