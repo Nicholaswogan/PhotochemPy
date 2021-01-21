@@ -35,6 +35,7 @@ if option == 1: # installing with parallel computation
               ]
 
     setup(name = 'PhotochemPy',
+          python_requires='>3.6.0',
           packages=['PhotochemPy'],
           version=version,
           ext_modules=extensions,
@@ -50,6 +51,7 @@ if option == 2: # istalling with serial compuation
               ]
 
     setup(name = 'PhotochemPy',
+          python_requires='>3.6.0',
           packages=['PhotochemPy'],
           version=version,
           ext_modules=extensions,
@@ -94,6 +96,7 @@ if option == 3: # installing with spike (fastest! But hard to install)
               ]
 
     setup(name = 'PhotochemPy',
+          python_requires='>3.6.0',
           packages=['PhotochemPy'],
           version=version,
           ext_modules=extensions,
