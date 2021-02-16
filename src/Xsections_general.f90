@@ -29,8 +29,8 @@ subroutine Xsections_general(species,reactions_rx,kj,nz,nw,kw,wavl,jn,sq)
   double precision :: deltax = 1.E-4, biggest=1.E+36, zero=0.0
   double precision, dimension(nw) :: yg1, yq1
 
-  ! character(len=500) :: rootdir
-  ! rootdir = '../PhotochemPy/'
+  character(len=500) :: rootdir
+  rootdir = '../PhotochemPy/'
 
   ! initialize
   ierr = 0
@@ -48,6 +48,9 @@ subroutine Xsections_general(species,reactions_rx,kj,nz,nw,kw,wavl,jn,sq)
     read(temperatureline,*,iostat=io) temperatures(1:i)
     if (io==-1) exit
   enddo
+  if (i == 101) then
+    print*,'More temperature data than allowed for ',species
+  endif
   ! now i-2 is number of temperature columns
   numtempcols = max(i-2,1)
 
@@ -91,6 +94,27 @@ subroutine Xsections_general(species,reactions_rx,kj,nz,nw,kw,wavl,jn,sq)
     y1 = yy(:,i)
   endif
 
+  ! if (numtempcols.eq.-1) then
+  !   ! make an array of cross sections
+  !   allocate(temperature_nums(numtempcols+2))
+  !   allocate(yyy(numtempcols+2))
+  !
+  !   do i=2,numtempcols
+  !     read(temperatures(:index(temperatures,'K')-1),*) temperature_nums(i)
+  !   enddo
+  !   temperature_nums(1) = 0.d0
+  !   temperature_nums(numtempcols+1) = 3000.d0
+  !
+  !   do i=1,kdata
+  !     yyy(2:numtempcols) = yy(i,:)
+  !     yyy(1) = yy(i,1)
+  !     yyy(numtempcols+1) = yy(i,numtempcols)
+  !     do j=1,nz
+  !       call inter2(nw+1,T(j),yg11,kdata,x1,y1,ierr)
+  !       yg1(j,i) =  yg11
+  !     enddo
+  !   enddo
+  ! endif
 
   ! interpolate XS data
   call addpnt(x1,y1,kdata+4,kdata,x1(1)*(1.-deltax),zero)
@@ -151,7 +175,7 @@ subroutine Xsections_general(species,reactions_rx,kj,nz,nw,kw,wavl,jn,sq)
         read(13,*)
       enddo
       do i=1,kdata
-        read(13,'(E12.6, 4X, E12.6)') x2(i), qy(i)
+        read(13,*) x2(i), qy(i)
       enddo
 
       close(13)
@@ -199,8 +223,8 @@ end subroutine
 !   j = 1
 !   call linspace(1210.d0,8000.d0,wavl,nw+1)
 !
-!   call XS('CH4     ','../input/templates/Archean+haze/reactions.rx',kj,nz,nw,kw,wavl,j,sq)
-!   print*,j
+!   call Xsections_general('CH4     ','../input/templates/Archean+haze/reactions.rx',kj,nz,nw,kw,wavl,j,sq)
+!   print*,sq(1,nz,:)
 !
 !
 ! end program

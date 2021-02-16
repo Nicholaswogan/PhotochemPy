@@ -14,7 +14,7 @@ def wrapper(inpt):
     pc.photo.wfall_init = aersol_props[init_ind][1]
     pc.photo.aersol_init = aersol_props[init_ind][2]
     for i,key in enumerate(params.keys()):
-        if key == 'CO2':
+        if key == 'CO2' and pc.photo.co2_inert==1:
             pc.photo.fco2 = 10**param_space[i][move_ind]
         else:
             pc.set_mr(key,10**param_space[i][move_ind])
@@ -39,7 +39,7 @@ def sweep(files, params, max_processes = None, verbose=True, nsteps_list=[1000],
 
     # check that all params are mixing ratios
     for key in params.keys():
-        if key == 'CO2':
+        if key == 'CO2' and pc.photo.co2_inert==1:
             pass
         else:
             ind = pc.ispec.index(key)
@@ -58,7 +58,7 @@ def sweep(files, params, max_processes = None, verbose=True, nsteps_list=[1000],
     # find the "closest" part of the grid to input atmosphere
     closest = []
     for key in params.keys():
-        if key == 'CO2':
+        if key == 'CO2' and pc.photo.co2_inert==1:
             mr = np.log10(pc.photo.fco2)
         else:
             ind = pc.ispec.index(key) # index
@@ -68,7 +68,7 @@ def sweep(files, params, max_processes = None, verbose=True, nsteps_list=[1000],
     start_vals = [params1[closest] for params1 in param_space]
     # now input the closest part of the grid
     for i,key in enumerate(params.keys()):
-        if key == 'CO2':
+        if key == 'CO2' and pc.photo.co2_inert==1:
             pc.photo.fco2 = 10**start_vals[i]
         else:
             pc.set_mr(key,10**start_vals[i])
