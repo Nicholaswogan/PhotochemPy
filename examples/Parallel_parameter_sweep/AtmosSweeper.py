@@ -208,14 +208,15 @@ def find_neighboring_zeros(array):
                 move[dim] = i
                 check = move+ind
                 if array.shape[dim]-1 < check[dim] or 0 > check[dim]: # if move is beyond array bounds, then pass
-                    break
+                    pass
                 # else, check the value
-                val = array[tuple(check)]
-                if val == 0: # if val = 0 then save its location
-                    # save its location
-                    possible_moves.append(check)
-                    # save location of where you checked from
-                    closest_ones.append(ind)
+                else:
+                    val = array[tuple(check)]
+                    if val == 0: # if val = 0 then save its location
+                        # save its location
+                        possible_moves.append(check)
+                        # save location of where you checked from
+                        closest_ones.append(ind)
     # now remove duplicates
     temp = [tuple(x) for x in possible_moves]
     uniques = [temp.index(x) for x in set(temp)]
