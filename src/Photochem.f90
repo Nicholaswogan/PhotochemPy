@@ -499,7 +499,7 @@ contains
     allocate(fluxo(nq,nz))
     allocate(yp(nq,nz))
     allocate(yl(nq,nz))
-    usol_out(i,j) = 0.0d0
+    usol_out = 0.0d0
     flow = 0.0d0
     fluxo = 0.0d0
     yp = 0.0d0

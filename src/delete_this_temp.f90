@@ -1,3 +1,49 @@
+program test
+  implicit none
+  integer, parameter :: kj = 61,nz = 200, nw = 1000, kw = 1000
+  double precision, dimension(kj,nz,nw) :: sq
+  double precision, dimension(nw+1) :: wavl
+  double precision, dimension(nz) :: T
+  integer j, i
+  integer, dimension(9) :: aaa
+
+  sq = 0.d0
+  wavl = 0.d0
+  T = 300.d0
+  call linspace(200.d0,500.d0,T,nz)
+  j = 1
+  call linspace(1210.d0,8000.d0,wavl,nw+1)
+
+  call Xsections_general('CH4     ','../input/templates/Archean+haze/reactions.rx',kj,nz,nw,kw,wavl,T,j,sq)
+  do i=1,nw
+    print*,wavl(i),sq(1,nz,i)
+  enddo
+  
+end program
+
+
+subroutine linspace(from, to, array,n)
+  real(8), intent(in) :: from, to
+  real(8), intent(out) :: array(n)
+  real(8) :: range
+  integer :: n
+  integer :: i
+  range = to - from
+
+  if (n == 0) return
+
+  if (n == 1) then
+    array(1) = from
+    return
+  end if
+
+  do i=1, n
+    array(i) = from + range * (i - 1) / (n - 1)
+  end do
+end subroutine
+
+
+
 SUBROUTINE addpnt ( x, y, ld, n, xnew, ynew )
 
 !*-----------------------------------------------------------------------------*

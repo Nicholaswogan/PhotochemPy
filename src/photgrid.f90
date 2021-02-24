@@ -102,35 +102,26 @@
       !note - before using, make sure that nw is the number of wavelengths to loop over and
       !that wl(nw+1)=wu(nw)
       ! this is needed for the interpolations to work correctly
-      if (LGRID.eq.0) mopt = 5
-      ! if (LGRID.eq.1) mopt = 7
+      if (LGRID.eq.0) then
+        nw = 118
+        kin = 797
+        OPEN(kin, file=trim(rootdir)//'DATA/GRIDS/wogan.grid',status='old')
 
-      ! IF (mopt .EQ. 1) GO TO 1
-      ! IF (mopt .EQ. 2) GO TO 2
-      ! IF (mopt .EQ. 3) GO TO 3
-      ! IF (mopt .EQ. 4) GO TO 4
-      IF (mopt .EQ. 5) GO TO 5 ! main option!
-      ! IF (mopt .EQ. 6) GO TO 6
-      ! IF (mopt .EQ. 7) GO TO 7
- 5    CONTINUE
-      ! read in wogan's grid here. THis is the same as kevins but extended down
-      ! to 121.0 nm instead of 121.6 nm
-      nw = 118
-      kin = 797
-      OPEN(kin, file=trim(rootdir)//'DATA/GRIDS/wogan.grid',status='old')
+        DO i = 1,2
+          READ(kin,*)  !skip header
+        ENDDO
 
-      DO i = 1,2
-        READ(kin,*)  !skip header
-      ENDDO
+        do L=1,nw
+          READ(kin,*) WL(L),WU(L)
+          wc(L) = ( wl(L) + wu(L) )/2.
+        enddo
+        wl(nw+1) = wu(nw)  !final point for interpolative array
+        CLOSE (kin)
+      else
+        print*,'LGRID=0 is the only option'
+        stop
+      endif
 
-      do L=1,nw
-        READ(kin,*) WL(L),WU(L)
-        wc(L) = ( wl(L) + wu(L) )/2.
-      enddo
-      wl(nw+1) = wu(nw)  !final point for interpolative array
-      CLOSE (kin)
-      GO TO 9
- 9    CONTINUE
 
       !c-mc should probably print these out to output file rather than screen
       ! print *, 'NW = ',nw,'   WAVELENGTH GRID:',wl(1),' -',wu(nw), &
