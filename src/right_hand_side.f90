@@ -95,7 +95,7 @@
     enddo
 
 
-    call rainout(Jtrop,0,Usol,nq,nz)
+    call rainout(Jtrop,1,usol,nq,nz)
 
 
     call aercon(usol,nq,nz)

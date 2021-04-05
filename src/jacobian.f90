@@ -98,8 +98,7 @@
       enddo
     enddo
 
-
-    call rainout(Jtrop,0,Usol,nq,nz)
+    call rainout(Jtrop,1,Usol,nq,nz)
 
 
     call aercon(usol,nq,nz)
@@ -370,9 +369,9 @@
       endif
     enddo
 
-    do i =1,nq+nq+1
+    do i =1,ldaa
       do j=1,neq
-        ddjac(i,j) = djac(i+nq,j)
+        ddjac(i,j) = - djac(i+nq,j)
       enddo
     enddo
 
