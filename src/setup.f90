@@ -114,6 +114,8 @@
        enddo
     endif  !end molecular diffusion for H and H2 loop
 
+    call rainout(Jtrop,0,Usol_init,nq,nz) ! help rainout not break on first step
+
 
 
 
