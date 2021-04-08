@@ -159,6 +159,8 @@ module photochem
   real*8, allocatable, dimension(:,:) :: yp
   real*8, allocatable, dimension(:,:) :: yl
 
+  ! cvode
+  real*8 :: time_prev = -1.d0 ! for printing time
 
   ! some planet parameters and constants
 
@@ -197,6 +199,7 @@ contains
   include "integrate.f90"
   include "right_hand_side.f90"
   include "jacobian.f90"
+  include "cvode.f90"
 
   include "redox_conservation.f90"
 
@@ -506,5 +509,11 @@ contains
     yl = 0.0d0
 
   end subroutine allocate_memory
+
+  ! for julia wrapper
+  subroutine get_usol_init(usol)
+    double precision, dimension(nq,nz),intent(out) ::usol
+    usol = usol_init
+  end subroutine
 
 end module

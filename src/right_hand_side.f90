@@ -55,6 +55,10 @@
 
     call rates
 
+    ! dochem needed to update SL (densities), which are then loaded
+    ! into absorbers below
+    call dochem(Fval,0,jtrop,isl,usol,nq,nz)
+
     lpolyscount = 0
     do k=1,kj
       do i=1,nz
@@ -336,7 +340,7 @@
     L = LH2O
     DO J=1,JTROP
       K = L + (J-1)*NQ
-      RHS(K) = 0.
+      RHS(K) = 0.d0
       ! DO M=1,NQ
         ! MM = M - L + KD
         ! DJAC(MM,K) = 0.

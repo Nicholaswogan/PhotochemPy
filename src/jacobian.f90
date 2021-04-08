@@ -58,6 +58,9 @@
     DTINV = 0.d0
 
     call rates
+    ! dochem needed to update SL (densities), which are then loaded
+    ! into absorbers below
+    call dochem(Fval,0,jtrop,isl,usol,nq,nz)
 
     lpolyscount = 0
     do k=1,kj
@@ -210,7 +213,7 @@
       DO J=1,NZ
         R(J) = EPSJ * USOL(I,J)
     !   as it was - USOL should be positive here anyway,
-        IF(R(J).LT.1.D-100) R(J) = 1.D-100
+        ! IF(R(J).LT.1.D-100) R(J) = 1.D-100
     !   Add perturbing quantity to mixing ratio
         USOL(I,J) = USAVE(I,J) + R(J)
       enddo
