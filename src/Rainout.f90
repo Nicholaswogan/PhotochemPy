@@ -82,7 +82,7 @@
 
 
       eps = 1.E-7         !Shawn has this as 1e-4
-      inewt = 20
+      inewt = 30
       gam15 = 8.64E+05/2.0
       gam8 = 7.0E+06/2.0
       av = 6.02E+23
@@ -362,7 +362,7 @@
             DO j = 1 , naq
                x(j) = x(j) - f(j)
                test = ABS(f(j)/x(j))
-               IF ( test.GT.1.E-2 ) ltest = 1
+               IF ( test.GT.1.E-5 ) ltest = 1
             ENDDO
             IF ( ltest.EQ.0 ) GOTO 50
                                   ! loop has converged; jump out of loop
