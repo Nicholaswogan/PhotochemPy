@@ -79,6 +79,7 @@ class PhotochemPy:
             self.np = 0
             inert = 0
             self.ispec = []
+            self.sl = []
             for line in lines:
                 if line[0]=='*':
                     pass
@@ -90,6 +91,7 @@ class PhotochemPy:
                         # record the species
                         self.ispec.append(line.split()[0])
                     if line.split()[1] == 'SL':
+                        self.sl.append(line.split()[0])
                         self.isl+=1
                     if line.split()[1] == 'IN':
                         inert += 1
@@ -115,6 +117,7 @@ class PhotochemPy:
                     if tmp == 0:
                         self.ks+=1
                         temp_spec.append(line.split()[0])
+            self.photospecies = temp_spec
 
             self.photo.allocate_memory(self.nz,self.nq,\
                                        self.np,self.nsp,self.nr,\
@@ -253,6 +256,54 @@ class PhotochemPy:
 
 
         return self.code_run
+
+    def evolve(self,t0,usol_start,t_eval,rtol = 1.0e-4,atol=1e-22, fast_and_loose = 1, outfile = None, overwrite = False):
+        """Evolves the atmosphere with the CVODE BDF integrator from Sundials.
+
+        Parameters
+        ----------
+        t0 : float
+            Starting time (s)
+        usol_start : Array{float,2}
+            Initial conditions. nq by nz array of atmospheric mixing ratios.
+        t_eval : Vector{float}
+            Times to evaluate the solution (s)
+        rtol : float
+            Relative tolerance.
+        atol : float
+            Absolute tolerance.
+        fast_and_loose : int
+            If 1, then will use a fast very approximation to the jacobian.
+            If 0, then CVODE will compute a more accurate jacobian (slowly).
+        outfile : string
+            If a file path is given, the the solution will be appended to the file "outfile"
+            throughout the simulation. If this is used, then None is returned
+
+        Returns
+        -------
+        solution : Array{float,3}
+            Array of dimension [len(t_eval),nq,nz] containing mixing ratios of the atmosphere at
+            each time.
+        """
+        # if type(t0) != float and type(t0) != int:
+        #     raise Exception('t0 must be a float or an int')
+        if usol_start.shape != (self.nq, self.nz):
+            raise Exception('usol_start is the wrong shape')
+        # if type(t_eval[0]) != float and type(t_eval[0]) != int:
+        #     raise Exception('t_eval must be an array of floats or ints')
+
+        # check for SL species which photolyze
+        if len(set(self.sl).intersection(set(self.photospecies))) > 0:
+            raise Exception("Short lived species can't photolyze in time-dependent model.")
+
+        if outfile == None:
+            solution = self.photo.cvode(t0,usol_start,t_eval,rtol,atol,fast_and_loose,'None')
+            return solution
+        else:
+            if os.path.isfile(outfile) and not overwrite:
+                raise Exception(outfile,' is already a file.')
+            solution = self.photo.cvode(t0,usol_start,t_eval,rtol,atol,fast_and_loose,outfile)
+            return None
 
     def out_dict(self):
         '''
