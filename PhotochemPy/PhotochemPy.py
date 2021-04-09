@@ -257,7 +257,7 @@ class PhotochemPy:
 
         return self.code_run
 
-    def evolve(self,t0,usol_start,t_eval,rtol = 1.0e-4,atol=1e-22, fast_and_loose = 1, outfile = None, overwrite = False):
+    def evolve(self,t0,usol_start,t_eval,rtol = 1.0e-3, atol=1e-24, fast_and_loose = 1, outfile = None, overwrite = False):
         """Evolves the atmosphere with the CVODE BDF integrator from Sundials.
 
         Parameters
@@ -269,11 +269,12 @@ class PhotochemPy:
         t_eval : Vector{float}
             Times to evaluate the solution (s)
         rtol : float
-            Relative tolerance.
+            Relative tolerance. Probably don't go higher than 1e-3.
         atol : float
-            Absolute tolerance.
+            Absolute tolerance. About 1e-25 works well for rtol=1e-3.
+            For low rtol (~1e-5) then use rtol=~1e-30.
         fast_and_loose : int
-            If 1, then will use a fast very approximation to the jacobian.
+            If 1, then will use a fast approximation to the jacobian.
             If 0, then CVODE will compute a more accurate jacobian (slowly).
         outfile : string
             If a file path is given, the the solution will be appended to the file "outfile"
