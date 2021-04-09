@@ -19,8 +19,8 @@ dochem photo setup integrate cvode
 # --opt="-O3" \
 # --f90flags='-freal-4-real-8 ' \
 # --f77flags='-freal-4-real-8' \
-# -I/Users/nicholas/Documents/Research_local/PhotochemPy/sundials/install/include \
-# -L/Users/nicholas/Documents/Research_local/PhotochemPy/sundials/install/lib \
+# -Isrc/cvode-5.7.0/install/include \
+# -Lsrc/cvode-5.7.0/install/lib \
 # -lm \
 # -lsundials_fcvode -lsundials_cvode -lsundials_fnvecserial -lsundials_nvecserial \
 # only: allocate_memory right_hand_side jacobian read_species read_reactions \
