@@ -11,12 +11,12 @@ import subprocess
 import os
 import sys
 
-version = '0.0.2'
+version = '0.1.0'
 
 only = '''only: allocate_memory right_hand_side jacobian read_species read_reactions
  read_atmosphere photgrid rates gridw readflux initphoto initmie read_planet
  read_photochem rainout ltning aertab densty aercon photsatrat difco sedmnt
- dochem photo setup integrate :'''
+ dochem photo setup integrate cvode :'''
 
 option = 1 # (Default) Parallel version (fast)
 # option = 2 # Serial version (slow)
@@ -27,10 +27,12 @@ option = 1 # (Default) Parallel version (fast)
 if option == 1: # installing with parallel computation
     extensions = [
     Extension(name="Photochem",
-              sources=['src/modules/Rainout_vars.f90', 'src/modules/reading_vars.f90','src/Photochem.f90','src/lin_alg.f'],
+              sources=['src/modules/Rainout_vars.f90', 'src/modules/reading_vars.f90','src/Photochem.f90','src/lin_alg.f','src/cvode_funcs.f90'],
               extra_f90_compile_args = ['-O3','-fopenmp', '-freal-4-real-8'],
               extra_f77_compile_args = ['-O3', '-freal-4-real-8'],
-              libraries=['gomp'],
+              libraries=['gomp','m','sundials_fcvode','sundials_cvode','sundials_fnvecserial','sundials_nvecserial'],
+              library_dirs =["src/cvode-5.7.0/install/lib"],
+              include_dirs = ["src/cvode-5.7.0/install/include"],
               f2py_options=only.split())
               ]
 
