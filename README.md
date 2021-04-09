@@ -9,15 +9,15 @@ PhotochemPy is a Python wrapper to Fortran source code. This makes the code very
 **Requirements:**
 To install PhotochemPy, you must have the following installed on your system.
 - `Python` (>3.6.0) with the `numpy` package. I suggest using [anaconda](https://www.anaconda.com/) to install these regardless of your operating system.
-- The GNU compiler collection, version >4.9.4 (includes `gfortran`, `gcc`, etc.). If you are using a Mac, I suggest installing it with Homebrew: `brew install gcc`. For other operating systems [follow this GNU installation guide](https://gcc.gnu.org/install/binaries.html). 
+- The GNU compiler collection, version >4.9.4 (includes `gfortran`, `gcc`, etc.). If you are using a Mac, I suggest installing it with Homebrew: `brew install gcc`. For other operating systems [follow this GNU installation guide](https://gcc.gnu.org/install/binaries.html).
 
-**Python Module:** After satisfying the requirements, the following command will install the PhotochemPy package to your Python installation.
+**Python Module:** After satisfying the requirements, then follow these setups to install PhotochemPy
 
-`python -m pip install git+git://github.com/Nicholaswogan/PhotochemPy.git`
+- Clone or download the github repository [`https://github.com/Nicholaswogan/PhotochemPy`](https://github.com/Nicholaswogan/PhotochemPy)
+- In a terminal, navigate to the folder `src/cvode-5.7.0/build_dir`, and run the shell script `compile.sh`. This compiles CVODE.
+- Navigate to the root directory of PhotochemPy, then install with `python -m pip install .`
 
-Alternatively, if you want maximum performance, then install PhotochemPy with the [Spike](http://www.ecs.umass.edu/~polizzi/spike/index.htm) solver following [these instructions](https://photochempy.readthedocs.io/en/latest/install.html#python).
-
-**Fortran source:** If you prefer to use the code exclusively in Fortran, that is OK too. An example is provided in the folder `examples/fortran_example`.
+<!-- **Fortran source:** If you prefer to use the code exclusively in Fortran, that is OK too. An example is provided in the folder `examples/fortran_example`. -->
 
 ## Documentation
 Read the [documentation here](https://photochempy.readthedocs.io/en/latest/). The best way to get started is [with this Tutorial in the documentation](https://photochempy.readthedocs.io/en/latest/Tutorial.html).

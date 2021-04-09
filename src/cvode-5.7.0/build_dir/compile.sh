@@ -1,0 +1,7 @@
+cmake \
+-DCMAKE_INSTALL_PREFIX=../install \
+-DEXAMPLES_ENABLE_F77=ON \
+-DBUILD_FORTRAN77_INTERFACE=ON \
+../
+
+make install
