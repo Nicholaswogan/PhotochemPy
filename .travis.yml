@@ -5,9 +5,13 @@ language: python
 before_install:
   - sudo apt-get install build-essential
   - sudo apt-get install gfortran
+  - sudo apt-get install gcc
 
 install:
+  - cd src/cvode-5.7.0/build_dir/
+  - ./compile.sh
+  - cd ../../../
   - pip install .
 
 script:
-  - python test_PhotochemPy.py 
+  - python test_PhotochemPy.py
