@@ -161,6 +161,8 @@ module photochem
 
   ! cvode
   real*8 :: time_prev = -1.d0 ! for printing time
+  integer :: cvode_stepper = 0
+  integer :: max_cvode_steps = 100000000
 
   ! some planet parameters and constants
 

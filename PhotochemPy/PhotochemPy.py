@@ -174,6 +174,7 @@ class PhotochemPy:
         self.np = 0
         inert = 0
         self.ispec = []
+        self.sl = []
         for line in lines:
             if line[0]=='*':
                 pass
@@ -185,6 +186,7 @@ class PhotochemPy:
                     # record the species
                     self.ispec.append(line.split()[0])
                 if line.split()[1] == 'SL':
+                    self.sl.append(line.split()[0])
                     self.isl+=1
                 if line.split()[1] == 'IN':
                     inert += 1
@@ -210,6 +212,7 @@ class PhotochemPy:
                 if tmp == 0:
                     self.ks+=1
                     temp_spec.append(line.split()[0])
+        self.photospecies = temp_spec
 
         self.photo.allocate_memory(self.nz,self.nq,\
                                    self.np,self.nsp,self.nr,\
@@ -224,7 +227,7 @@ class PhotochemPy:
         self.code_run = False
         self.redox_factor = np.nan
 
-    def integrate(self,nsteps=1000):
+    def integrate(self,nsteps=1000,method='Backward_Euler',rtol = 1e-3, atol = 1e-27, fast_and_loose = True):
         '''
         Integrates atomsphere to photochemical equilibrium using the backward
         Euler method.
@@ -241,8 +244,15 @@ class PhotochemPy:
             If True, then the code converged to equilibrium. If False,
             the code did not converge.
         '''
-        converged = self.photo.integrate(nsteps)
-        if converged == 0:
+        if method == "CVODE_BDF":
+            if len(set(self.sl).intersection(set(self.photospecies))) > 0:
+                raise Exception("Short lived species can't photolyze when using CVODE.")
+            self.photo.max_cvode_steps = nsteps
+            converged = self.photo.cvode_equilibrium(rtol,atol,fast_and_loose)
+        elif method == "Backward_Euler":
+            converged = self.photo.integrate(nsteps)
+
+        if not converged:
             self.code_run = False
         else:
             self.code_run = True
@@ -253,11 +263,9 @@ class PhotochemPy:
                 print('Warning, redox conservation is not very good.')
                 print('redox factor =','%.2e'%self.redox_factor)
 
-
-
         return self.code_run
 
-    def evolve(self,t0,usol_start,t_eval,rtol = 1.0e-3, atol=1e-24, fast_and_loose = 1, outfile = None, overwrite = False):
+    def evolve(self,t0,usol_start,t_eval,rtol = 1.0e-3, atol= 1e-27, nsteps = 1000000, fast_and_loose = True, outfile = None, overwrite = False):
         """Evolves the atmosphere with the CVODE BDF integrator from Sundials.
 
         Parameters
@@ -273,7 +281,7 @@ class PhotochemPy:
         atol : float
             Absolute tolerance. About 1e-25 works well for rtol=1e-3.
             For low rtol (~1e-5) then use rtol=~1e-30.
-        fast_and_loose : int
+        fast_and_loose : bool
             If 1, then will use a fast approximation to the jacobian.
             If 0, then CVODE will compute a more accurate jacobian (slowly).
         outfile : string
@@ -292,18 +300,26 @@ class PhotochemPy:
             raise Exception('usol_start is the wrong shape')
         # if type(t_eval[0]) != float and type(t_eval[0]) != int:
         #     raise Exception('t_eval must be an array of floats or ints')
-
         # check for SL species which photolyze
         if len(set(self.sl).intersection(set(self.photospecies))) > 0:
             raise Exception("Short lived species can't photolyze in time-dependent model.")
 
+        self.photo.max_cvode_steps = nsteps
+
+        # in this case num_sol = len(t_eval)
         if outfile == None:
-            solution = self.photo.cvode(t0,usol_start,t_eval,rtol,atol,fast_and_loose,'None')
+            num_sol = len(t_eval)
+            solution, success = self.photo.cvode(t0,usol_start,t_eval,num_sol,rtol,atol,fast_and_loose,'None')
+            if not success:
+                raise Exception('CVODE returned an error.')
             return solution
         else:
             if os.path.isfile(outfile) and not overwrite:
                 raise Exception(outfile,' is already a file.')
-            solution = self.photo.cvode(t0,usol_start,t_eval,rtol,atol,fast_and_loose,outfile)
+            num_sol = 1
+            solution, success = self.photo.cvode(t0,usol_start,t_eval,num_sol,rtol,atol,fast_and_loose,outfile)
+            if not success:
+                raise Exception('CVODE returned an error.')
             return None
 
     def out_dict(self):

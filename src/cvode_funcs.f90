@@ -8,7 +8,9 @@ SUBROUTINE FCVFUN(TT, U, UDOT, IPAR, RRPAR, IER)
   ier = 0
   call right_hand_side(U,UDOT,neq)
   if ((TT .ne. time_prev) .and. (verbose)) then
-    print"('Time = ',es20.14,3x,'max(df/dt) = ',es10.3)",TT,maxval(UDOT)
+    print"(1x,'N =',i6,3x,'Time = ',es20.14,3x,'max(df/dt) = ',es10.3)",cvode_stepper,TT,maxval(UDOT)
+    if (cvode_stepper >= max_cvode_steps) ier = -1
+    cvode_stepper = cvode_stepper + 1
   endif
   time_prev = TT
 end subroutine

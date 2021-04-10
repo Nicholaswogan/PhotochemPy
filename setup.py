@@ -16,7 +16,7 @@ version = '0.1.0'
 only = '''only: allocate_memory right_hand_side jacobian read_species read_reactions
  read_atmosphere photgrid rates gridw readflux initphoto initmie read_planet
  read_photochem rainout ltning aertab densty aercon photsatrat difco sedmnt
- dochem photo setup integrate cvode :'''
+ dochem photo setup integrate cvode cvode_equilibrium :'''
 
 option = 1 # (Default) Parallel version (fast)
 # option = 2 # Serial version (slow)

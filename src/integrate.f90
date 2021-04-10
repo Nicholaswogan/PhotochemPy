@@ -92,7 +92,7 @@
     call system_clock(count = c1, count_rate = cr, count_max = cm)
     do n = 1,nsteps
       if (verbose) then
-        print"(2x,'N =',i6,3x,'Time = ',es12.5,3x,'DT = ',es12.5"// &
+        print"(1x,'N =',i6,3x,'Time = ',es12.5,3x,'DT = ',es12.5"// &
         ",3x,'emax = ',es12.5,3x,'for ',a8)", &
         n,time,dt,emax,ispec(is)
       endif

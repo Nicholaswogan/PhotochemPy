@@ -12,7 +12,7 @@ python -m numpy.f2py -c src/modules/Rainout_vars.f90 src/modules/reading_vars.f9
 only: allocate_memory right_hand_side jacobian read_species read_reactions \
 read_atmosphere photgrid rates gridw readflux initphoto initmie read_planet \
 read_photochem rainout ltning aertab densty aercon photsatrat difco sedmnt \
-dochem photo setup integrate cvode
+dochem photo setup integrate cvode cvode_equilibrium
 
 # python -m numpy.f2py -c src/modules/Rainout_vars.f90 src/modules/reading_vars.f90 src/Photochem.f90 src/lin_alg.f src/cvode_funcs.f90 \
 # -m Photochem \
