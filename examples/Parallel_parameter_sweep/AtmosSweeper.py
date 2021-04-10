@@ -1,11 +1,13 @@
 import numpy as np
-from multiprocessing import Pool
+from pathos.multiprocessing import ProcessingPool as Pool
 from PhotochemPy import PhotochemPy
 import sys
 import time
 import os
 
 pc = PhotochemPy(None,None,None,None,None,None)
+
+method = 'Backward_Euler'
 
 def wrapper(inpt):
     move_ind,init_ind,solutions,aersol_props,params,param_space,nsteps = inpt
@@ -18,7 +20,7 @@ def wrapper(inpt):
             pc.photo.fco2 = 10**param_space[i][move_ind]
         else:
             pc.set_mr(key,10**param_space[i][move_ind])
-    converged = pc.integrate(nsteps = nsteps)
+    converged = pc.integrate(method = method,nsteps = nsteps)
     # converged = True
     if not converged:
         return [converged,np.nan,np.nan,np.nan,np.nan]
@@ -75,13 +77,13 @@ def sweep(files, params, max_processes = None, verbose=True, nsteps_list=[1000],
 
     # find equlibrium at first grid point
     print('Trying to move to closest point on the grid...')
-    converged = pc.integrate(nsteps = nsteps_init)
+    converged = pc.integrate(method= method,nsteps = nsteps_init)
     if not converged:
         sys.exit("Didn't converge to first grid point.\n"\
         +"Try increasing nsteps_init, or starting with an atmosphere.txt closer to the grid.")
     print('Successful.')
     pc.out2in()
-    pc.photo.verbose = False
+    pc.photo.verbose = True
 
     # save first grid point
     progress[closest] = 1
