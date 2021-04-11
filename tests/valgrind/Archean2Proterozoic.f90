@@ -4,9 +4,10 @@ Program PhotoMain
   integer :: nnw, nnz, nnq, nnp, nnsp, nnr, kks, kkj
   integer i, converged
 
-  double precision, dimension(100) :: teval
-  double precision, dimension(100,71,200) :: solution
+  double precision, dimension(1) :: teval
+  double precision, dimension(1,71,200) :: solution
   logical :: use_fast_jacobian
+  logical :: success
 
 
   ! Point the Photochem module to the directory where the DATA folder is located
@@ -31,15 +32,10 @@ Program PhotoMain
              '../../input/templates/Archean2Proterozoic/atmosphere.txt', &
              '../../input/templates/Archean2Proterozoic/Sun_2.7Ga.txt')
 
-  ! set O2 flux a bit higher
-  sgflux(LO2) = 4.0d10
-
-  do i = 1,100
-    teval(i) = 10.d0**(9.d0 + ((13.d0-9.d0)/100)*(i-1)) ! times to output solution
-  enddo
+  teval(1) = 1.d17
   use_fast_jacobian = .true. ! use fast jacobian
 
   ! goe.txt is the output file
-  call cvode(0.0d0,usol_init,nnq,nnz,teval,100,1.d-4,1.d-22, use_fast_jacobian ,"goe.txt",solution )
+  call cvode(0.0d0,usol_init,nnq,nnz,teval,1,1.d-4,1.d-22, use_fast_jacobian ,solution,success )
 
 end Program
