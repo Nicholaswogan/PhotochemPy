@@ -309,15 +309,14 @@ class PhotochemPy:
         # in this case num_sol = len(t_eval)
         if outfile == None:
             num_sol = len(t_eval)
-            solution, success = self.photo.cvode(t0,usol_start,t_eval,num_sol,rtol,atol,fast_and_loose,'None')
+            solution, success = self.photo.cvode(t0,usol_start,t_eval,rtol,atol,fast_and_loose)
             if not success:
                 raise Exception('CVODE returned an error.')
             return solution
         else:
             if os.path.isfile(outfile) and not overwrite:
                 raise Exception(outfile,' is already a file.')
-            num_sol = 1
-            solution, success = self.photo.cvode(t0,usol_start,t_eval,num_sol,rtol,atol,fast_and_loose,outfile)
+            success = self.photo.cvode_save(t0,usol_start,t_eval,rtol,atol,fast_and_loose,outfile)
             if not success:
                 raise Exception('CVODE returned an error.')
             return None
