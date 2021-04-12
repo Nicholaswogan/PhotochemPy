@@ -25,7 +25,6 @@ SUBROUTINE FCVBJAC(N, MU, ML, MDIM, TT, U, FU, &
   DOUBLE PRECISION TT, U(*), FU(*), BJAC(MDIM,neq), HH, RRPAR(*)
   DOUBLE PRECISION V1(*), V2(*), V3(*)
   integer i
-  BJAC = 0.d0
   call jacobian(U,BJAC(1:nq+nq+1,:),neq,nq+nq+1)
   ier = 0
 end subroutine
