@@ -52,7 +52,7 @@ void FSUNBANDLINSOL_INIT(int *code, int *ier)
 
   switch(*code) {
   case FCMIX_CVODE:
-    if (F2C_CVODE_linsol)  SUNLinSolFree(F2C_CVODE_linsol);
+    // if (F2C_CVODE_linsol)  SUNLinSolFree(F2C_CVODE_linsol);
     F2C_CVODE_linsol = NULL;
     F2C_CVODE_linsol = SUNLinSol_Band(F2C_CVODE_vec,
                                       F2C_CVODE_matrix);

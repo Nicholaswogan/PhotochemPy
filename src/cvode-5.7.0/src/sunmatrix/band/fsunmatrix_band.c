@@ -40,7 +40,7 @@ void FSUNBANDMAT_INIT(int *code, long int *N, long int *mu,
 
   switch(*code) {
   case FCMIX_CVODE:
-    if (F2C_CVODE_matrix)  SUNMatDestroy(F2C_CVODE_matrix);
+    // if (F2C_CVODE_matrix)  SUNMatDestroy(F2C_CVODE_matrix);
     F2C_CVODE_matrix = NULL;
     F2C_CVODE_matrix = SUNBandMatrix((sunindextype)(*N),
                                      (sunindextype)(*mu),
