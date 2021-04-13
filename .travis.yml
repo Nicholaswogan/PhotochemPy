@@ -6,8 +6,6 @@ before_install:
   - sudo apt-get install build-essential
   - sudo apt-get install gfortran
   - sudo apt-get install gcc
-  - sudo apt-get install libtcmalloc-minimal4
-  - export LD_PRELOAD="/usr/lib/libtcmalloc_minimal.so.4"
 
 install:
   - cd src/cvode-5.7.0/build_dir/

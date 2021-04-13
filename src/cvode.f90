@@ -158,6 +158,7 @@ subroutine cvode(T0, usol_start, nnq, nnz, t_eval, num_t_eval, rtol, atol, &
   else
     success = .false.
   endif
+  call fcvfree
 
 end subroutine
 
@@ -344,6 +345,7 @@ subroutine cvode_save(T0, usol_start, nnq, nnz, t_eval, num_t_eval, rtol, atol, 
   else
     success = .false.
   endif
+  call fcvfree
 
 end subroutine
 

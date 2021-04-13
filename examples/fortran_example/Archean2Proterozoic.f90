@@ -5,7 +5,7 @@ Program PhotoMain
   integer i, converged
 
   double precision, dimension(100) :: teval
-  double precision, dimension(100,71,200) :: solution
+  logical success
   logical :: use_fast_jacobian
 
 
@@ -40,6 +40,6 @@ Program PhotoMain
   use_fast_jacobian = .true. ! use fast jacobian
 
   ! goe.txt is the output file
-  call cvode(0.0d0,usol_init,nnq,nnz,teval,100,1.d-4,1.d-22, use_fast_jacobian ,"goe.txt",solution )
+  call cvode_save(0.0d0,usol_init,nnq,nnz,teval,100,1.d-4,1.d-22, use_fast_jacobian ,"goe.txt",success )
 
 end Program

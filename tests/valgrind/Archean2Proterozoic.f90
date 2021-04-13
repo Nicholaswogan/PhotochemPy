@@ -32,10 +32,11 @@ Program PhotoMain
              '../../input/templates/Archean2Proterozoic/atmosphere.txt', &
              '../../input/templates/Archean2Proterozoic/Sun_2.7Ga.txt')
 
-  teval(1) = 1.d17
+  teval(1) = 1.d0
   use_fast_jacobian = .true. ! use fast jacobian
 
   ! goe.txt is the output file
+  call cvode(0.0d0,usol_init,nnq,nnz,teval,1,1.d-4,1.d-22, use_fast_jacobian ,solution,success )
   call cvode(0.0d0,usol_init,nnq,nnz,teval,1,1.d-4,1.d-22, use_fast_jacobian ,solution,success )
 
 end Program
