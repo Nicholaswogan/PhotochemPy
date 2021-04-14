@@ -8,6 +8,8 @@ import os
 pc = PhotochemPy(None,None,None,None,None,None)
 
 method = 'Backward_Euler'
+rtol = 1e-3
+atol = 1e-27
 
 def wrapper(inpt):
     move_ind,init_ind,solutions,aersol_props,params,param_space,nsteps = inpt
@@ -20,7 +22,7 @@ def wrapper(inpt):
             pc.photo.fco2 = 10**param_space[i][move_ind]
         else:
             pc.set_mr(key,10**param_space[i][move_ind])
-    converged = pc.integrate(method = method,nsteps = nsteps)
+    converged = pc.integrate(method = method,nsteps = nsteps,rtol=rtol,atol=atol)
     # converged = True
     if not converged:
         return [converged,np.nan,np.nan,np.nan,np.nan]
@@ -77,7 +79,7 @@ def sweep(files, params, max_processes = None, verbose=True, nsteps_list=[1000],
 
     # find equlibrium at first grid point
     print('Trying to move to closest point on the grid...')
-    converged = pc.integrate(method= method,nsteps = nsteps_init)
+    converged = pc.integrate(method= method,nsteps = nsteps_init,rtol=rtol,atol=atol)
     if not converged:
         sys.exit("Didn't converge to first grid point.\n"\
         +"Try increasing nsteps_init, or starting with an atmosphere.txt closer to the grid.")
