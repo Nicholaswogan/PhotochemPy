@@ -246,7 +246,8 @@ class PhotochemPy:
         '''
         if method == "CVODE_BDF":
             if len(set(self.sl).intersection(set(self.photospecies))) > 0:
-                raise Exception("Short lived species can't photolyze when using CVODE.")
+                raise Exception("Short lived species can't photolyze when using CVODE. ", \
+                set(self.sl).intersection(set(self.photospecies)))
             self.photo.max_cvode_steps = nsteps
             converged = self.photo.cvode_equilibrium(rtol,atol,fast_and_loose)
         elif method == "Backward_Euler":
@@ -262,7 +263,11 @@ class PhotochemPy:
             if np.abs(self.redox_factor) > 1e-3:
                 print('Warning, redox conservation is not very good.')
                 print('redox factor =','%.2e'%self.redox_factor)
-
+                
+            # check for mixing ratios greater than 1
+            if np.max(self.photo.usol_out) > 1:
+                print('Warning, some mixing ratios are greater than 1.')
+                
         return self.code_run
 
     def evolve(self,t0,usol_start,t_eval,rtol = 1.0e-3, atol= 1e-27, nsteps = 1000000, fast_and_loose = True, outfile = None, overwrite = False):
