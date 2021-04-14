@@ -189,7 +189,7 @@
       SMFLUX(LCO) = SMFLUX(LO)
 
       if (NP.GT.0) then   !particles in main loop
-        CALL SEDMNT(frak,HCDENS,ihztype,nz,np,conver)
+        CALL SEDMNT(frak,HCDENS,ihztype,nz,np,conver, .true.)
 
         do J=1,NZ
           do JJ=1, NP

@@ -1,5 +1,5 @@
 
-      SUBROUTINE SEDMNT(Frak,Hcdens,Ihztype,nz,np, conver)
+      SUBROUTINE SEDMNT(Frak,Hcdens,Ihztype,nz,np, conver,change_radius)
 
       IMPLICIT NONE
 
@@ -15,6 +15,7 @@
       integer, intent(in) :: nz, np, ihztype, frak
       real*8, intent(in) :: hcdens
       real*8, dimension(nz,np), intent(out) :: conver
+      logical, intent(in) :: change_radius
 
       real*8 a, b, c, bk, pi, adensity, e_minus_5
       real*8 alph, e_hc, f1, factor, r, rf, gpermolec
@@ -203,26 +204,28 @@
 !   FIND MINIMUM OF DIFFUSION AND SEDIMENTATION LIFETIMES, THEN SCALE PRTICLE SIZES
          e_minus_5 = 1.D-5
          e_hc = 1.3D-7
-         DO i = 1 , nz
-            tautrn(i) = MIN(TAUSED(i,k),TAUEDD(i))            !find the minimum of the three destruction timescales
-            tautrn(i) = MIN(tautrn(i),tauran(i,k))            !lifetime against eddy diffusion is H*H/K
-                                                              !where K is eddy diffusion coefficient, H is scale height
-            RPAR(i,k) = RPAR(i,k)*(tautrn(i)/TAUC(i,k))**0.25 !particle growth depends on
-            IF ( k.GE.3 ) THEN
-               RPAR(i,k) = MAX(RPAR(i,k),e_hc)
-                                        !largest HC particles are smaller?
-            ELSE
-               RPAR(i,k) = MAX(RPAR(i,k),e_minus_5)            !largest particles are 1 micron
-            ENDIF
-         ENDDO
+         if (change_radius) then
+           DO i = 1 , nz
+              tautrn(i) = MIN(TAUSED(i,k),TAUEDD(i))            !find the minimum of the three destruction timescales
+              tautrn(i) = MIN(tautrn(i),tauran(i,k))            !lifetime against eddy diffusion is H*H/K
+                                                                !where K is eddy diffusion coefficient, H is scale height
+              RPAR(i,k) = RPAR(i,k)*(tautrn(i)/TAUC(i,k))**0.25 !particle growth depends on
+              IF ( k.GE.3 ) THEN
+                 RPAR(i,k) = MAX(RPAR(i,k),e_hc)
+                                          !largest HC particles are smaller?
+              ELSE
+                 RPAR(i,k) = MAX(RPAR(i,k),e_minus_5)            !largest particles are 1 micron
+              ENDIF
+           ENDDO
+         
 !
 !   DON'T ALLOW PARTICLES TO DECREASE IN SIZE AT LOW ALTITUDES
-         DO i = 1 , nz1
-            j = nz - i
-            RPAR(j,k) = MAX(RPAR(j,k),RPAR(j+1,k))
-         ENDDO
-
-
+           DO i = 1 , nz1
+              j = nz - i
+              RPAR(j,k) = MAX(RPAR(j,k),RPAR(j+1,k))
+           ENDDO
+           
+         endif
 !
 !   COMPUTE PARTICLE-TO-GAS CONVERSION FACTORS AND DENSITIES
 ! - it would nice to document where these come from - the 1989 sulfur/UV paper, I imagine.
@@ -242,6 +245,10 @@
             IF ( ll.EQ.lso4aer ) THEN
                rhop(i) = 1. + 0.8*Fsulf(i)
                factor = 4.6D7*Fsulf(i)
+               if (.not. change_radius) then ! 
+                 rhop(i) = 1.6d0
+                 factor = 4.6d7
+               endif
             ENDIF
 
             IF ( ll.EQ.lhcaer .OR. ll.EQ.lhcaer2 ) THEN
