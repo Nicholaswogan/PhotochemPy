@@ -34,4 +34,3 @@ A more complete example is available in the Tutorial linked in the User Guide.
    install
    Tutorial
    PhotochemPy
-   todo
