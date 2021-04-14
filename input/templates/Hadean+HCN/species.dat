@@ -81,6 +81,8 @@ NCO        LL  1 0 1 0 1 0    0     1.       0.       0.        0.      0      0
 CN         LL  0 0 1 0 1 0    0     1.       0.       0.        0.      0      0.      0.
 N2H3       LL  0 3 0 0 2 0    0     0.       0.       0.        0.      0      0.      0.
 N2H4       LL  0 4 0 0 2 0    0     0.       0.       0.        0.      0      0.      0.
+S3         LL  0 0 0 3 0 0    0     0.       0.       0.        0.      0      0.      0.
+S4         LL  0 0 0 4 0 0    0     0.       0.       0.        0.      0      0.      0.
 SO4AER     LL  4 2 0 1 0 0    0     1.00E-02 0.       0.        0.      0      0.      0.            !turbulent depostion velocity for particles (hardcoded for td)
 S8AER      LL  0 0 0 8 0 0    0     1.00E-02 0.       0.        0.      0      0.      0.            !turbulent depostion velocity for particles
 HCAER      LL  0 2 4 0 0 0    0     1.00E-02 0.       0.        0.      0      0.      0.            !turbulent depostion velocity for particles
@@ -99,8 +101,6 @@ SO23       SL  2 0 0 1 0 0
 HSO3       SL  3 1 0 1 0 0
 OCS2       SL  1 0 1 2 0 0
 CS2X       SL  0 0 1 2 0 0
-S3         SL  0 0 0 3 0 0    0     0.       0.       0.        0.      0      0.      0.
-S4         SL  0 0 0 4 0 0    0     0.       0.       0.        0.      0      0.      0.
 H2CN       SL  0 2 1 0 1 0
 HCNOH      SL  1 2 1 0 1 0
 NH         SL  0 1 0 0 1 0
