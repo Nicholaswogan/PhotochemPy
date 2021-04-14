@@ -24,6 +24,3 @@ Read the [documentation here](https://photochempy.readthedocs.io/en/latest/). Th
 
 ## History
 PhotochemPy is an updated version of the [Atmos](https://github.com/VirtualPlanetaryLaboratory/atmos) photochemical model, originally developed by Jim Kasting and Kevin Zahnle and further developed by many of their students and colleges.
-
-## Code integrity and validation
-I regularly check for memory issues (uninitialized variables, accessing an array beyond its bounds) with the [valgrind memcheck](http://valgrind.org) tool, and make sure all errors are dealt with. Additionally, I have validated PhotochemPy against the [2016 version of Atmos](https://github.com/VirtualPlanetaryLaboratory/atmos) used in [a research article by Giada Arney](https://www.liebertpub.com/doi/full/10.1089/ast.2015.1422). The validation is located in `examples/validation`.
