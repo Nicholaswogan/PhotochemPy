@@ -3501,7 +3501,7 @@
 
 
       if (option.eq.2) then  !high resolution O2 data, same data for O1D+O
-         print *,'using high resolution O2 cross section'
+         ! print *,'using high resolution O2 cross section'
 
 !still use the old shortwave cross-section for O2 + hv -> O1D+O
       kin = 594
