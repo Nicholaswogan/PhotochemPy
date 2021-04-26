@@ -1,5 +1,8 @@
 
       SUBROUTINE LTNING(usol,nq,nz)
+        use photochem_data, only: far, lCH4, lco, lh2, lo2, lh2o, N2_inert, P0, prono
+        use photochem_vars, only: fco2
+        use photochem_wrk, only: zapNO,zapO2,proNOP,zapCO,zapH2,zapO
 !  3-21-06   This subroutine does not work
 !  it does not conserve redc  it needs to be replaced by something that isn't wrong
 !-mc 4-29-06  it conserves redox now and is only as wrong as chamedies, which is probably wrong...
@@ -19,6 +22,8 @@
       real*8 zaph2o, po2, a, beta
 
       real*8 fx, fpx
+      
+      real(8) :: fn2
 
       integer n, ns
 

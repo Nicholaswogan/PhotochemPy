@@ -1,6 +1,9 @@
 
 subroutine cvode(T0, usol_start, nnq, nnz, t_eval, num_t_eval, rtol, atol, &
                  use_fast_jacobian, solution, success)
+  use photochem_data, only: neq, nq, nz, jtrop
+  use photochem_vars, only: verbose, lbound, fixedmr
+  use photochem_wrk, only: cvode_stepper
   implicit none
 
   ! inputs
@@ -27,7 +30,7 @@ subroutine cvode(T0, usol_start, nnq, nnz, t_eval, num_t_eval, rtol, atol, &
 
   ! The following declaration specification should match C type long int.
   integer*8 nneq, IOUT(25), IPAR(2), mu, ml
-  double precision TT, TOUT
+  double precision TT
   double precision U(neq), ROUT(10), RRPAR(1)
 
   cvode_stepper = 0
@@ -164,6 +167,9 @@ end subroutine
 
 subroutine cvode_save(T0, usol_start, nnq, nnz, t_eval, num_t_eval, rtol, atol, &
                       use_fast_jacobian, outfilename, success)
+  use photochem_data, only: neq, nq, nz, jtrop, ispec
+  use photochem_vars, only: verbose, lbound, fixedmr
+  use photochem_wrk, only: cvode_stepper
   implicit none
 
   ! inputs
@@ -192,7 +198,7 @@ subroutine cvode_save(T0, usol_start, nnq, nnz, t_eval, num_t_eval, rtol, atol, 
 
   ! The following declaration specification should match C type long int.
   integer*8 nneq, IOUT(25), IPAR(2), mu, ml
-  double precision TT, TOUT
+  double precision TT
   double precision U(neq), ROUT(10), RRPAR(1)
 
   cvode_stepper = 0
@@ -351,6 +357,12 @@ end subroutine
 
 
 subroutine cvode_equilibrium(rtol, atol, use_fast_jacobian, success)
+  use photochem_data, only: nq, np, nz1, nq1, isl, nz, jtrop, &
+                            lh, lh2, lh2o, dz
+  use photochem_vars, only: verbose, usol_init, usol_out, &
+                            den, fluxo, flow
+  use photochem_wrk, only: cvode_stepper, sl, wfall, dk, scale_h, h_atm, yp, yl, &
+                           bh2n2, bhn2, raingc
   implicit none
   ! input
   double precision, intent(in) :: rtol ! relative tolerance

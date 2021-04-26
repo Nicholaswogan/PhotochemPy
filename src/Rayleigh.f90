@@ -54,7 +54,7 @@
       real*8, intent(out) :: sigr2(nz)
       INTEGER i , j
       ! REAL*8 Sigr2 , Volmix , Wleff
-      REAL*8 delta(7) , a(7) , b(7) , c(7) , wl2i , r , aniso , r2 ,    &
+      REAL*8 delta(7) , a(7) , b(7) , wl2i , r , aniso , r2 ,    &
            & sum , cnst
       ! real*8 Volmix(10,nz) , Ncomp(nz) , Icomp(10,nz) , Sigr2(nz)
 

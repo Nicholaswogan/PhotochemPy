@@ -1,5 +1,7 @@
 subroutine redox_conservation(flow,fup,sr)
-
+  use photochem_data, only: nq, nq1, lco, lh2, lh2s, lo2, redoxstate                    
+  use photochem_vars, only: redox_factor, distflux
+  implicit none
   double precision, dimension(nq), intent(in) :: FLOW
   double precision, dimension(nq1), intent(in) :: FUP
   double precision, dimension(nq1), intent(in) :: SR

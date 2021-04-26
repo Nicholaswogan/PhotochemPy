@@ -1,6 +1,10 @@
 
       subroutine read_reactions(reactions_rx)
-        use reading_vars
+        use photochem_data, only: kj, ks, nr, nsp, nsp2, nmax, &
+                                  reactype, rateparams, chemj, jchem, &
+                                  nump, numl, iprod, iloss, ispec, &
+                                  photospec, photoreac, photonums, &
+                                  atomsO, atomsH, atomsC, atomsS, atomsN, atomsCl
         implicit none
 
         ! module variables

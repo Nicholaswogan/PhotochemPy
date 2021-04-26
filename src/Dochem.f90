@@ -1,5 +1,13 @@
 
       SUBROUTINE DOCHEM(Fval,N,Jtrop,Nshort,Usol,nq,nz)
+        use photochem_data, only: nsp, nsp2, nq1, CO2_inert, N2_inert, lco, &
+                                  lco2, lh2, lh2o, &
+                                  lh2so4, lno, lo, lo2, ls, ls2, ls3, ls4, lso4aer, &
+                                  planet, ispec
+                                  
+        use photochem_vars, only: fco2, den, H2OSAT
+        use photochem_wrk, only: zapco, zaph2, zapno, zapo, zapo2, A, rain, raingc, &
+                                 yp, yl, sl, H2SO4S
 
       IMPLICIT NONE
 

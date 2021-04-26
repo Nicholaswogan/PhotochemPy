@@ -1,5 +1,6 @@
 
       subroutine photgrid(top_atmosphere)
+        use photochem_data, only: nz, ztrop, z, dz, jtrop
         implicit none
 
         ! module variables
@@ -61,6 +62,7 @@
 !*= To obtain a copy of the GNU General Public License, write to:             =*
 !*= Free Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.   =*
 !*-----------------------------------------------------------------------------*
+      use photochem_vars, only: rootdir
       implicit none
 
       ! module variables
@@ -71,13 +73,8 @@
       integer, intent(in) :: LGRID ! input:
       real*8, dimension(kw), intent(out) :: wl, wc, wu ! output
       integer, intent(out) :: nw
-      character(len=60) :: string
-      real*8 wincr
       integer iw, I, l, kin
       logical ok
-      integer idum
-      real*8 dum
-      integer mopt
 
       DO iw = 1, kw ! zero out
         wl(iw) = 0.
@@ -164,7 +161,6 @@
 !*-----------------------------------------------------------------------------*
 !*= Copyright (C) 1994,95,96  University Corporation for Atmospheric Research =*
 !*-----------------------------------------------------------------------------*
-
       implicit none
 
       ! module variables
@@ -181,12 +177,10 @@
       REAL*8, intent(out) :: f(kw)
       ! * work arrays for input data files:
       REAL*8 x1(kdata), x2(kdata), x3(kdata)
-      REAL*8 y1(kdata), y2(kdata), y3(kdata)
+      REAL*8 y1(kdata), y3(kdata)
       INTEGER nhead, n, i, ierr, kin, io, n3
       INTEGER iw
       ! * data gridded onto wl(kw) grid:
-      REAL*8 yg1(kw)
-      REAL*8 yg2(kw)
       REAL*8 yg3(kw)
       REAL*8, parameter :: hc = 6.62E-34 * 2.998E8
 
@@ -333,6 +327,9 @@
 
 
       SUBROUTINE addpnt ( x, y, ld, n, xnew, ynew )
+        use photochem_data
+        use photochem_vars
+        use photochem_wrk
 
 !*-----------------------------------------------------------------------------*
 !*=  PURPOSE:                                                                 =*

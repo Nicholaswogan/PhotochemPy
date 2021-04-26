@@ -1,7 +1,8 @@
       SUBROUTINE XS(species,nw,wavl,wav,T,DEN,j,columndepth,zy,IO2)
+        use photochem_data, only: nz, kj
 !     INCLUDE 'PHOTOCHEM/INPUTFILES/parameters.inc'
       implicit none
-      integer :: kin
+      ! integer :: kin
       character*8 species
 
 ! input
@@ -28,7 +29,7 @@
 !----------------------------Comments Correspond to line below---------------------------!
       !T dependent - also unexplained factor of 1000. (but not using T-dependent data right now)
       IF(species.eq.'HNO3    ') CALL XS_HNO3(nw,wavl,T,j)
-      IF(species.eq.'HO2     ') CALL XS_HO2(nw,wavl,wav,j,Ja)
+      IF(species.eq.'HO2     ') CALL XS_HO2(nw,wavl,wav,j)
       !T-dependent (not in use)
       IF(species.eq.'NO2     ') CALL XS_NO2(nw,wavl,T,j)
       !T-dependent (not in use)
@@ -109,13 +110,13 @@
       !returns SS8L then SS8R
       IF(species.eq.'S8      ') CALL XS_S8(nw,wavl,j)
       !note using HO2 cross section for HSO
-      IF(species.eq.'HSO     ') CALL XS_HO2(nw,wavl,wav,j,Jb)
+      IF(species.eq.'HSO     ') CALL XS_HO2(nw,wavl,wav,j)
       !note this contains an unphysical scaling factor
-      IF(species.eq.'S2      ') CALL XS_S2(nw,wavl,j,Ja)
+      IF(species.eq.'S2      ') CALL XS_S2(nw,wavl,j)
       !note using S2 cross section for S4
-      IF(species.eq.'S4      ') CALL XS_S2(nw,wavl,j,Jb)
+      IF(species.eq.'S4      ') CALL XS_S2(nw,wavl,j)
       !note using S2 cross section for S3
-      IF(species.eq.'S3      ') CALL XS_S2(nw,wavl,j,Jc)
+      IF(species.eq.'S3      ') CALL XS_S2(nw,wavl,j)
 !sorg species
       IF(species.eq.'CS2    ') CALL XS_CS2(nw,wavl,j)
       IF(species.eq.'CH3SH  ') CALL XS_CH3SH(nw,wavl,j)
@@ -159,6 +160,8 @@
 
 
        SUBROUTINE XS_HNO3(nw,wl,tlev,jn)
+         use photochem_data, only: sq, nz
+         use photochem_vars, only: rootdir
 
 !---------------------------------------------------------------------------------------!
 !-----------------------------------------------------------------------------*
@@ -221,7 +224,7 @@
       INTEGER i, iw
       INTEGER ierr
       INTEGER option
-      integer :: hjtest
+      ! integer :: hjtest
       ierr = 0
 
 
@@ -291,12 +294,12 @@
      &  file=trim(rootdir)//'DATA/XSECTIONS/HNO3/HNO3_zahnle.abs',&
      &  STATUS='old')
 
-      HJtest=0 !HOT JUPITER TEST
+      ! HJtest=0 !HOT JUPITER TEST
 
-      do i=1,nsp
+      ! do i=1,nsp
 !         print*,i,ISPEC(i)
-         if (ISPEC(i).eq.'HE') HJtest=1  !temp solution to get 3 reactions for hot jupiters at Ly alpha
-      enddo
+         ! if (ISPEC(i).eq.'HE') HJtest=1  !temp solution to get 3 reactions for hot jupiters at Ly alpha
+      ! enddo
 
 !         print*,"HJtest",HJtest
 
@@ -313,11 +316,11 @@
       CALL addpnt(x1,y1,kdata,n1,               zero,zero)
       CALL addpnt(x1,y1,kdata,n1,x1(n1)*(1.+deltax),zero)
       CALL addpnt(x1,y1,kdata,n1,            biggest,zero)
-      IF (HJtest.eq.1) THEN
-        CALL inter3(nw+1,wl,yg1,n1,x1,y1,ierr)
-      ELSE
-      	CALL inter2(nw+1,wl,yg1,n1,x1,y1,ierr)
-      ENDIF
+      ! IF (HJtest.eq.1) THEN
+        ! CALL inter3(nw+1,wl,yg1,n1,x1,y1,ierr)
+      ! ELSE
+      CALL inter2(nw+1,wl,yg1,n1,x1,y1,ierr)
+      ! ENDIF
 
       IF (ierr .NE. 0) THEN
          WRITE(*,*) ierr, ' ***Something wrong in XS_HNO3***'
@@ -337,14 +340,16 @@
       endif   !end option 2
 
       plab='PHNO3'
-      photolabel(jn)=plab
+!      photolabel(jn)=plab
       jn=jn+1
 
 
       RETURN
       END
 
-       SUBROUTINE XS_HO2(nw,wl,wc,jn,jdum)
+       SUBROUTINE XS_HO2(nw,wl,wc,jn)
+         use photochem_data, only: sq, nz
+         use photochem_vars, only: rootdir
 
 !-----------------------------------------------------------------------------*
 !=  PURPOSE:                                                                 =*
@@ -383,7 +388,7 @@
 !     INCLUDE 'DATA/INCLUDE/DBLOK.inc'
 !     SAVE/PBLOK/
 ! input
-      INTEGER nw,jn,jdum
+      INTEGER nw,jn
       REAL*8 wl(nw+1), wc(nw) !EWS - wc used here
       !orig was kw, but don't see why this is needed once nw is defined by gridw.f
       !could go back to kz if I ever want to have a variable altitude grid?
@@ -407,7 +412,7 @@
       INTEGER ierr
       INTEGER option
       integer :: idum
-      integer :: hjtest
+      ! integer :: hjtest
       ierr = 0
 
 !*************************************************************
@@ -470,12 +475,12 @@
      &  file=trim(rootdir)//'DATA/XSECTIONS/HO2/HO2_zahnle.abs',&
      &  STATUS='old')
 
-      HJtest=0 !HOT JUPITER TEST
+      ! HJtest=0 !HOT JUPITER TEST
 
-      do i=1,nsp
+      ! do i=1,nsp
 !         print*,i,ISPEC(i)
-         if (ISPEC(i).eq.'HE') HJtest=1  !temp solution to get 3 reactions for hot jupiters at Ly alpha
-      enddo
+         ! if (ISPEC(i).eq.'HE') HJtest=1  !temp solution to get 3 reactions for hot jupiters at Ly alpha
+      ! enddo
 
 !         print*,"HJtest",HJtest
 
@@ -492,11 +497,11 @@
       CALL addpnt(x1,y1,kdata,n1,               zero,zero)
       CALL addpnt(x1,y1,kdata,n1,x1(n1)*(1.+deltax),zero)
       CALL addpnt(x1,y1,kdata,n1,            biggest,zero)
-      IF (HJtest.eq.1) THEN
-      	CALL inter3(nw+1,wl,yg1,n1,x1,y1,ierr)
-      ELSE
-      	CALL inter2(nw+1,wl,yg1,n1,x1,y1,ierr)
-      ENDIF
+      ! IF (HJtest.eq.1) THEN
+      	! CALL inter3(nw+1,wl,yg1,n1,x1,y1,ierr)
+      ! ELSE
+      CALL inter2(nw+1,wl,yg1,n1,x1,y1,ierr)
+      ! ENDIF
 
       IF (ierr .NE. 0) THEN
          WRITE(*,*) ierr, ' ***Something wrong in XS_HO2***'
@@ -515,11 +520,11 @@
       ENDDO
       endif   !end option 2
 
-      if(jdum.eq.0) photolabel(jn)='PHO2'
+      ! if(jdum.eq.0) photolabel(jn)='PHO2'
 
-      if(jdum.eq.1) then
-        photolabel(jn)='PHSO'
-      endif
+      ! if(jdum.eq.1) then
+  !      photolabel(jn)='PHSO'
+      ! endif
 
       jn=jn+1
 
@@ -527,6 +532,8 @@
       END
 
        SUBROUTINE XS_NO2(nw,wl,tlev,jn)
+         use photochem_data, only: sq, nz
+         use photochem_vars, only: rootdir
 
 !-----------------------------------------------------------------------------*
 !=  PURPOSE:                                                                 =*
@@ -571,7 +578,7 @@
       REAL*8 dum
       INTEGER i, iw, n, idum, ierr,option
       REAL*8 xsno2(nz,nw),wavn
-      integer :: hjtest
+      ! integer :: hjtest
       ierr = 0
 
 ! local
@@ -692,12 +699,12 @@
      &  file=trim(rootdir)//'DATA/XSECTIONS/NO2/NO2_zahnle.abs',&
      &  STATUS='old')
 
-      HJtest=0 !HOT JUPITER TEST
+      ! HJtest=0 !HOT JUPITER TEST
 
-      do i=1,nsp
+      ! do i=1,nsp
 !         print*,i,ISPEC(i)
-         if (ISPEC(i).eq.'HE') HJtest=1  !temp solution to get 3 reactions for hot jupiters at Ly alpha
-      enddo
+         ! if (ISPEC(i).eq.'HE') HJtest=1  !temp solution to get 3 reactions for hot jupiters at Ly alpha
+      ! enddo
 
 !         print*,"HJtest",HJtest
 
@@ -714,11 +721,11 @@
       CALL addpnt(x1,y1,kdata,n1,               zero,zero)
       CALL addpnt(x1,y1,kdata,n1,x1(n1)*(1.+deltax),zero)
       CALL addpnt(x1,y1,kdata,n1,            biggest,zero)
-      IF (HJtest.eq.1) THEN
-      	CALL inter3(nw+1,wl,yg1,n1,x1,y1,ierr)
-      ELSE
-      	CALL inter2(nw+1,wl,yg1,n1,x1,y1,ierr)
-      ENDIF
+      ! IF (HJtest.eq.1) THEN
+      	! CALL inter3(nw+1,wl,yg1,n1,x1,y1,ierr)
+      ! ELSE
+      CALL inter2(nw+1,wl,yg1,n1,x1,y1,ierr)
+      ! ENDIF
 
 
       IF (ierr .NE. 0) THEN
@@ -803,11 +810,11 @@
       CALL addpnt(x1,y1,kdata,n1,               zero,zero)
       CALL addpnt(x1,y1,kdata,n1,x1(n1)*(1.+deltax),zero)
       CALL addpnt(x1,y1,kdata,n1,            biggest,zero)
-      IF (HJtest.eq.1) THEN
-      	CALL inter3(nw+1,wl,yg1,n1,x1,y1,ierr)
-      ELSE
-      	CALL inter2(nw+1,wl,yg1,n1,x1,y1,ierr)
-      ENDIF
+      ! IF (HJtest.eq.1) THEN
+      	! CALL inter3(nw+1,wl,yg1,n1,x1,y1,ierr)
+      ! ELSE
+      CALL inter2(nw+1,wl,yg1,n1,x1,y1,ierr)
+      ! ENDIF
 
       IF (ierr .NE. 0) THEN
          WRITE(*,*) ierr, ' Something wrong in XS_NO2'
@@ -825,7 +832,7 @@
       ENDDO
 
       plab='PNO2'
-      photolabel(jn)=plab
+!      photolabel(jn)=plab
 
 !      print *, jn,photolabel
 
@@ -837,6 +844,8 @@
        ! EWS - airlev not used below
 !      SUBROUTINE XS_H2O2(nw,wl,wc,tlev,airlev,jn)
        SUBROUTINE XS_H2O2(nw,wl,wc,tlev,jn)
+         use photochem_data, only: sq, nz
+         use photochem_vars, only: rootdir
 
 !-----------------------------------------------------------------------------*
 !=  PURPOSE:                                                                 =*
@@ -880,15 +889,15 @@
       REAL*8 qy
       REAL*8 a0, a1, a2, a3, a4, a5, a6, a7
       REAL*8 b0, b1, b2, b3, b4
-      REAL*8 xs
+      ! REAL*8 xs
       REAL*8 t
-      integer :: j
+      ! integer :: j
       real*8 :: xsss
       INTEGER i, iw, n, idum
       INTEGER ierr,option
       REAL*8 lambda
       REAL*8 sumA, sumB, chi
-      integer :: hjtest
+      ! integer :: hjtest
       ierr = 0
 
 !*************** H2O2 photodissociation
@@ -965,23 +974,23 @@
               t = MIN(MAX(tlev(i),200.),400.)
               chi = 1./(1.+EXP(-1265./t))
               xsss = (chi * sumA + (1.-chi)*sumB)*1E-21
-              sq(j,i,iw) = xs*qy
+              sq(jn,i,iw) = xsss*qy
            ENDDO
          ELSE
            DO i = 1, nz
-              sq(j,i,iw) = yg(iw)*qy
+              sq(jn,i,iw) = yg(iw)*qy
            ENDDO
          ENDIF
 
       ENDDO
       endif  !end option 1
 
-      HJtest=0 !HOT JUPITER TEST
+      ! HJtest=0 !HOT JUPITER TEST
 
-      do i=1,nsp
+      ! do i=1,nsp
 !         print*,i,ISPEC(i)
-         if (ISPEC(i).eq.'HE') HJtest=1  !temp solution to get 3 reactions for hot jupiters at Ly alpha
-      enddo
+         ! if (ISPEC(i).eq.'HE') HJtest=1  !temp solution to get 3 reactions for hot jupiters at Ly alpha
+      ! enddo
 !         print*,"HJtest",HJtest
 
       if (option.eq.2) then  !Kevin's data
@@ -990,11 +999,11 @@
      &  file=trim(rootdir)//'DATA/XSECTIONS/H2O2/H2O2_zahnle.abs',&
      &  STATUS='old')
 
-      HJtest=0 !HOT JUPITER TEST
-      do i=1,nsp
+      ! HJtest=0 !HOT JUPITER TEST
+      ! do i=1,nsp
 !         print*,i,ISPEC(i)
-         if (ISPEC(i).eq.'HE') HJtest=1  !temp solution to get 3 reactions for hot jupiters at Ly alpha
-      enddo
+         ! if (ISPEC(i).eq.'HE') HJtest=1  !temp solution to get 3 reactions for hot jupiters at Ly alpha
+      ! enddo
 
 !         print*,"HJtest",HJtest
 
@@ -1011,11 +1020,11 @@
       CALL addpnt(x1,y1,kdata,n1,               zero,zero)
       CALL addpnt(x1,y1,kdata,n1,x1(n1)*(1.+deltax),zero)
       CALL addpnt(x1,y1,kdata,n1,            biggest,zero)
-      IF (HJtest.eq.1) THEN
-      	CALL inter3(nw+1,wl,yg1,n1,x1,y1,ierr)
-      ELSE
-      	CALL inter2(nw+1,wl,yg1,n1,x1,y1,ierr)
-      ENDIF
+      ! IF (HJtest.eq.1) THEN
+      	! CALL inter3(nw+1,wl,yg1,n1,x1,y1,ierr)
+      ! ELSE
+      CALL inter2(nw+1,wl,yg1,n1,x1,y1,ierr)
+      ! ENDIF
 
       IF (ierr .NE. 0) THEN
          WRITE(*,*) ierr, ' ***Something wrong in XS_H2O2***'
@@ -1036,7 +1045,7 @@
        endif  !end option 2
 
       plab='PH2O2'
-      photolabel(jn)=plab
+!      photolabel(jn)=plab
       jn=jn+1
 
       RETURN
@@ -1044,6 +1053,8 @@
 
 
        SUBROUTINE XS_OCS(nw,wl,jn)
+         use photochem_data, only: sq, nz
+         use photochem_vars, only: rootdir
 !-----------------------------------------------------------------------------*
 !=  PURPOSE:                                                                 =*
 !=  Provide product of (cross section) x (quantum yield) for OCS photolysis  =*
@@ -1057,7 +1068,7 @@
 
 !     INCLUDE 'PHOTOCHEM/INPUTFILES/parameters.inc'
       implicit none
-      integer :: hjtest
+      ! integer :: hjtest
       integer :: kin
       REAL*8 deltax,biggest,zero
       PARAMETER (deltax = 1.E-4,biggest=1.E+36, zero=0.0)
@@ -1104,11 +1115,11 @@
      &  file=trim(rootdir)//'DATA/XSECTIONS/OCS/OCS_zahnle.abs',&
      &  STATUS='old')
 
-      HJtest=0 !HOT JUPITER TEST
-      do i=1,nsp
+      ! HJtest=0 !HOT JUPITER TEST
+      ! do i=1,nsp
 !         print*,i,ISPEC(i)
-         if (ISPEC(i).eq.'HE') HJtest=1  !temp solution to get 3 reactions for hot jupiters at Ly alpha
-      enddo
+         ! if (ISPEC(i).eq.'HE') HJtest=1  !temp solution to get 3 reactions for hot jupiters at Ly alpha
+      ! enddo
 
 !         print*,"HJtest",HJtest
 
@@ -1125,11 +1136,11 @@
       CALL addpnt(x1,y1,kdata,n1,               zero,zero)
       CALL addpnt(x1,y1,kdata,n1,x1(n1)*(1.+deltax),zero)
       CALL addpnt(x1,y1,kdata,n1,            biggest,zero)
-      IF (HJtest.eq.1) THEN
-      	CALL inter3(nw+1,wl,yg1,n1,x1,y1,ierr)
-      ELSE
-      	CALL inter2(nw+1,wl,yg1,n1,x1,y1,ierr)
-      ENDIF
+      ! IF (HJtest.eq.1) THEN
+      ! 	CALL inter3(nw+1,wl,yg1,n1,x1,y1,ierr)
+      ! ELSE
+      CALL inter2(nw+1,wl,yg1,n1,x1,y1,ierr)
+      ! ENDIF
 
       IF (ierr .NE. 0) THEN
          WRITE(*,*) ierr, ' ***Something wrong in XS_OCS***'
@@ -1147,7 +1158,7 @@
       ENDDO
       endif  !end option 1
 
-         photolabel(jn)='POCS'
+   !      photolabel(jn)='POCS'
 
       jn=jn+1
 
@@ -1155,6 +1166,8 @@
       END
 
        SUBROUTINE XS_SO3(nw,wl,jn)
+         use photochem_data, only: sq, nz
+         use photochem_vars, only: rootdir
 !-----------------------------------------------------------------------------*
 !=  PURPOSE:                                                                 =*
 !=  Provide product of (cross section) x (quantum yield) for SO3 photolysis  =*
@@ -1170,8 +1183,8 @@
 !      PARAMETER(kin=33,kj=33,kw=250)    !kin - file unit#  !kj=number of reactions defined - will need to abstract or figure out
 !     INCLUDE 'PHOTOCHEM/INPUTFILES/parameters.inc'
       implicit none
-      integer :: hjtest
-      integer :: jdum
+      ! integer :: hjtest
+      ! integer :: jdum
       integer :: kin
       REAL*8 deltax,biggest,zero
       PARAMETER (deltax = 1.E-4,biggest=1.E+36, zero=0.0)
@@ -1216,11 +1229,11 @@
      &  file=trim(rootdir)//'DATA/XSECTIONS/SO3/SO3_zahnle.abs',&
      &  STATUS='old')
 
-      HJtest=0 !HOT JUPITER TEST
-      do i=1,nsp
+      ! HJtest=0 !HOT JUPITER TEST
+      ! do i=1,nsp
 !         print*,i,ISPEC(i)
-         if (ISPEC(i).eq.'HE') HJtest=1  !temp solution to get 3 reactions for hot jupiters at Ly alpha
-      enddo
+         ! if (ISPEC(i).eq.'HE') HJtest=1  !temp solution to get 3 reactions for hot jupiters at Ly alpha
+      ! enddo
 
 !         print*,"HJtest",HJtest
 
@@ -1237,11 +1250,11 @@
       CALL addpnt(x1,y1,kdata,n1,               zero,zero)
       CALL addpnt(x1,y1,kdata,n1,x1(n1)*(1.+deltax),zero)
       CALL addpnt(x1,y1,kdata,n1,            biggest,zero)
-      IF (HJtest.eq.1) THEN
-      	CALL inter3(nw+1,wl,yg1,n1,x1,y1,ierr)
-      ELSE
-      	CALL inter2(nw+1,wl,yg1,n1,x1,y1,ierr)
-      ENDIF
+      ! IF (HJtest.eq.1) THEN
+      	! CALL inter3(nw+1,wl,yg1,n1,x1,y1,ierr)
+      ! ELSE
+      CALL inter2(nw+1,wl,yg1,n1,x1,y1,ierr)
+      ! ENDIF
 
       IF (ierr .NE. 0) THEN
          WRITE(*,*) ierr, ' ***Something wrong in XS_SO3***'
@@ -1264,7 +1277,7 @@
       ENDDO
       endif  !end option 1
 
-         photolabel(jn)='PSO3'
+   !      photolabel(jn)='PSO3'
 
       jn=jn+1
 
@@ -1272,7 +1285,9 @@
       RETURN
       END
 
-       SUBROUTINE XS_S2(nw,wl,jn,jdum)
+       SUBROUTINE XS_S2(nw,wl,jn)
+         use photochem_data, only: sq, nz
+         use photochem_vars, only: rootdir
 !-----------------------------------------------------------------------------*
 !=  PURPOSE:                                                                 =*
 !=  Provide product of (cross section) x (quantum yield) for S2 photolysis   =*
@@ -1286,9 +1301,9 @@
 
 !     INCLUDE 'PHOTOCHEM/INPUTFILES/parameters.inc'
       implicit none
-      integer :: hjtest
+      ! integer :: hjtest
       integer :: kin
-      integer jdum
+      ! integer jdum
 
       REAL*8 deltax,biggest,zero
       PARAMETER (deltax = 1.E-4,biggest=1.E+36, zero=0.0)
@@ -1333,11 +1348,11 @@
      &  file=trim(rootdir)//'DATA/XSECTIONS/S2/S2_zahnle.abs',&
      &  STATUS='old')
 
-      HJtest=0 !HOT JUPITER TEST
-      do i=1,nsp
+      ! HJtest=0 !HOT JUPITER TEST
+      ! do i=1,nsp
 !         print*,i,ISPEC(i)
-         if (ISPEC(i).eq.'HE') HJtest=1  !temp solution to get 3 reactions for hot jupiters at Ly alpha
-      enddo
+         ! if (ISPEC(i).eq.'HE') HJtest=1  !temp solution to get 3 reactions for hot jupiters at Ly alpha
+      ! enddo
 
 !         print*,"HJtest",HJtest
 
@@ -1354,11 +1369,11 @@
       CALL addpnt(x1,y1,kdata,n1,               zero,zero)
       CALL addpnt(x1,y1,kdata,n1,x1(n1)*(1.+deltax),zero)
       CALL addpnt(x1,y1,kdata,n1,            biggest,zero)
-      IF (HJtest.eq.1) THEN
-      	CALL inter3(nw+1,wl,yg1,n1,x1,y1,ierr)
-      ELSE
-      	CALL inter2(nw+1,wl,yg1,n1,x1,y1,ierr)
-      ENDIF
+      ! IF (HJtest.eq.1) THEN
+      ! 	CALL inter3(nw+1,wl,yg1,n1,x1,y1,ierr)
+      ! ELSE
+      CALL inter2(nw+1,wl,yg1,n1,x1,y1,ierr)
+      ! ENDIF
 
       IF (ierr .NE. 0) THEN
          WRITE(*,*) ierr, ' ***Something wrong in XS_S2***'
@@ -1390,9 +1405,9 @@
 
 !      print *, jn,photolabel
 
-      if(jdum.eq.0) photolabel(jn)='PS2'
-      if(jdum.eq.1) photolabel(jn)='PS4'
-      if(jdum.eq.2) photolabel(jn)='PS3'
+      ! if(jdum.eq.0) photolabel(jn)='PS2'
+      ! if(jdum.eq.1) photolabel(jn)='PS4'
+      ! if(jdum.eq.2) photolabel(jn)='PS3'
 
 
       jn=jn+1
@@ -1402,6 +1417,8 @@
       END
 
        SUBROUTINE XS_S8(nw,wl,jn)
+         use photochem_data, only: sq, nz
+         use photochem_vars, only: rootdir
 !-----------------------------------------------------------------------------*
 !=  PURPOSE:                                                                 =*
 !=  Provide product of (cross section) x (quantum yield) for S8  photolysis  =*
@@ -1418,7 +1435,7 @@
 !      PARAMETER(kin=33,kj=33,kw=250)    !kin - file unit#  !kj=number of reactions defined - will need to abstract or figure out
 !     INCLUDE 'PHOTOCHEM/INPUTFILES/parameters.inc'
       implicit none
-      integer :: hjtest
+      ! integer :: hjtest
       integer :: kin
       REAL*8 deltax,biggest,zero
       PARAMETER (deltax = 1.E-4,biggest=1.E+36, zero=0.0)
@@ -1465,11 +1482,11 @@
      &  file=trim(rootdir)//'DATA/XSECTIONS/S8/S8L_zahnle.abs',&
      &  STATUS='old')
 
-      HJtest=0 !HOT JUPITER TEST
-      do i=1,nsp
+      ! HJtest=0 !HOT JUPITER TEST
+      ! do i=1,nsp
 !         print*,i,ISPEC(i)
-         if (ISPEC(i).eq.'HE') HJtest=1  !temp solution to get 3 reactions for hot jupiters at Ly alpha
-      enddo
+         ! if (ISPEC(i).eq.'HE') HJtest=1  !temp solution to get 3 reactions for hot jupiters at Ly alpha
+      ! enddo
 
 !         print*,"HJtest",HJtest
 
@@ -1487,11 +1504,11 @@
       CALL addpnt(x1,y1,kdata,n1,               zero,zero)
       CALL addpnt(x1,y1,kdata,n1,x1(n1)*(1.+deltax),zero)
       CALL addpnt(x1,y1,kdata,n1,            biggest,zero)
-      IF (HJtest.eq.1) THEN
-      	CALL inter3(nw+1,wl,yg1,n1,x1,y1,ierr)
-      ELSE
-      	CALL inter2(nw+1,wl,yg1,n1,x1,y1,ierr)
-      ENDIF
+      ! IF (HJtest.eq.1) THEN
+      	! CALL inter3(nw+1,wl,yg1,n1,x1,y1,ierr)
+      ! ELSE
+      CALL inter2(nw+1,wl,yg1,n1,x1,y1,ierr)
+      ! ENDIF
 
       IF (ierr .NE. 0) THEN
          WRITE(*,*) ierr, ' ***Something wrong in XS_S8***'
@@ -1503,11 +1520,11 @@
      &  file=trim(rootdir)//'DATA/XSECTIONS/S8/S8R_zahnle.abs',&
      &  STATUS='old')
 
-      HJtest=0 !HOT JUPITER TEST
-      do i=1,nsp
+      ! HJtest=0 !HOT JUPITER TEST
+      ! do i=1,nsp
 !         print*,i,ISPEC(i)
-         if (ISPEC(i).eq.'HE') HJtest=1  !temp solution to get 3 reactions for hot jupiters at Ly alpha
-      enddo
+         ! if (ISPEC(i).eq.'HE') HJtest=1  !temp solution to get 3 reactions for hot jupiters at Ly alpha
+      ! enddo
 
 !         print*,"HJtest",HJtest
 
@@ -1527,11 +1544,11 @@
       CALL addpnt(x2,y2,kdata,n1,               zero,zero)
       CALL addpnt(x2,y2,kdata,n1,x2(n1)*(1.+deltax),zero)
       CALL addpnt(x2,y2,kdata,n1,            biggest,zero)
-      IF (HJtest.eq.1) THEN
-      	CALL inter3(nw+1,wl,yg2,n1,x2,y2,ierr)
-      ELSE
-      	CALL inter2(nw+1,wl,yg2,n1,x2,y2,ierr)
-      ENDIF
+      ! IF (HJtest.eq.1) THEN
+      	! CALL inter3(nw+1,wl,yg2,n1,x2,y2,ierr)
+      ! ELSE
+      CALL inter2(nw+1,wl,yg2,n1,x2,y2,ierr)
+      ! ENDIF
 
       IF (ierr .NE. 0) THEN
          WRITE(*,*) ierr, ' ***Something wrong in XS_S8***'
@@ -1560,13 +1577,13 @@
       ENDDO
       endif
 
-      photolabel(jn)='PS8L'
+!      photolabel(jn)='PS8L'
       jn=jn+1
 
-      photolabel(jn)='PS8R'
+!      photolabel(jn)='PS8R'
       jn=jn+1
 
-      photolabel(jn)='PS8'
+!      photolabel(jn)='PS8'
       jn=jn+1
 
       !so we are reserving sq(j+3)=0.0 for S8.
@@ -1576,6 +1593,8 @@
       END
 
        SUBROUTINE XS_H2S(nw,wl,jn)
+         use photochem_data, only: sq, nz
+         use photochem_vars, only: rootdir
 !-----------------------------------------------------------------------------*
 !=  PURPOSE:                                                                 =*
 !=  Provide product of (cross section) x (quantum yield) for H2S photolysis  =*
@@ -1592,7 +1611,7 @@
 !      PARAMETER(kin=33,kj=33,kw=250)    !kin - file unit#  !kj=number of reactions defined - will need to abstract or figure out
 !     INCLUDE 'PHOTOCHEM/INPUTFILES/parameters.inc'
       implicit none
-      integer :: hjtest
+      ! integer :: hjtest
       integer :: kin
       REAL*8 deltax,biggest,zero
       PARAMETER (deltax = 1.E-4,biggest=1.E+36, zero=0.0)
@@ -1638,11 +1657,11 @@
      &  file=trim(rootdir)//'DATA/XSECTIONS/H2S/H2S_zahnle.abs',&
      &  STATUS='old')
 
-      HJtest=0 !HOT JUPITER TEST
-      do i=1,nsp
+      ! HJtest=0 !HOT JUPITER TEST
+      ! do i=1,nsp
 !         print*,i,ISPEC(i)
-         if (ISPEC(i).eq.'HE') HJtest=1  !temp solution to get 3 reactions for hot jupiters at Ly alpha
-      enddo
+         ! if (ISPEC(i).eq.'HE') HJtest=1  !temp solution to get 3 reactions for hot jupiters at Ly alpha
+      ! enddo
 
 !         print*,"HJtest",HJtest
 
@@ -1659,11 +1678,11 @@
       CALL addpnt(x1,y1,kdata,n1,               zero,zero)
       CALL addpnt(x1,y1,kdata,n1,x1(n1)*(1.+deltax),zero)
       CALL addpnt(x1,y1,kdata,n1,            biggest,zero)
-      IF (HJtest.eq.1) THEN
-      	CALL inter3(nw+1,wl,yg1,n1,x1,y1,ierr)
-      ELSE
-      	CALL inter2(nw+1,wl,yg1,n1,x1,y1,ierr)
-      ENDIF
+      ! IF (HJtest.eq.1) THEN
+      ! 	CALL inter3(nw+1,wl,yg1,n1,x1,y1,ierr)
+      ! ELSE
+      CALL inter2(nw+1,wl,yg1,n1,x1,y1,ierr)
+      ! ENDIF
 
       IF (ierr .NE. 0) THEN
          WRITE(*,*) ierr, ' ***Something wrong in XS_H2S***'
@@ -1729,7 +1748,7 @@
       ENDDO
       endif  !end option 2
 
-      photolabel(jn)='PH2S'
+!      photolabel(jn)='PH2S'
 
       jn=jn+1
 
@@ -1737,6 +1756,8 @@
       END
 
        SUBROUTINE XS_H2O(nw,wl,wc,jn)
+         use photochem_data, only: sq, nz
+         use photochem_vars, only: rootdir
 !-----------------------------------------------------------------------------!
 !   purpose:                                                                  !
 !   provide product (cross section) x (quantum yield) for H2O photolysis:     !
@@ -1759,9 +1780,9 @@
 !     INCLUDE 'PHOTOCHEM/INPUTFILES/parameters.inc'
       implicit none
       integer :: n1
-      integer :: j
+      ! integer :: j
       integer :: iw
-      integer :: hjtest
+      ! integer :: hjtest
       integer :: kin
       REAL*8 deltax,biggest,zero
       PARAMETER (deltax = 1.E-4,biggest=1.E+36, zero=0.0)
@@ -1801,6 +1822,7 @@
 !     3) Ranjan et al. 2020 cross sections
 
       option=3
+      kin = 10
 
 !**NOTE option 1 will not work - need to implement ***
 
@@ -1925,9 +1947,9 @@
         if (wc(iw) .le. 145.0) then
 
              do iz = 1, nz
-             sq(j-2,iz,iw) = yg(iw) * 0.890
-               sq(j-1,iz,iw) = yg(iw) * 0.110
-               sq(j,  iz,iw) = yg(iw) * 0.0
+             sq(jn-2,iz,iw) = yg(iw) * 0.890
+               sq(jn-1,iz,iw) = yg(iw) * 0.110
+               sq(jn,  iz,iw) = yg(iw) * 0.0
            end do
 
           end if
@@ -1937,9 +1959,9 @@
         if (wc(iw) .gt. 145.0) then
 
              do iz = 1, nz
-               sq(j-2,iz,iw) = yg(iw) * 1.0
-                 sq(j-1,iz,iw) = yg(iw) * 0.0
-                 sq(j,  iz,iw) = yg(iw) * 0.0
+               sq(jn-2,iz,iw) = yg(iw) * 1.0
+                 sq(jn-1,iz,iw) = yg(iw) * 0.0
+                 sq(jn,  iz,iw) = yg(iw) * 0.0
            end do
 
           end if
@@ -1953,18 +1975,18 @@
 !         **** Caution, Lyman Alpha is always wavelength postion #2 ****
       iw = 2
       do iz = 1, nz
-        sq(j-2,iz,iw) = yg(iw) * 0.780
-          sq(j-1,iz,iw) = yg(iw) * 0.100
-          sq(j,  iz,iw) = yg(iw) * 0.120
+        sq(jn-2,iz,iw) = yg(iw) * 0.780
+          sq(jn-1,iz,iw) = yg(iw) * 0.100
+          sq(jn,  iz,iw) = yg(iw) * 0.120
       end do
 
       endif   !end option 1)
 
-      HJtest=0 !HOT JUPITER TEST
-      do i=1,nsp
-!         print*,i,ISPEC(i)
-         if (ISPEC(i).eq.'HE') HJtest=1  !temp solution to get 3 reactions for hot jupiters at Ly alpha
-      enddo
+      ! HJtest=0 !HOT JUPITER TEST
+      ! do i=1,nsp
+        ! print*,i,ISPEC(i)
+         ! if (ISPEC(i).eq.'HE') HJtest=1  !temp solution to get 3 reactions for hot jupiters at Ly alpha
+      ! enddo
 !         print*,"HJtest",HJtest
 
       if (option.eq.2) then
@@ -1986,11 +2008,11 @@
       CALL addpnt(x1,y1,kdata,n1,               zero,zero)
       CALL addpnt(x1,y1,kdata,n1,x1(n1)*(1.+deltax),zero)
       CALL addpnt(x1,y1,kdata,n1,            biggest,zero)
-      IF (HJTEST.EQ.1) THEN
-      	CALL inter3(nw+1,wl,yg1,n1,x1,y1,ierr)
-      ELSE
-       	CALL inter2(nw+1,wl,yg1,n1,x1,y1,ierr)
-      ENDIF
+      ! IF (HJTEST.EQ.1) THEN
+      	! CALL inter3(nw+1,wl,yg1,n1,x1,y1,ierr)
+      ! ELSE
+       CALL inter2(nw+1,wl,yg1,n1,x1,y1,ierr)
+      ! ENDIF
 
       IF (ierr .NE. 0) THEN
          WRITE(*,*) ierr, ' ***Something wrong in XS_H2O***'
@@ -2031,11 +2053,11 @@
       CALL addpnt(x1,y1,kdata,n1,               zero,zero)
       CALL addpnt(x1,y1,kdata,n1,x1(n1)*(1.+deltax),zero)
       CALL addpnt(x1,y1,kdata,n1,            biggest,zero)
-      IF (HJTEST.EQ.1) THEN
-      	CALL inter3(nw+1,wl,yg1,n1,x1,y1,ierr)
-      ELSE
-       	CALL inter2(nw+1,wl,yg1,n1,x1,y1,ierr)
-      ENDIF
+      ! IF (HJTEST.EQ.1) THEN
+      	! CALL inter3(nw+1,wl,yg1,n1,x1,y1,ierr)
+      ! ELSE
+       CALL inter2(nw+1,wl,yg1,n1,x1,y1,ierr)
+      ! ENDIF
 
       IF (ierr .NE. 0) THEN
          WRITE(*,*) ierr, ' ***Something wrong in XS_H2O***'
@@ -2058,7 +2080,7 @@
       endif   !end option 2
 
 
-      photolabel(jn)='PH2O'
+!      photolabel(jn)='PH2O'
       jn=jn+1
 
       RETURN
@@ -2066,6 +2088,8 @@
 !      end subroutine XS_H2O
 
        SUBROUTINE XS_SO(nw,wl,jn)
+         use photochem_data, only: sq, nz
+         use photochem_vars, only: rootdir
 !-----------------------------------------------------------------------------*
 !=  PURPOSE:                                                                 =*
 !=  Provide product of (cross section) x (quantum yield) for SO photolysis   =*
@@ -2081,7 +2105,7 @@
 !      PARAMETER(kin=33,kj=33,kw=250)    !kin - file unit#  !kj=number of reactions defined - will need to abstract or figure out
 !     INCLUDE 'PHOTOCHEM/INPUTFILES/parameters.inc'
       implicit none
-      integer :: hjtest
+      ! integer :: hjtest
       integer :: kin
       REAL*8 deltax,biggest,zero
       PARAMETER (deltax = 1.E-4,biggest=1.E+36, zero=0.0)
@@ -2126,11 +2150,11 @@
      &  file=trim(rootdir)//'DATA/XSECTIONS/SO/SO_zahnle.abs',&
      &  STATUS='old')
 
-      HJtest=0 !HOT JUPITER TEST
-      do i=1,nsp
+      ! HJtest=0 !HOT JUPITER TEST
+      ! do i=1,nsp
 !         print*,i,ISPEC(i)
-         if (ISPEC(i).eq.'HE') HJtest=1  !temp solution to get 3 reactions for hot jupiters at Ly alpha
-      enddo
+         ! if (ISPEC(i).eq.'HE') HJtest=1  !temp solution to get 3 reactions for hot jupiters at Ly alpha
+      ! enddo
 
 !         print*,"HJtest",HJtest
 
@@ -2147,11 +2171,11 @@
       CALL addpnt(x1,y1,kdata,n1,               zero,zero)
       CALL addpnt(x1,y1,kdata,n1,x1(n1)*(1.+deltax),zero)
       CALL addpnt(x1,y1,kdata,n1,            biggest,zero)
-      IF (HJtest.eq.1) THEN
-      	CALL inter3(nw+1,wl,yg1,n1,x1,y1,ierr)
-      ELSE
-      	CALL inter2(nw+1,wl,yg1,n1,x1,y1,ierr)
-      ENDIF
+      ! IF (HJtest.eq.1) THEN
+      ! 	CALL inter3(nw+1,wl,yg1,n1,x1,y1,ierr)
+      ! ELSE
+      CALL inter2(nw+1,wl,yg1,n1,x1,y1,ierr)
+      ! ENDIF
 
       IF (ierr .NE. 0) THEN
          WRITE(*,*) ierr, ' ***Something wrong in XS_SO***'
@@ -2175,7 +2199,7 @@
       ENDDO
       endif  !end option 1
 
-      photolabel(jn)='PSO'
+!      photolabel(jn)='PSO'
 
 
       jn=jn+1
@@ -2184,6 +2208,8 @@
       END
 
        SUBROUTINE XS_CO2(nw,wl,jn)
+         use photochem_data, only: sq, nz
+         use photochem_vars, only: rootdir
 !-----------------------------------------------------------------------------*
 !=  PURPOSE:                                                                 =*
 !=  Provide product of (cross section) x (quantum yield) for CO2 photolysis  =*
@@ -2200,7 +2226,7 @@
 
 !     INCLUDE 'PHOTOCHEM/INPUTFILES/parameters.inc'
       implicit none
-      integer :: hjtest
+      ! integer :: hjtest
       integer :: kin
       REAL*8 deltax,biggest,zero
       PARAMETER (deltax = 1.E-4,biggest=1.E+36, zero=0.0)
@@ -2239,11 +2265,11 @@
         !this data is for 195K - in the final run should be t-dependent
 
 
-      HJtest=0 !HOT JUPITER TEST
-      do i=1,nsp
+      ! HJtest=0 !HOT JUPITER TEST
+      ! do i=1,nsp
 !         print*,i,ISPEC(i)
-         if (ISPEC(i).eq.'HE') HJtest=1  !temp solution to get 3 reactions for hot jupiters at Ly alpha
-      enddo
+         ! if (ISPEC(i).eq.'HE') HJtest=1  !temp solution to get 3 reactions for hot jupiters at Ly alpha
+      ! enddo
 !         print*,"HJtest",HJtest
 
       option=1
@@ -2267,11 +2293,11 @@
       CALL addpnt(x1,y1,kdata,n1,               zero,zero)
       CALL addpnt(x1,y1,kdata,n1,x1(n1)*(1.+deltax),zero)
       CALL addpnt(x1,y1,kdata,n1,            biggest,zero)
-      IF (HJtest.eq.1) THEN
-      	CALL inter3(nw+1,wl,yg1,n1,x1,y1,ierr)
-      ELSE
-      	CALL inter2(nw+1,wl,yg1,n1,x1,y1,ierr)
-      ENDIF
+      ! IF (HJtest.eq.1) THEN
+      	! CALL inter3(nw+1,wl,yg1,n1,x1,y1,ierr)
+      ! ELSE
+      CALL inter2(nw+1,wl,yg1,n1,x1,y1,ierr)
+      ! ENDIF
 
       IF (ierr .NE. 0) THEN
          WRITE(*,*) ierr, ' ***Something wrong in XS_CO2***'
@@ -2295,11 +2321,11 @@
       CALL addpnt(x2,y2,kdata,n1,               zero,zero)
       CALL addpnt(x2,y2,kdata,n1,x2(n1)*(1.+deltax),zero)
       CALL addpnt(x2,y2,kdata,n1,            biggest,zero)
-      IF (HJtest.eq.1) THEN
-      	CALL inter3(nw+1,wl,yg2,n1,x2,y2,ierr)
-      ELSE
-      	CALL inter2(nw+1,wl,yg2,n1,x2,y2,ierr)
-      ENDIF
+      ! IF (HJtest.eq.1) THEN
+      	! CALL inter3(nw+1,wl,yg2,n1,x2,y2,ierr)
+      ! ELSE
+      CALL inter2(nw+1,wl,yg2,n1,x2,y2,ierr)
+      ! ENDIF
 
       IF (ierr .NE. 0) THEN
          WRITE(*,*) ierr, ' ***Something wrong in XS_CO2D***'
@@ -2364,10 +2390,10 @@
 
 !      print *, jn, photolabel
 
-      photolabel(jn)='PCO2'
+!      photolabel(jn)='PCO2'
       jn=jn+1
 
-      photolabel(jn)='PCO2_O1D'
+!      photolabel(jn)='PCO2_O1D'
       jn=jn+1
 
       RETURN
@@ -2376,6 +2402,8 @@
        !EWS - airlev, tlev, wc not used
 !      SUBROUTINE XS_H2CO(nw,wl,wc,tlev,airlev,jn)
        SUBROUTINE XS_H2CO(nw,wl,jn)
+         use photochem_data, only: sq, nz
+         use photochem_vars, only: rootdir
 !-----------------------------------------------------------------------------*
 !=  PURPOSE:                                                                 =*
 !=  Provide product of (cross section) x (quantum yield) for H2CO photolysis =*
@@ -2392,7 +2420,7 @@
 !      PARAMETER(kin=33,kj=33,kw=250)    !kin - file unit#  !kj=number of reactions defined - will need to abstract or figure out
 !     INCLUDE 'PHOTOCHEM/INPUTFILES/parameters.inc'
       implicit none
-      integer :: hjtest
+      ! integer :: hjtest
       integer :: kin
       REAL*8 deltax,biggest,zero
       PARAMETER (deltax = 1.E-4,biggest=1.E+36, zero=0.0)
@@ -2428,11 +2456,11 @@
 ! options
 !     1)Kevin's photo.dat data
 
-      HJtest=0 !HOT JUPITER TEST
-      do i=1,nsp
+      ! HJtest=0 !HOT JUPITER TEST
+      ! do i=1,nsp
 !         print*,i,ISPEC(i)
-         if (ISPEC(i).eq.'HE') HJtest=1  !temp solution to get 3 reactions for hot jupiters at Ly alpha
-      enddo
+         ! if (ISPEC(i).eq.'HE') HJtest=1  !temp solution to get 3 reactions for hot jupiters at Ly alpha
+      ! enddo
 !         print*,"HJtest",HJtest
 
       option=1
@@ -2462,11 +2490,11 @@
       CALL addpnt(x1,y1,kdata,n1,               zero,zero)
       CALL addpnt(x1,y1,kdata,n1,x1(n1)*(1.+deltax),zero)
       CALL addpnt(x1,y1,kdata,n1,            biggest,zero)
-      IF (HJtest.eq.1) THEN
-      	CALL inter3(nw+1,wl,yg1,n1,x1,y1,ierr)
-      ELSE
-      	CALL inter2(nw+1,wl,yg1,n1,x1,y1,ierr)
-      ENDIF
+      ! IF (HJtest.eq.1) THEN
+      	! CALL inter3(nw+1,wl,yg1,n1,x1,y1,ierr)
+      ! ELSE
+      CALL inter2(nw+1,wl,yg1,n1,x1,y1,ierr)
+      ! ENDIF
 
 !yg1 is H2CO cross section
 
@@ -2482,11 +2510,11 @@
       CALL addpnt(x2,y2,kdata,n2,               zero,zero)
       CALL addpnt(x2,y2,kdata,n2,x2(n2)*(1.+deltax),zero)
       CALL addpnt(x2,y2,kdata,n2,            biggest,zero)
-      IF (HJtest.eq.1) THEN
-       CALL inter3(nw+1,wl,yg2,n2,x2,y2,ierr)
-      ELSE
-       CALL inter2(nw+1,wl,yg2,n2,x2,y2,ierr)
-      ENDIF
+      ! IF (HJtest.eq.1) THEN
+       ! CALL inter3(nw+1,wl,yg2,n2,x2,y2,ierr)
+      ! ELSE
+      CALL inter2(nw+1,wl,yg2,n2,x2,y2,ierr)
+      ! ENDIF
 
 !yg2 is quantum yield for HCO
 
@@ -2500,11 +2528,11 @@
       CALL addpnt(x3,y3,kdata,n3,               zero,zero)
       CALL addpnt(x3,y3,kdata,n3,x3(n3)*(1.+deltax),zero)
       CALL addpnt(x3,y3,kdata,n3,            biggest,zero)
-      IF (HJtest.eq.1) THEN
-       CALL inter3(nw+1,wl,yg3,n3,x3,y3,ierr)
-      ELSE
-       CALL inter2(nw+1,wl,yg3,n3,x3,y3,ierr)
-      ENDIF
+      ! IF (HJtest.eq.1) THEN
+       ! CALL inter3(nw+1,wl,yg3,n3,x3,y3,ierr)
+      ! ELSE
+      CALL inter2(nw+1,wl,yg3,n3,x3,y3,ierr)
+      ! ENDIF
 
 !yg3 is quantum yield for H2
 
@@ -2524,10 +2552,10 @@
       ENDDO
       endif   ! end option 1
 
-      photolabel(jn)='PH2CO_H2'
+!      photolabel(jn)='PH2CO_H2'
       jn=jn+1
 
-      photolabel(jn)='PH2CO_HCO'
+!      photolabel(jn)='PH2CO_HCO'
       jn=jn+1
 
       RETURN
@@ -2535,6 +2563,8 @@
 
 
        SUBROUTINE XS_SO2(nw,wl,jn)
+         use photochem_data, only: sq, nz
+         use photochem_vars, only: rootdir
 !-----------------------------------------------------------------------------*
 !=  PURPOSE:                                                                 =*
 !=  Provide product of (cross section) x (quantum yield) for SO2 photolysis  =*
@@ -2552,11 +2582,11 @@
 !      PARAMETER(kin=33,kj=33,kw=250)    !kin - file unit#  !kj=number of reactions defined - will need to abstract or figure out
 !     INCLUDE 'PHOTOCHEM/INPUTFILES/parameters.inc'
       implicit none
-      integer :: newspec
-      integer :: n6
-      integer :: n5
-      integer :: n4
-      integer :: hjtest
+      ! integer :: newspec
+      ! integer :: n6
+      ! integer :: n5
+      ! integer :: n4
+      ! integer :: hjtest
       integer :: kin
       REAL*8 deltax,biggest,zero
       PARAMETER (deltax = 1.E-4,biggest=1.E+36, zero=0.0)
@@ -2582,17 +2612,17 @@
       REAL*8 x1(kdata), x2(kdata), x3(kdata)
       REAL*8 y1(kdata), y2(kdata), y3(kdata)
 
-      REAL*8 x32(kdataHR), x33(kdataHR), x34(kdataHR),xdum(kdataHR)
-      REAL*8 y32(kdataHR), y33(kdataHR), y34(kdataHR)
-      REAL*8 ydum1(kdataHR), ydum2(kdataHR), ydum3(kdataHR)
+      ! REAL*8 x32(kdataHR), x33(kdataHR), x34(kdataHR),xdum(kdataHR)
+      ! REAL*8 y32(kdataHR), y33(kdataHR), y34(kdataHR)
+      ! REAL*8 ydum1(kdataHR), ydum2(kdataHR), ydum3(kdataHR)
 
 
 ! local
-      REAL*8 yg1(nw), yg2(nw), yg3(nw), ygnew(nw)
+      REAL*8 yg1(nw), yg2(nw), yg3(nw)
 !      REAL*8 yg32(nw),yg33(nw), yg34(nw) ! EWS - not used
 
 !      REAL*8 qy !EWS - not used
-      real*8 mass  !from PHOTABLOK
+      ! real*8 mass  !from PHOTABLOK
       INTEGER i, iw
       INTEGER ierr,option
       ierr = 0
@@ -2614,11 +2644,11 @@
 
       option=1
 
-      HJtest=0 !HOT JUPITER TEST
-      do i=1,nsp
+      ! HJtest=0 !HOT JUPITER TEST
+      ! do i=1,nsp
 !         print*,i,ISPEC(i)
-         if (ISPEC(i).eq.'HE') HJtest=1  !temp solution to get 3 reactions for hot jupiters at Ly alpha
-      enddo
+         ! if (ISPEC(i).eq.'HE') HJtest=1  !temp solution to get 3 reactions for hot jupiters at Ly alpha
+      ! enddo
 !         print*,"HJtest",HJtest
 
       if (option.eq.1) then  !Kevin's data
@@ -2647,11 +2677,11 @@
       CALL addpnt(x1,y1,kdata,n1,               zero,zero)
       CALL addpnt(x1,y1,kdata,n1,x1(n1)*(1.+deltax),zero)
       CALL addpnt(x1,y1,kdata,n1,            biggest,zero)
-      IF (HJtest.eq.1) THEN
-      	CALL inter3(nw+1,wl,yg1,n1,x1,y1,ierr)
-      ELSE
-      	CALL inter2(nw+1,wl,yg1,n1,x1,y1,ierr)
-      ENDIF
+      ! IF (HJtest.eq.1) THEN
+      	! CALL inter3(nw+1,wl,yg1,n1,x1,y1,ierr)
+      ! ELSE
+      CALL inter2(nw+1,wl,yg1,n1,x1,y1,ierr)
+      ! ENDIF
 !yg1 is SO + O cross section * quantum yield
 
       IF (ierr .NE. 0) THEN
@@ -2687,24 +2717,24 @@
       ENDIF
 
 
-      if (LGRID.eq.1) then   !on fine wavelength grid, use Danielache data
+      ! if (LGRID.eq.1) then   !on fine wavelength grid, use Danielache data
 
-      newspec=1  !use Sebastian's corrected spectrum
-      kin = 587
-      if (newspec.eq.0) then
-      kin = 587
-      OPEN(UNIT=kin,&
-     &  file=trim(rootdir)//'DATA/XSECTIONS/SO2/2007jd009695-ds01.txt',&
-     &  STATUS='old')
-      n4 = 3360
+     !  newspec=1  !use Sebastian's corrected spectrum
+     !  kin = 587
+     !  if (newspec.eq.0) then
+     !  kin = 587
+     !  OPEN(UNIT=kin,&
+     ! &  file=trim(rootdir)//'DATA/XSECTIONS/SO2/2007jd009695-ds01.txt',&
+     ! &  STATUS='old')
+     !  n4 = 3360
 !the default used for the sulfur mif calculations in the 2013 paper - from Danielace 2012 JGR paper
-      else
+      ! else
 
-      OPEN(UNIT=kin,file=&
-     & trim(rootdir)//'DATA/XSECTIONS&
-     &/SO2/data-non-systematic-errors-corrections.txt',&
-     &  STATUS='old')
-      n4 = 1184
+     !  OPEN(UNIT=kin,file=&
+     ! & trim(rootdir)//'DATA/XSECTIONS&
+     ! &/SO2/data-non-systematic-errors-corrections.txt',&
+     ! &  STATUS='old')
+     !  n4 = 1184
 !Seba said the published versions are incorrect and sent these along in 2013
 
 ! longward1.txt is non-systematic + 2007data to 320nm
@@ -2719,51 +2749,51 @@
 !      n4 = 4159
 
 
-      endif
+      ! endif
 
 
 
-
-      DO i = 1, 1
-         READ(kin,*)  !skip a line...
-      ENDDO
-
-
-
-      n5 = n4
-      n6 = n4
-      DO i = 1, n4
-       if (newspec.eq.0) then
-         READ(kin,*) xdum(i),x32(i),y32(i),ydum1(i),y33(i),ydum2(i),&
-     &               y34(i),ydum3(i)
-       else
-         READ(kin,*) x32(i),y32(i),y33(i), y34(i),ydum1(i),&
-     &               ydum2(i),ydum3(i)
-       endif
-
-         x32(i)=x32(i)*10.   !convert from nm to A
-         x33(i)=x32(i)
-         x34(i)=x32(i)
-      ENDDO
-      CLOSE (kin)
-
-      print *, 'using high resolution SO2 cross section'
-
-      CALL addpnt(x32,y32,kdataHR,n4,x32(1)*(1.-deltax),zero)
-      CALL addpnt(x32,y32,kdataHR,n4,               zero,zero)
-      CALL addpnt(x32,y32,kdataHR,n4,x32(n1)*(1.+deltax),zero)
-      CALL addpnt(x32,y32,kdataHR,n4,            biggest,zero)
-      CALL inter2(nw+1,wl,ygnew,n4,x32,y32,0)
+      ! 
+      ! DO i = 1, 1
+      !    READ(kin,*)  !skip a line...
+      ! ENDDO
 
 
-      IF (ierr .NE. 0) THEN
-         WRITE(*,*) ierr, ' ***Something wrong in XS_SO2***'
-         STOP
-      ENDIF
+
+     !  n5 = n4
+     !  n6 = n4
+     !  DO i = 1, n4
+     !   if (newspec.eq.0) then
+     !     READ(kin,*) xdum(i),x32(i),y32(i),ydum1(i),y33(i),ydum2(i),&
+     ! &               y34(i),ydum3(i)
+     !   else
+     !     READ(kin,*) x32(i),y32(i),y33(i), y34(i),ydum1(i),&
+     ! &               ydum2(i),ydum3(i)
+     !   endif
+     ! 
+     !     x32(i)=x32(i)*10.   !convert from nm to A
+     !     x33(i)=x32(i)
+     !     x34(i)=x32(i)
+     !  ENDDO
+     !  CLOSE (kin)
+
+      ! print *, 'using high resolution SO2 cross section'
+
+      ! CALL addpnt(x32,y32,kdataHR,n4,x32(1)*(1.-deltax),zero)
+      ! CALL addpnt(x32,y32,kdataHR,n4,               zero,zero)
+      ! CALL addpnt(x32,y32,kdataHR,n4,x32(n1)*(1.+deltax),zero)
+      ! CALL addpnt(x32,y32,kdataHR,n4,            biggest,zero)
+      ! CALL inter2(nw+1,wl,ygnew,n4,x32,y32,0)
+
+
+      ! IF (ierr .NE. 0) THEN
+      !    WRITE(*,*) ierr, ' ***Something wrong in XS_SO2***'
+      !    STOP
+      ! ENDIF
 
 !assuming quantum yield of 1 for <220nm and 0 otherwise
 
-      endif  !end fine wavelength grid
+      ! endif  !end fine wavelength grid
 
       DO iw = 1, nw
          DO i = 1, nz
@@ -2775,13 +2805,13 @@
       endif   ! end option 1
 
 
-      photolabel(jn)='PSO2'
+!      photolabel(jn)='PSO2'
       jn=jn+1
 
-      photolabel(jn)='PSO2_SO21'
+!      photolabel(jn)='PSO2_SO21'
       jn=jn+1
 
-      photolabel(jn)='PSO2_SO23'
+!      photolabel(jn)='PSO2_SO23'
       jn=jn+1
 
       RETURN
@@ -2789,6 +2819,8 @@
 
 
        SUBROUTINE XS_O3(nw,wl,tlev,jn)
+         use photochem_data, only: sq, nz
+         use photochem_vars, only: rootdir
 !-----------------------------------------------------------------------------*
 !=  PURPOSE:                                                                 =*
 !=  Provide product of (cross section) x (quantum yield) for O3 photolysis   =*
@@ -2802,7 +2834,7 @@
 
 !     INCLUDE 'PHOTOCHEM/INPUTFILES/parameters.inc'
       implicit none
-      integer :: hjtest
+      ! integer :: hjtest
       integer :: kin
       REAL*8 deltax,biggest,zero
       PARAMETER (deltax = 1.E-4,biggest=1.E+36, zero=0.0)
@@ -2873,11 +2905,11 @@
 !$$$      enddo
 !$$$      stop
 
-      HJtest=0 !HOT JUPITER TEST
-      do i=1,nsp
+      ! HJtest=0 !HOT JUPITER TEST
+      ! do i=1,nsp
 !         print*,i,ISPEC(i)
-         if (ISPEC(i).eq.'HE') HJtest=1  !temp solution to get 3 reactions for hot jupiters at Ly alpha
-      enddo
+         ! if (ISPEC(i).eq.'HE') HJtest=1  !temp solution to get 3 reactions for hot jupiters at Ly alpha
+      ! enddo
 !         print*,"HJtest",HJtest
       kin = 4356
       OPEN(UNIT=kin,&
@@ -2900,11 +2932,11 @@
       CALL addpnt(x1,y1,kdata,n1,               zero,zero)
       CALL addpnt(x1,y1,kdata,n1,x1(n1)*(1.+deltax),zero)
       CALL addpnt(x1,y1,kdata,n1,            biggest,zero)
-      IF (HJtest.eq.1) THEN
-      	CALL inter3(nw+1,wl,yg1,n1,x1,y1,ierr)
-      ELSE
-      	CALL inter2(nw+1,wl,yg1,n1,x1,y1,ierr)
-      ENDIF
+      ! IF (HJtest.eq.1) THEN
+      ! 	CALL inter3(nw+1,wl,yg1,n1,x1,y1,ierr)
+      ! ELSE
+      CALL inter2(nw+1,wl,yg1,n1,x1,y1,ierr)
+      ! ENDIF
 
 !yg1 is "ozone 1" from photo.dat, i.e. SO31 in Kevin's code
 
@@ -3004,10 +3036,10 @@
 
 !      print *, jn, photolabel
 
-      photolabel(jn)='PO3_O1D'
+!      photolabel(jn)='PO3_O1D'
       jn=jn+1
 
-      photolabel(jn)='PO3'
+!      photolabel(jn)='PO3'
       jn=jn+1
 
       RETURN
@@ -3016,6 +3048,8 @@
        !EWS - airlev, tlev, and wc not used
 !      SUBROUTINE XS_HCL(nw,wl,wc,tlev,airlev,jn)
        SUBROUTINE XS_HCL(nw,wl,jn)
+         use photochem_data, only: sq, nz
+         use photochem_vars, only: rootdir
 !-----------------------------------------------------------------------------*
 !=  PURPOSE:                                                                 =*
 !=  Provide product of (cross section) x (quantum yield) for HCL photolysis  =*
@@ -3031,9 +3065,9 @@
 !      PARAMETER(kin=33,kj=33,kw=250)    !kin - file unit#  !kj=number of reactions defined - will need to abstract or figure out
 !     INCLUDE 'PHOTOCHEM/INPUTFILES/parameters.inc'
       implicit none
-      integer :: j
+      ! integer :: j
       integer :: iw
-      integer :: hjtest
+      ! integer :: hjtest
       integer :: kin
       REAL*8 deltax,biggest,zero
       PARAMETER (deltax = 1.E-4,biggest=1.E+36, zero=0.0)
@@ -3079,11 +3113,11 @@
      &  file=trim(rootdir)//'DATA/XSECTIONS/HCL/HCL_zahnle.abs',&
      &  STATUS='old')
 
-      HJtest=0 !HOT JUPITER TEST
-      do i=1,nsp
+      ! HJtest=0 !HOT JUPITER TEST
+      ! do i=1,nsp
 !         print*,i,ISPEC(i)
-         if (ISPEC(i).eq.'HE') HJtest=1  !temp solution to get 3 reactions for hot jupiters at Ly alpha
-      enddo
+         ! if (ISPEC(i).eq.'HE') HJtest=1  !temp solution to get 3 reactions for hot jupiters at Ly alpha
+      ! enddo
 !         print*,"HJtest",HJtest
 
       DO i = 1, 2
@@ -3099,11 +3133,11 @@
       CALL addpnt(x1,y1,kdata,n1,               zero,zero)
       CALL addpnt(x1,y1,kdata,n1,x1(n1)*(1.+deltax),zero)
       CALL addpnt(x1,y1,kdata,n1,            biggest,zero)
-      IF (HJtest.eq.1) THEN
-      	CALL inter3(nw+1,wl,yg1,n1,x1,y1,ierr)
-      ELSE
-      	CALL inter2(nw+1,wl,yg1,n1,x1,y1,ierr)
-      ENDIF
+      ! IF (HJtest.eq.1) THEN
+      ! 	CALL inter3(nw+1,wl,yg1,n1,x1,y1,ierr)
+      ! ELSE
+      CALL inter2(nw+1,wl,yg1,n1,x1,y1,ierr)
+      ! ENDIF
 
       IF (ierr .NE. 0) THEN
          WRITE(*,*) ierr, ' ***Something wrong in XS_HCL***'
@@ -3122,7 +3156,7 @@
 
       DO iw = 1, nw
          DO i = 1, nz
-              sq(j,i,iw) = yg1(iw)*qy
+              sq(jn,i,iw) = yg1(iw)*qy
          ENDDO
       ENDDO
       endif  !end option 1
@@ -3172,7 +3206,7 @@
       ENDDO
       endif  !end option 2
 
-      photolabel(jn)='PHCL'
+!      photolabel(jn)='PHCL'
       jn=jn+1
 
 
@@ -3184,6 +3218,8 @@
        !EWS - wc not used
 !      SUBROUTINE XS_O2(nw,wl,wc,tlev,airlev,jn,columndepth,zy,IO2)
        SUBROUTINE XS_O2(nw,wl,tlev,airlev,jn,columndepth,zy,IO2)
+         use photochem_data, only: sq, nz, kj
+         use photochem_vars, only: rootdir
 !-----------------------------------------------------------------------------*
 !=  PURPOSE:                                                                 =*
 !=  Provide product of (cross section) x (quantum yield) for O2 photolysis   =*
@@ -3199,7 +3235,7 @@
 !     INCLUDE 'PHOTOCHEM/INPUTFILES/parameters.inc'
       implicit none
       integer :: j
-      integer :: hjtest
+      ! integer :: hjtest
       integer :: kin
       REAL*8 deltax,biggest,zero
       PARAMETER (deltax = 1.E-4,biggest=1.E+36, zero=0.0)
@@ -3291,11 +3327,11 @@
 !         print*,'x2(i),wl(i),y2(i),yg2(i)',x2(i),wl(i),y2(i),yg2(i)
 !      ENDDO
 
-      HJtest=0 !HOT JUPITER TEST
-      do i=1,nsp
+      ! HJtest=0 !HOT JUPITER TEST
+      ! do i=1,nsp
 !         print*,i,ISPEC(i)
-         if (ISPEC(i).eq.'HE') HJtest=1  !temp solution to get 3 reactions for hot jupiters at Ly alpha
-      enddo
+         ! if (ISPEC(i).eq.'HE') HJtest=1  !temp solution to get 3 reactions for hot jupiters at Ly alpha
+      ! enddo
 
 !         print*,"HJtest",HJtest
 
@@ -3303,11 +3339,11 @@
       CALL addpnt(x2,y2,kdata,n1,               zero,zero)
       CALL addpnt(x2,y2,kdata,n1,x2(n1)*(1.+deltax),zero)
       CALL addpnt(x2,y2,kdata,n1,            biggest,zero)
-      IF (HJtest.eq.1) THEN
-      	CALL inter3(nw+1,wl,yg2,n1,x2,y2,ierr)
-      ELSE
-      	CALL inter2(nw+1,wl,yg2,n1,x2,y2,ierr)
-      ENDIF
+      ! IF (HJtest.eq.1) THEN
+      	! CALL inter3(nw+1,wl,yg2,n1,x2,y2,ierr)
+      ! ELSE
+      CALL inter2(nw+1,wl,yg2,n1,x2,y2,ierr)
+      ! ENDIF
 !      DO i = 1, n1
 !         print*,'x2(i),wl(i),y2(i),yg2(i)',x2(i),wl(i),y2(i),yg2(i)
 !      ENDDO
@@ -3338,11 +3374,11 @@
       CALL addpnt(x1,y1,kdata,n1,               zero,zero)
       CALL addpnt(x1,y1,kdata,n1,x1(n1)*(1.+deltax),zero)
       CALL addpnt(x1,y1,kdata,n1,            biggest,zero)
-      IF (HJtest.eq.1) THEN
-      	CALL inter3(nw+1,wl,yg1,n1,x1,y1,ierr)
-      ELSE
-      	CALL inter2(nw+1,wl,yg1,n1,x1,y1,ierr)
-      ENDIF
+      ! IF (HJtest.eq.1) THEN
+      	! CALL inter3(nw+1,wl,yg1,n1,x1,y1,ierr)
+      ! ELSE
+      CALL inter2(nw+1,wl,yg1,n1,x1,y1,ierr)
+      ! ENDIF
 
 !      DO i = 1, n1
 !         print*,'x1(i),wl(i),y1(i),yg1(i)',x1(i),wl(i),y1(i),yg1(i)
@@ -3482,15 +3518,15 @@
         sq(jn,i,L) = yg2(L)      !for O1D ...
 !           if(i.eq.1)print*,"L,jn,sq(jn,1,L)",L,jn,sq(jn,i,L)
 
-        if (HJtest.EQ.1.) then
-         sq(jn+1,I,L)=0.0
-        else
+        ! if (HJtest.EQ.1.) then
+        !  sq(jn+1,I,L)=0.0
+        ! else
          sq(jn+1,I,L)=yg1(L)        !for O2
 
          if (wl(L) .GE. 1754. .AND. wl(L) .LE. 2041.) then
             sq(jn+1,I,L)=sq(jn+1,I,L) + SRO2(I,L-10) !add in Schuman-Runge correction
 !            sq(j+1,I,L)=sq(j+1,I,L) + SRO2(I,L) !add in Schuman-Runge correction
-         endif
+         ! endif
         endif
 !           if(i.eq.1)print*,"L,jn+1,sq(jn+1,1,L)",L,jn+1,sq(jn+1,i,L)
        enddo
@@ -3600,10 +3636,10 @@
 
 !      print *, jn, photolabel
 
-      photolabel(jn)='PO2_O1D'
+!      photolabel(jn)='PO2_O1D'
       jn=jn+1
 
-      photolabel(jn)='PO2_O3P'
+!      photolabel(jn)='PO2_O3P'
       jn=jn+1
 
       RETURN
@@ -3612,6 +3648,8 @@
        !EWS - airlev, tlev, and wc not used
 !      SUBROUTINE XS_CH4(nw,wl,wc,tlev,airlev,jn)
        SUBROUTINE XS_CH4(nw,wl,jn)
+         use photochem_data, only: sq, nz
+         use photochem_vars, only: rootdir
 !-----------------------------------------------------------------------------*
 !=  PURPOSE:                                                                 =*
 !=  Provide product of (cross section) x (quantum yield) for CH4 photolysis  =*
@@ -3628,7 +3666,7 @@
       implicit none
       real*8 :: qy3
       real*8 :: qy2
-      integer :: hjtest
+      ! integer :: hjtest
       integer :: kin
       REAL*8 deltax,biggest,zero
       PARAMETER (deltax = 1.E-4,biggest=1.E+36, zero=0.0)
@@ -3667,11 +3705,11 @@
 
       option=1
 
-      HJtest=0 !HOT JUPITER TEST
-      do i=1,nsp
+      ! HJtest=0 !HOT JUPITER TEST
+      ! do i=1,nsp
 !         print*,i,ISPEC(i)
-         if (ISPEC(i).eq.'HE') HJtest=1  !temp solution to get 3 reactions for hot jupiters at Ly alpha
-      enddo
+         ! if (ISPEC(i).eq.'HE') HJtest=1  !temp solution to get 3 reactions for hot jupiters at Ly alpha
+      ! enddo
 
 !         print*,"HJtest",HJtest
       if (option.eq.1) then  !Kevin's data
@@ -3693,11 +3731,11 @@
       CALL addpnt(x1,y1,kdata,n1,               zero,zero)
       CALL addpnt(x1,y1,kdata,n1,x1(n1)*(1.+deltax),zero)
       CALL addpnt(x1,y1,kdata,n1,            biggest,zero)
-      IF (HJtest.eq.1) THEN
-      	CALL inter3(nw+1,wl,yg1,n1,x1,y1,ierr)
-      ELSE
-      	CALL inter2(nw+1,wl,yg1,n1,x1,y1,ierr)
-      ENDIF
+      ! IF (HJtest.eq.1) THEN
+      ! 	CALL inter3(nw+1,wl,yg1,n1,x1,y1,ierr)
+      ! ELSE
+      CALL inter2(nw+1,wl,yg1,n1,x1,y1,ierr)
+      ! ENDIF
 
 
       IF (ierr .NE. 0) THEN
@@ -3730,13 +3768,13 @@
 
 !      print *, jn, photolabel
 
-      photolabel(jn)='PCH4_1CH2'
+!      photolabel(jn)='PCH4_1CH2'
       jn=jn+1
 
-      photolabel(jn)='PCH4_CH3'
+!      photolabel(jn)='PCH4_CH3'
       jn=jn+1
 
-      photolabel(jn)='PCH4_3CH2'
+!      photolabel(jn)='PCH4_3CH2'
       jn=jn+1
 
       RETURN
@@ -3746,6 +3784,8 @@
        ! EWS - airlev, tlev, and wc not used
 !      SUBROUTINE XS_C2H6(nw,wl,wc,tlev,airlev,jn)
        SUBROUTINE XS_C2H6(nw,wl,jn)
+         use photochem_data, only: sq, ispec, nz, nsp
+         use photochem_vars, only: rootdir
 !-----------------------------------------------------------------------------*
 !=  PURPOSE:                                                                 =*
 !=  Provide product of (cross section) x (quantum yield) for C2H6 photolysis =*
@@ -3773,7 +3813,7 @@
       real*8 :: qy5
       real*8 :: qy4
       real*8 :: qy3
-      integer :: hjtest
+      ! integer :: hjtest
       integer :: hctest
       integer :: kin
       REAL*8 deltax,biggest,zero
@@ -3819,11 +3859,11 @@
      &  file=trim(rootdir)//'DATA/XSECTIONS/C2H6/C2H6_zahnle.abs',&
      &  STATUS='old')
 
-      HJtest=0 !HOT JUPITER TEST
-      do i=1,nsp
+      ! HJtest=0 !HOT JUPITER TEST
+      ! do i=1,nsp
 !         print*,i,ISPEC(i)
-         if (ISPEC(i).eq.'HE') HJtest=1  !temp solution to get 3 reactions for hot jupiters at Ly alpha
-      enddo
+         ! if (ISPEC(i).eq.'HE') HJtest=1  !temp solution to get 3 reactions for hot jupiters at Ly alpha
+      ! enddo
 
 !         print*,"HJtest",HJtest
 
@@ -3840,11 +3880,11 @@
       CALL addpnt(x1,y1,kdata,n1,               zero,zero)
       CALL addpnt(x1,y1,kdata,n1,x1(n1)*(1.+deltax),zero)
       CALL addpnt(x1,y1,kdata,n1,            biggest,zero)
-      IF (HJtest.eq.1) THEN
-        CALL inter3(nw+1,wl,yg1,n1,x1,y1,ierr)
-      ELSE
-      	CALL inter2(nw+1,wl,yg1,n1,x1,y1,ierr)
-      ENDIF
+      ! IF (HJtest.eq.1) THEN
+      !   CALL inter3(nw+1,wl,yg1,n1,x1,y1,ierr)
+      ! ELSE
+      CALL inter2(nw+1,wl,yg1,n1,x1,y1,ierr)
+      ! ENDIF
 
       IF (ierr .NE. 0) THEN
          WRITE(*,*) ierr, ' ***Something wrong in XS_C2H6***'
@@ -3901,19 +3941,19 @@
 
 !      print *, jn, photolabel
 
-      photolabel(jn)='PC2H6_1'
+!      photolabel(jn)='PC2H6_1'
       jn=jn+1
-      photolabel(jn)='PC2H6_2'
+!      photolabel(jn)='PC2H6_2'
       jn=jn+1
 
       if (HCtest.eq.1.0) then
-      photolabel(jn)='PC2H6_3'
+!      photolabel(jn)='PC2H6_3'
       jn=jn+1
-      photolabel(jn)='PC2H6_4'
+!      photolabel(jn)='PC2H6_4'
       jn=jn+1
-      photolabel(jn)='PC2H6_5'
+!      photolabel(jn)='PC2H6_5'
       jn=jn+1
-      photolabel(jn)='PC2H6_6'
+!      photolabel(jn)='PC2H6_6'
       jn=jn+1
       endif
 
@@ -3923,6 +3963,8 @@
        ! EWS - wl, wc, sq, and nw not used
 !      SUBROUTINE XS_NO(nw,wl,wc,tlev,airlev,jn,columndepth)
        SUBROUTINE XS_NO(tlev,airlev,jn,columndepth)
+         use photochem_data, only: nz, kj, zy
+         use photochem_wrk, only: SIGNO
 !-----------------------------------------------------------------------------*
 !=  PURPOSE:                                                                 =*
 !=  Provide product of (cross section) x (quantum yield) for NO photolysis   =*
@@ -3937,7 +3979,7 @@
       ! real*8 :: signo(nz,2)
       real*8 :: to2l(nz)
       real*8 :: e_15
-      integer :: kin
+      ! integer :: kin
 !     INCLUDE 'DATA/INCLUDE/QBLOK.inc'
       REAL*8 deltax,biggest,zero
       PARAMETER (deltax = 1.E-4,biggest=1.E+36, zero=0.0)
@@ -4068,7 +4110,7 @@
 
       endif  !end option 1
 
-      photolabel(jn)='PNO'
+!      photolabel(jn)='PNO'
       jn=jn+1
 
       RETURN
@@ -4077,6 +4119,8 @@
        !EWS - airlev and wc not used
 !      SUBROUTINE XS_NO3(nw,wl,wc,tlev,airlev,jn)
        SUBROUTINE XS_NO3(nw,wl,tlev,jn)
+         use photochem_data, only: sq, nz
+         use photochem_vars, only: rootdir
 !-----------------------------------------------------------------------------*
 !=  PURPOSE:                                                                 =*
 !=  Provide product of (cross section) x (quantum yield) for NO3 photolysis  =*
@@ -4269,10 +4313,10 @@
 
 !      write(14,*) jn, photolabel
 
-      photolabel(jn)='PNO3_NO'
+!      photolabel(jn)='PNO3_NO'
       jn=jn+1
 
-      photolabel(jn)='PNO3_NO2'
+!      photolabel(jn)='PNO3_NO2'
       jn=jn+1
 
       RETURN
@@ -4283,6 +4327,8 @@
        !EWS - airlev not used
 !      SUBROUTINE XS_N2O(nw,wl,wc,tlev,airlev,jn)
        SUBROUTINE XS_N2O(nw,wl,wc,tlev,jn)
+         use photochem_data, only: sq, nz
+         use photochem_vars, only: rootdir
 !-----------------------------------------------------------------------------*
 !=  PURPOSE:                                                                 =*
 !=  Provide product of (cross section) x (quantum yield) for N2O photolysis  =*
@@ -4415,7 +4461,7 @@
 
       endif  !end option 1
 
-      photolabel(jn)='PN2O'
+!      photolabel(jn)='PN2O'
       jn=jn+1
 
       RETURN
@@ -4425,6 +4471,8 @@
        !EWS - airlev, tlev, and wc not used
 !      SUBROUTINE XS_CLO(nw,wl,wc,tlev,airlev,jn)
        SUBROUTINE XS_CLO(nw,wl,jn)
+         use photochem_data, only: sq, nz
+         use photochem_vars, only: rootdir
 !-----------------------------------------------------------------------------*
 !=  PURPOSE:                                                                 =*
 !=  Provide product of (cross section) x (quantum yield) for CLO photolysis  =*
@@ -4519,10 +4567,10 @@
       ENDDO
       endif  !end option 1
 
-      photolabel(jn)='PCLO_O1D'
+!      photolabel(jn)='PCLO_O1D'
       jn=jn+1
 
-      photolabel(jn)='PCLO_O3P'
+!      photolabel(jn)='PCLO_O3P'
       jn=jn+1
 
       RETURN
@@ -4532,6 +4580,8 @@
        !EWS airlev, tlev, and wc not needed
 !      SUBROUTINE XS_HOCL(nw,wl,wc,tlev,airlev,jn)
        SUBROUTINE XS_HOCL(nw,wl,jn)
+         use photochem_data, only: sq, nz
+         use photochem_vars, only: rootdir
 !-----------------------------------------------------------------------------*
 !=  PURPOSE:                                                                 =*
 !=  Provide product of (cross section) x (quantum yield) for HOCL photolysis =*
@@ -4619,7 +4669,7 @@
       ENDDO
       endif  !end option 1
 
-      photolabel(jn)='PHOCL'
+!      photolabel(jn)='PHOCL'
       jn=jn+1
 
       RETURN
@@ -4628,6 +4678,8 @@
        !EWS - airlev and wc not used
 !      SUBROUTINE XS_CL2(nw,wl,wc,tlev,airlev,jn)
        SUBROUTINE XS_CL2(nw,wl,tlev,jn)
+         use photochem_data, only: sq, nz
+         ! use photochem_vars, only: rootdir
 !-----------------------------------------------------------------------------*
 !=  PURPOSE:                                                                 =*
 !=  Provide product of (cross section) x (quantum yield) for HOCL photolysis =*
@@ -4640,7 +4692,7 @@
 
 !     INCLUDE 'PHOTOCHEM/INPUTFILES/parameters.inc'
       implicit none
-      integer :: kin
+      ! integer :: kin
       REAL*8 deltax,biggest,zero
       PARAMETER (deltax = 1.E-4,biggest=1.E+36, zero=0.0)
 !     CHARACTER*11 photolabel
@@ -4699,7 +4751,7 @@
       ENDDO
       endif  !end option 1
 
-      photolabel(jn)='PCL2'
+!      photolabel(jn)='PCL2'
       jn=jn+1
 
       RETURN
@@ -4708,6 +4760,8 @@
        !EWS - airlev, tlev, and wc not used
 !      SUBROUTINE XS_CLOO(nw,wl,wc,tlev,airlev,jn)
        SUBROUTINE XS_CLOO(nw,wl,jn)
+         use photochem_data, only: sq, nz
+         use photochem_vars, only: rootdir
 !-----------------------------------------------------------------------------*
 !=  PURPOSE:                                                                 =*
 !=  Provide product of (cross section) x (quantum yield) for CLOO photolysis =*
@@ -4795,7 +4849,7 @@
       ENDDO
       endif  !end option 1
 
-      photolabel(jn)='PCLOO'
+!      photolabel(jn)='PCLOO'
       jn=jn+1
 
       RETURN
@@ -4804,6 +4858,8 @@
        !EWS - airlev, tlev, and wc not used
 !      SUBROUTINE XS_OCLO(nw,wl,wc,tlev,airlev,jn)
        SUBROUTINE XS_OCLO(nw,wl,jn)
+         use photochem_data, only: sq, nz
+         use photochem_vars, only: rootdir
 !-----------------------------------------------------------------------------*
 !=  PURPOSE:                                                                 =*
 !=  Provide product of (cross section) x (quantum yield) for OCLO photolysis =*
@@ -4893,7 +4949,7 @@
       ENDDO
       endif  !end option 1
 
-      photolabel(jn)='POCLO'
+!      photolabel(jn)='POCLO'
       jn=jn+1
 
       RETURN
@@ -4902,6 +4958,8 @@
        !EWS - airlev, tlev, and wc not used
 !      SUBROUTINE XS_CLONO(nw,wl,wc,tlev,airlev,jn)
        SUBROUTINE XS_CLONO(nw,wl,jn)
+         use photochem_data, only: sq, nz
+         use photochem_vars, only: rootdir
 !-----------------------------------------------------------------------------*
 !=  PURPOSE:                                                                 =*
 !=  Provide product of (cross section) x (quantum yield) for CLONO photolysis=*
@@ -4987,7 +5045,7 @@
       ENDDO
       endif  !end option 1
 
-      photolabel(jn)='PCLONO'
+!      photolabel(jn)='PCLONO'
       jn=jn+1
 
       RETURN
@@ -4996,6 +5054,8 @@
        !EWS - airlev not used
 !      SUBROUTINE XS_CLONO2(nw,wl,wc,tlev,airlev,jn)
        SUBROUTINE XS_CLONO2(nw,wl,wc,tlev,jn)
+         use photochem_data, only: sq, nz
+         use photochem_vars, only: rootdir
 !-------------------------------------------------------------------------------*
 !=  PURPOSE:                                                                   =*
 !=  Provide product of (cross section) x (quantum yield) for CLONO2 photolysis =*
@@ -5136,10 +5196,10 @@
 
       endif  !end option 1
 
-      photolabel(jn)='PCLONO2_CL'
+!      photolabel(jn)='PCLONO2_CL'
       jn=jn+1
 
-      photolabel(jn)='PCLONO2_CLO'
+!      photolabel(jn)='PCLONO2_CLO'
       jn=jn+1
 
 
@@ -5149,6 +5209,8 @@
        !EWS - airlev, tlev, and wc not used
 !      SUBROUTINE XS_CLNO(nw,wl,wc,tlev,airlev,jn)
        SUBROUTINE XS_CLNO(nw,wl,jn)
+         use photochem_data, only: sq, nz
+         use photochem_vars, only: rootdir
 !-----------------------------------------------------------------------------*
 !=  PURPOSE:                                                                 =*
 !=  Provide product of (cross section) x (quantum yield) for CLNO photolysis =*
@@ -5234,7 +5296,7 @@
       ENDDO
       endif  !end option 1
 
-      photolabel(jn)='PCLNO'
+!      photolabel(jn)='PCLNO'
       jn=jn+1
 
       RETURN
@@ -5243,6 +5305,8 @@
        !EWS - airlev, tlev, and wc not used
 !      SUBROUTINE XS_CLNO2(nw,wl,wc,tlev,airlev,jn)
        SUBROUTINE XS_CLNO2(nw,wl,jn)
+         use photochem_data, only: sq, nz
+         use photochem_vars, only: rootdir
 !-----------------------------------------------------------------------------*
 !=  PURPOSE:                                                                 =*
 !=  Provide product of (cross section) x (quantum yield) for CLNO2 photolysis =*
@@ -5329,7 +5393,7 @@
       ENDDO
       endif  !end option 1
 
-      photolabel(jn)='PCLNO2'
+!      photolabel(jn)='PCLNO2'
       jn=jn+1
 
       RETURN
@@ -5338,6 +5402,8 @@
        !EWS - airlev, tlev, and wc not used
 !      SUBROUTINE XS_CHCLO(nw,wl,wc,tlev,airlev,jn)
        SUBROUTINE XS_CHCLO(nw,wl,jn)
+         use photochem_data, only: sq, nz
+         use photochem_vars, only: rootdir
 !-----------------------------------------------------------------------------*
 !=  PURPOSE:                                                                 =*
 !=  Provide product of (cross section) x (quantum yield) for CHCLO photolysis=*
@@ -5425,7 +5491,7 @@
       ENDDO
       endif  !end option 1
 
-      photolabel(jn)='PCHCLO'
+!      photolabel(jn)='PCHCLO'
       jn=jn+1
 
       RETURN
@@ -5434,6 +5500,8 @@
        !EWS - airlev not used
 !      SUBROUTINE XS_CH3CL(nw,wl,wc,tlev,airlev,jn)
        SUBROUTINE XS_CH3CL(nw,wl,wc,tlev,jn)
+         use photochem_data, only: sq, nz
+         use photochem_vars, only: rootdir
 !-----------------------------------------------------------------------------*
 !=  PURPOSE:                                                                 =*
 !=  Provide product of (cross section) x (quantum yield) for CH3CL photolysis=*
@@ -5573,7 +5641,7 @@
 
       endif  !end option 1
 
-      photolabel(jn)='PCH3CL'
+!      photolabel(jn)='PCH3CL'
       jn=jn+1
 
 
@@ -5583,6 +5651,8 @@
        !EWS - airlev not used
 !      SUBROUTINE XS_CCL4(nw,wl,wc,tlev,airlev,jn)
        SUBROUTINE XS_CCL4(nw,wl,wc,tlev,jn)
+         use photochem_data, only: sq, nz
+         use photochem_vars, only: rootdir
 !-----------------------------------------------------------------------------*
 !=  PURPOSE:                                                                 =*
 !=  Provide product of (cross section) x (quantum yield) for CCL4 photolysis =*
@@ -5717,7 +5787,7 @@
 
       endif  !end option 1
 
-      photolabel(jn)='PCCL4'
+!      photolabel(jn)='PCCL4'
       jn=jn+1
 
       RETURN
@@ -5726,6 +5796,8 @@
        !EWS - airlev, tlev, and wc not used
 !      SUBROUTINE XS_COCL2(nw,wl,wc,tlev,airlev,jn)
        SUBROUTINE XS_COCL2(nw,wl,jn)
+         use photochem_data, only: sq, nz
+         use photochem_vars, only: rootdir
 !-----------------------------------------------------------------------------*
 !=  PURPOSE:                                                                 =*
 !=  Provide product of (cross section) x (quantum yield) for COCL2 photolysis=*
@@ -5812,7 +5884,7 @@
       ENDDO
       endif  !end option 1
 
-      photolabel(jn)='PCOCL2'
+!      photolabel(jn)='PCOCL2'
       jn=jn+1
 
       RETURN
@@ -5821,6 +5893,8 @@
        !EWS - airlev, tlev, and wc not used
 !      SUBROUTINE XS_CL2O2(nw,wl,wc,tlev,airlev,jn)
        SUBROUTINE XS_CL2O2(nw,wl,jn)
+         use photochem_data, only: sq, nz
+         use photochem_vars, only: rootdir
 !-------------------------------------------------------------------------------*
 !=  PURPOSE:                                                                   =*
 !=  Provide product of (cross section) x (quantum yield) for CL2O2 photolysis  =*
@@ -5919,10 +5993,10 @@
       ENDDO
       endif  !end option 1
 
-      photolabel(jn)='PCL2O2_CL'
+!      photolabel(jn)='PCL2O2_CL'
       jn=jn+1
 
-      photolabel(jn)='PCL2O2_CLO'
+!      photolabel(jn)='PCL2O2_CLO'
       jn=jn+1
 
       RETURN
@@ -5931,6 +6005,8 @@
        !EWS - airlev, tlev, and wc not used
 !      SUBROUTINE XS_CH3O2NO2(nw,wl,wc,tlev,airlev,jn)
        SUBROUTINE XS_CH3O2NO2(nw,wl,jn)
+         use photochem_data, only: sq, nz
+         use photochem_vars, only: rootdir
 !---------------------------------------------------------------------------------*
 !=  PURPOSE:                                                                     =*
 !=  Provide product of (cross section) x (quantum yield) for CH3O2NO2 photolysis =*
@@ -6016,7 +6092,7 @@
       ENDDO
       endif  !end option 1
 
-      photolabel(jn)='PCH3O2NO2'
+!      photolabel(jn)='PCH3O2NO2'
       jn=jn+1
 
       RETURN
@@ -6025,6 +6101,8 @@
        !EWS - airlev, tlev, and wc not used
 !      SUBROUTINE XS_CH3OCL(nw,wl,wc,tlev,airlev,jn)
        SUBROUTINE XS_CH3OCL(nw,wl,jn)
+         use photochem_data, only: sq, nz
+         use photochem_vars, only: rootdir
 !---------------------------------------------------------------------------------*
 !=  PURPOSE:                                                                     =*
 !=  Provide product of (cross section) x (quantum yield) for CH3OCL photolysis   =*
@@ -6110,7 +6188,7 @@
       ENDDO
       endif  !end option 1
 
-      photolabel(jn)='PCH3OCL'
+!      photolabel(jn)='PCH3OCL'
       jn=jn+1
 
       RETURN
@@ -6119,6 +6197,8 @@
        !EWS - airlev, tlev, and wc not used
 !      SUBROUTINE XS_CH3OOH(nw,wl,wc,tlev,airlev,jn)
        SUBROUTINE XS_CH3OOH(nw,wl,jn)
+         use photochem_data, only: sq, nz
+         use photochem_vars, only: rootdir
 !---------------------------------------------------------------------------------*
 !=  PURPOSE:                                                                     =*
 !=  Provide product of (cross section) x (quantum yield) for CH3OCL photolysis   =*
@@ -6204,7 +6284,7 @@
       ENDDO
       endif  !end option 1
 
-      photolabel(jn)='PCH3OOH'
+!      photolabel(jn)='PCH3OOH'
       jn=jn+1
 
       RETURN
@@ -6212,6 +6292,8 @@
        !EWS - airlev, tlev, and wc not used
 !      SUBROUTINE XS_HO2NO2(nw,wl,wc,tlev,airlev,jn)
        SUBROUTINE XS_HO2NO2(nw,wl,jn)
+         use photochem_data, only: sq, nz
+         use photochem_vars, only: rootdir
 !---------------------------------------------------------------------------------*
 !=  PURPOSE:                                                                     =*
 !=  Provide product of (cross section) x (quantum yield) for HO2NO2 photolysis   =*
@@ -6300,10 +6382,10 @@
       ENDDO
       endif  !end option 1
 
-      photolabel(jn)='PHO2NO2_NO2'
+!      photolabel(jn)='PHO2NO2_NO2'
       jn=jn+1
 
-      photolabel(jn)='PHO2NO2_NO3'
+!      photolabel(jn)='PHO2NO2_NO3'
       jn=jn+1
 
       RETURN
@@ -6312,6 +6394,8 @@
        !EWS - airlev, tlev, and wc not used
 !      SUBROUTINE XS_CL2O(nw,wl,wc,tlev,airlev,jn)
        SUBROUTINE XS_CL2O(nw,wl,jn)
+         use photochem_data, only: sq, nz
+         use photochem_vars, only: rootdir
 !---------------------------------------------------------------------------------*
 !=  PURPOSE:                                                                     =*
 !=  Provide product of (cross section) x (quantum yield) for CL2O photolysis     =*
@@ -6399,7 +6483,7 @@
       ENDDO
       endif  !end option 1
 
-      photolabel(jn)='PCL2O'
+!      photolabel(jn)='PCL2O'
       jn=jn+1
 
       RETURN
@@ -6408,6 +6492,8 @@
        !EWS - airlev not used
 !      SUBROUTINE XS_N2O5(nw,wl,wc,tlev,airlev,jn)
        SUBROUTINE XS_N2O5(nw,wl,wc,tlev,jn)
+         use photochem_data, only: sq, nz
+         use photochem_vars, only: rootdir
 !---------------------------------------------------------------------------------*
 !=  PURPOSE:                                                                     =*
 !=  Provide product of (cross section) x (quantum yield) for N2O5 photolysis     =*
@@ -6572,10 +6658,10 @@
       ENDDO
       endif  !end option 1
 
-      photolabel(jn)='PN2O5_NO2'
+!      photolabel(jn)='PN2O5_NO2'
       jn=jn+1
 
-      photolabel(jn)='PN2O5_NO'
+!      photolabel(jn)='PN2O5_NO'
       jn=jn+1
 
       close(kin)
@@ -6586,6 +6672,8 @@
        !EWS - airlev, tlev, and wc not used
 !      SUBROUTINE XS_CLO3(nw,wl,wc,tlev,airlev,jn)
        SUBROUTINE XS_CLO3(nw,wl,jn)
+         use photochem_data, only: sq, nz
+         use photochem_vars, only: rootdir
 !---------------------------------------------------------------------------------*
 !=  PURPOSE:                                                                     =*
 !=  Provide product of (cross section) x (quantum yield) for CLO3 photolysis     =*
@@ -6673,7 +6761,7 @@
       ENDDO
       endif  !end option 1
 
-      photolabel(jn)='PCLO3'
+!      photolabel(jn)='PCLO3'
       jn=jn+1
 
       RETURN
@@ -6681,6 +6769,8 @@
 
 
        SUBROUTINE XS_CL2O3(nw,wl,jn)
+         use photochem_data, only: sq, nz
+         use photochem_vars, only: rootdir
 !---------------------------------------------------------------------------------*
 !=  PURPOSE:                                                                     =*
 !=  Provide product of (cross section) x (quantum yield) for CL2O3 photolysis    =*
@@ -6766,13 +6856,15 @@
       ENDDO
       endif  !end option 1
 
-      photolabel(jn)='PCL2O3'
+!      photolabel(jn)='PCL2O3'
       jn=jn+1
 
       RETURN
       END
 
        SUBROUTINE XS_CL2O4(nw,wl,jn)
+         use photochem_data, only: sq, nz
+         use photochem_vars, only: rootdir
 !---------------------------------------------------------------------------------*
 !=  PURPOSE:                                                                     =*
 !=  Provide product of (cross section) x (quantum yield) for CL2O4 photolysis    =*
@@ -6858,13 +6950,15 @@
       ENDDO
       endif  !end option 1
 
-      photolabel(jn)='PCL2O4'
+!      photolabel(jn)='PCL2O4'
       jn=jn+1
 
       RETURN
       END
 
        SUBROUTINE XS_CS2(nw,wl,jn)
+         use photochem_data, only: sq, nz
+         use photochem_vars, only: rootdir
 !-----------------------------------------------------------------------------*
 !=  PURPOSE:                                                                 =*
 !=  Provide product of (cross section) x (quantum yield) for CS2 photolysis  =*
@@ -6980,9 +7074,9 @@
 
       endif   ! end option 1
 
-       photolabel(jn)='PCS2_CS'
+ !      photolabel(jn)='PCS2_CS'
        jn=jn+1
-       photolabel(jn)='PCS2_CS2X'
+ !      photolabel(jn)='PCS2_CS2X'
        jn=jn+1
 
 
@@ -6990,6 +7084,8 @@
       END
 
        SUBROUTINE XS_CH3SH(nw,wl,jn)
+         use photochem_data, only: sq, nz
+         use photochem_vars, only: rootdir
 !-----------------------------------------------------------------------------*
 !=  PURPOSE:                                                                 =*
 !=  Provide product of (cross section) x (quantum yield) for CH3SH photo.    =*
@@ -7078,16 +7174,18 @@
       ENDDO
       endif  !end option 1
 
-      photolabel(jn)='PCH3SH_H'
+!      photolabel(jn)='PCH3SH_H'
       jn=jn+1
 
-      photolabel(jn)='PCH3SH_HS'
+!      photolabel(jn)='PCH3SH_HS'
       jn=jn+1
 
       RETURN
       END
 
        SUBROUTINE XS_simple(species,nw,wl,jn)
+         use photochem_data, only: sq, nz
+         use photochem_vars, only: rootdir
 !-----------------------------------------------------------------------------*
 !=  PURPOSE:                                                                 =*
 !=  Provide product of (cross section) x (quantum yield) for generic photo.  =*
@@ -7214,7 +7312,7 @@
       endif  !end option 1
 
       write(plab,'(a,a)') 'P',trim(species)
-      photolabel(jn)=plab
+!      photolabel(jn)=plab
       jn=jn+1
 
       DEALLOCATE(x1)
@@ -7224,6 +7322,8 @@
       END
 
        SUBROUTINE XS_CHOCHO(nw,wl,jn)
+         use photochem_data, only: sq, nz
+         use photochem_vars, only: rootdir
 !---------------------------------------------------------------------------------*
 !=  PURPOSE:                                                                     =*
 !=  Provide product of (cross section) x (quantum yield) for CHOCHO photolysis   =*
@@ -7393,16 +7493,18 @@
       ENDDO
       endif  !end option 1
 
-      photolabel(jn)='PCHOCHO_1'
+!      photolabel(jn)='PCHOCHO_1'
       jn=jn+1
 
-      photolabel(jn)='PCHOCHO_2'
+!      photolabel(jn)='PCHOCHO_2'
       jn=jn+1
 
       RETURN
       END
 
        SUBROUTINE XS_C2H2(nw,wl,jn)
+         use photochem_data, only: sq, nz
+         use photochem_vars, only: rootdir
 !-----------------------------------------------------------------------------*
 !=  PURPOSE:                                                                 =*
 !=  Provide product of (cross section) x (quantum yield) for C2H2 photolysis =*
@@ -7507,13 +7609,13 @@
 !      print *, jn, photolabel
       jdum = 0
 
-      if (Jdum.eq.3) photolabel(jn)='PCH'
-      if (Jdum.eq.0) photolabel(jn)='PC2H2_H'
+      ! if (Jdum.eq.3) photolabel(jn)='PCH'
+      ! if (Jdum.eq.0) photolabel(jn)='PC2H2_H'
 
       jn=jn+1
 
       if (Jdum.eq.0) then
-         photolabel(jn)='PC2H2_H2'
+   !      photolabel(jn)='PC2H2_H2'
          jn=jn+1
       endif
 
@@ -7523,6 +7625,8 @@
 
 
        SUBROUTINE XS_CH3CHO(nw,wl,jn)
+         use photochem_data, only: sq, nz
+         use photochem_vars, only: rootdir
 !-----------------------------------------------------------------------------*
 !=  PURPOSE:                                                                 =*
 !=  Provide product of (cross section) x (quantum yield) for CH3CHO photo.   =*
@@ -7614,16 +7718,18 @@
 
 !      print *, jn, photolabel
 
-      photolabel(jn)='PCH3CHO_1'
+!      photolabel(jn)='PCH3CHO_1'
       jn=jn+1
 
-      photolabel(jn)='PCH3CHO_2'
+!      photolabel(jn)='PCH3CHO_2'
       jn=jn+1
 
       RETURN
       END
 
        SUBROUTINE XS_C3H6(nw,wl,jn)
+         use photochem_data, only: sq, nz
+         use photochem_vars, only: rootdir
 !-----------------------------------------------------------------------------*
 !=  PURPOSE:                                                                 =*
 !=  Provide product of (cross section) x (quantum yield) for C3H6 photolysis =*
@@ -7722,16 +7828,16 @@
 
 !      print *, jn, photolabel
 
-      photolabel(jn)='PC3H6_1'
+!      photolabel(jn)='PC3H6_1'
       jn=jn+1
 
-      photolabel(jn)='PC3H6_2'
+!      photolabel(jn)='PC3H6_2'
       jn=jn+1
 
-      photolabel(jn)='PC3H6_3'
+!      photolabel(jn)='PC3H6_3'
       jn=jn+1
 
-      photolabel(jn)='PC3H6_4'
+!      photolabel(jn)='PC3H6_4'
       jn=jn+1
 
       RETURN
@@ -7739,6 +7845,8 @@
 
 
        SUBROUTINE XS_CH3C2H(nw,wl,jn)
+         use photochem_data, only: sq, nz
+         use photochem_vars, only: rootdir
 !-----------------------------------------------------------------------------*
 !=  PURPOSE:                                                                 =*
 !=  Provide product of (cross section) x (quantum yield) for CH3C2H photo.   =*
@@ -7834,19 +7942,21 @@
 
 !      print *, jn, photolabel
 
-      photolabel(jn)='PCH3C2H_1'
+!      photolabel(jn)='PCH3C2H_1'
       jn=jn+1
 
-      photolabel(jn)='PCH3C2H_2'
+!      photolabel(jn)='PCH3C2H_2'
       jn=jn+1
 
-      photolabel(jn)='PCH3C2H_3'
+!      photolabel(jn)='PCH3C2H_3'
       jn=jn+1
 
       RETURN
       END
 
        SUBROUTINE XS_CH2CCH2(nw,wl,jn)
+         use photochem_data, only: sq, nz
+         use photochem_vars, only: rootdir
 !-----------------------------------------------------------------------------*
 !=  PURPOSE:                                                                 =*
 !=  Provide product of (cross section) x (quantum yield) for CH2CCH2 photo.  =*
@@ -7941,13 +8051,13 @@
 
 !      print *, jn, photolabel
 
-      photolabel(jn)='PCH2CCH2_1'
+!      photolabel(jn)='PCH2CCH2_1'
       jn=jn+1
 
-      photolabel(jn)='PCH2CCH2_2'
+!      photolabel(jn)='PCH2CCH2_2'
       jn=jn+1
 
-      photolabel(jn)='PCH2CCH2_3'
+!      photolabel(jn)='PCH2CCH2_3'
       jn=jn+1
 
       RETURN
@@ -7955,6 +8065,8 @@
 
 
        SUBROUTINE XS_C2H4(nw,wl,jn,Jdum)
+         use photochem_data, only: sq, nz
+         use photochem_vars, only: rootdir
 !-----------------------------------------------------------------------------*
 !=  PURPOSE:                                                                 =*
 !=  Provide product of (cross section) x (quantum yield) for C2H4 photolysis =*
@@ -8046,12 +8158,12 @@
 
 !      print *, jn, photolabel
 
-      photolabel(jn)='PC2H4_H2'
-      if (Jdum.eq.3) photolabel(jn)='PCH'
+!      photolabel(jn)='PC2H4_H2'
+      ! if (Jdum.eq.3) photolabel(jn)='PCH'
       jn=jn+1
 
       if (Jdum.eq.0) then
-      photolabel(jn)='PC2H4_H+H'
+!      photolabel(jn)='PC2H4_H+H'
       jn=jn+1
       endif
 
@@ -8060,6 +8172,8 @@
 
 
        SUBROUTINE XS_C3H8(nw,wl,jn)
+         use photochem_data, only: sq, nz
+         use photochem_vars, only: rootdir
 !-----------------------------------------------------------------------------*
 !=  PURPOSE:                                                                 =*
 !=  Provide product of (cross section) x (quantum yield) for C3H8 photolysis =*
@@ -8101,7 +8215,7 @@
 
 ! local
       REAL*8 yg1(nw)
-      REAL*8 qy,qy2
+      REAL*8 qy2
       INTEGER i, iw
       INTEGER ierr,option
       ierr = 0
@@ -8166,16 +8280,16 @@
 
 !      print *, jn, photolabel
 
-      photolabel(jn)='PC3H8_C3H6'
+!      photolabel(jn)='PC3H8_C3H6'
       jn=jn+1
 
-      photolabel(jn)='PC3H8_C2H6'
+!      photolabel(jn)='PC3H8_C2H6'
       jn=jn+1
 
-      photolabel(jn)='PC3H8_C2H4'
+!      photolabel(jn)='PC3H8_C2H4'
       jn=jn+1
 
-      photolabel(jn)='PC3H8_C2H5'
+!      photolabel(jn)='PC3H8_C2H5'
       jn=jn+1
 
       RETURN
@@ -8183,6 +8297,8 @@
 
 !     Nick's additions
       SUBROUTINE XS_NH3(nw,wl,jn)
+        use photochem_data, only: sq, nz
+        use photochem_vars, only: rootdir
 !-----------------------------------------------------------------------------*
 !=  PURPOSE:                                                                 =*
 !=  Provide product of (cross section) x (quantum yield) for NH3 photolysis  =*
@@ -8195,7 +8311,7 @@
 
 !     INCLUDE 'PHOTOCHEM/INPUTFILES/parameters.inc'
       implicit none
-      integer :: hjtest
+      ! integer :: hjtest
       integer :: kin
       REAL*8 deltax,biggest,zero
       PARAMETER (deltax = 1.E-4,biggest=1.E+36, zero=0.0)
@@ -8238,10 +8354,10 @@
      &  file=trim(rootdir)//'DATA/XSECTIONS/NH3/NH3.XS.dat',&
      &  STATUS='old')
 
-      HJtest=0 !HOT JUPITER TEST
-      do i=1,nsp
-        if (ISPEC(i).eq.'HE') HJtest=1  !temp solution to get 3 reactions for hot jupiters at Ly alpha
-      enddo
+      ! HJtest=0 !HOT JUPITER TEST
+      ! do i=1,nsp
+        ! if (ISPEC(i).eq.'HE') HJtest=1  !temp solution to get 3 reactions for hot jupiters at Ly alpha
+      ! enddo
 
       DO i = 1, 4 ! skip first 4 rows
         READ(kin,*)
@@ -8256,11 +8372,11 @@
       CALL addpnt(x1,y1,kdata,n1,               zero,zero)
       CALL addpnt(x1,y1,kdata,n1,x1(n1)*(1.+deltax),zero)
       CALL addpnt(x1,y1,kdata,n1,            biggest,zero)
-      IF (HJtest.eq.1) THEN
-       CALL inter3(nw+1,wl,yg1,n1,x1,y1,ierr)
-      ELSE
+      ! IF (HJtest.eq.1) THEN
+      !  CALL inter3(nw+1,wl,yg1,n1,x1,y1,ierr)
+      ! ELSE
        CALL inter2(nw+1,wl,yg1,n1,x1,y1,ierr)
-      ENDIF
+      ! ENDIF
 
       IF (ierr .NE. 0) THEN
         WRITE(*,*) ierr, ' ***Something wrong in XS_NH3***'
@@ -8284,7 +8400,7 @@
       ENDDO
       endif  !end option 1
 
-      photolabel(jn)='PNH3'
+!      photolabel(jn)='PNH3'
 
       jn=jn+1
 
@@ -8292,6 +8408,8 @@
       END SUBROUTINE
 
       SUBROUTINE XS_HCN(nw,wl,jn)
+        use photochem_data, only: sq, nz
+        use photochem_vars, only: rootdir
 !-----------------------------------------------------------------------------*
 !=  PURPOSE:                                                                 =*
 !=  Provide product of (cross section) x (quantum yield) for HCN photolysis  =*
@@ -8304,7 +8422,7 @@
 
 !     INCLUDE 'PHOTOCHEM/INPUTFILES/parameters.inc'
       implicit none
-      integer :: hjtest
+      ! integer :: hjtest
       integer :: kin
       REAL*8 deltax,biggest,zero
       PARAMETER (deltax = 1.E-4,biggest=1.E+36, zero=0.0)
@@ -8344,10 +8462,10 @@
      &  file=trim(rootdir)//'DATA/XSECTIONS/HCN/HCN.XS.dat',&
      &  STATUS='old')
 
-      HJtest=0 !HOT JUPITER TEST
-      do i=1,nsp
-        if (ISPEC(i).eq.'HE') HJtest=1  !temp solution to get 3 reactions for hot jupiters at Ly alpha
-      enddo
+      ! HJtest=0 !HOT JUPITER TEST
+      ! do i=1,nsp
+      !   if (ISPEC(i).eq.'HE') HJtest=1  !temp solution to get 3 reactions for hot jupiters at Ly alpha
+      ! enddo
 
       DO i = 1, 4 ! skip first 4 rows
         READ(kin,*)
@@ -8362,11 +8480,11 @@
       CALL addpnt(x1,y1,kdata,n1,               zero,zero)
       CALL addpnt(x1,y1,kdata,n1,x1(n1)*(1.+deltax),zero)
       CALL addpnt(x1,y1,kdata,n1,            biggest,zero)
-      IF (HJtest.eq.1) THEN
-       CALL inter3(nw+1,wl,yg1,n1,x1,y1,ierr)
-      ELSE
-       CALL inter2(nw+1,wl,yg1,n1,x1,y1,ierr)
-      ENDIF
+      ! IF (HJtest.eq.1) THEN
+      !  CALL inter3(nw+1,wl,yg1,n1,x1,y1,ierr)
+      ! ELSE
+      CALL inter2(nw+1,wl,yg1,n1,x1,y1,ierr)
+      ! ENDIF
 
       IF (ierr .NE. 0) THEN
         WRITE(*,*) ierr, ' ***Something wrong in XS_HCN***'
@@ -8387,7 +8505,7 @@
       ENDDO
       endif  !end option 1
 
-      photolabel(jn)='PHCN'
+!      photolabel(jn)='PHCN'
 
       jn=jn+1
 
@@ -8395,6 +8513,8 @@
       END SUBROUTINE
 
       SUBROUTINE XS_N2H4(nw,wl,jn)
+        use photochem_data, only: sq, nz
+        use photochem_vars, only: rootdir
 !-----------------------------------------------------------------------------*
 !=  PURPOSE:                                                                 =*
 !=  Provide product of (cross section) x (quantum yield) for HCN photolysis  =*
@@ -8407,7 +8527,7 @@
 
 !     INCLUDE 'PHOTOCHEM/INPUTFILES/parameters.inc'
       implicit none
-      integer :: hjtest
+      ! integer :: hjtest
       integer :: kin
       REAL*8 deltax,biggest,zero
       PARAMETER (deltax = 1.E-4,biggest=1.E+36, zero=0.0)
@@ -8446,10 +8566,10 @@
      &  file=trim(rootdir)//'DATA/XSECTIONS/N2H4/N2H4.XS.dat',&
      &  STATUS='old')
 
-      HJtest=0 !HOT JUPITER TEST
-      do i=1,nsp
-        if (ISPEC(i).eq.'HE') HJtest=1  !temp solution to get 3 reactions for hot jupiters at Ly alpha
-      enddo
+      ! HJtest=0 !HOT JUPITER TEST
+      ! do i=1,nsp
+      !   if (ISPEC(i).eq.'HE') HJtest=1  !temp solution to get 3 reactions for hot jupiters at Ly alpha
+      ! enddo
 
       DO i = 1, 4 ! skip first 4 rows
         READ(kin,*)
@@ -8464,11 +8584,11 @@
       CALL addpnt(x1,y1,kdata,n1,               zero,zero)
       CALL addpnt(x1,y1,kdata,n1,x1(n1)*(1.+deltax),zero)
       CALL addpnt(x1,y1,kdata,n1,            biggest,zero)
-      IF (HJtest.eq.1) THEN
-       CALL inter3(nw+1,wl,yg1,n1,x1,y1,ierr)
-      ELSE
-       CALL inter2(nw+1,wl,yg1,n1,x1,y1,ierr)
-      ENDIF
+      ! IF (HJtest.eq.1) THEN
+      !  CALL inter3(nw+1,wl,yg1,n1,x1,y1,ierr)
+      ! ELSE
+      CALL inter2(nw+1,wl,yg1,n1,x1,y1,ierr)
+      ! ENDIF
 
       IF (ierr .NE. 0) THEN
         WRITE(*,*) ierr, ' ***Something wrong in XS_N2H4***'
@@ -8489,7 +8609,7 @@
       ENDDO
       endif  !end option 1
 
-      photolabel(jn)='PN2H4'
+!      photolabel(jn)='PN2H4'
 
       jn=jn+1
 
@@ -8497,6 +8617,8 @@
       END SUBROUTINE
 
       SUBROUTINE XS_HNCO(nw,wl,jn)
+        use photochem_data, only: sq, nz
+        use photochem_vars, only: rootdir
 !-----------------------------------------------------------------------------*
 !=  PURPOSE:                                                                 =*
 !=  Provide product of (cross section) x (quantum yield) for HCN photolysis  =*
@@ -8509,7 +8631,7 @@
 
 !     INCLUDE 'PHOTOCHEM/INPUTFILES/parameters.inc'
       implicit none
-      integer :: hjtest
+      ! integer :: hjtest
       integer :: kin
       REAL*8 deltax,biggest,zero
       PARAMETER (deltax = 1.E-4,biggest=1.E+36, zero=0.0)
@@ -8548,10 +8670,10 @@
      &  file=trim(rootdir)//'DATA/XSECTIONS/HNCO/HNCO.XS.dat',&
      &  STATUS='old')
 
-      HJtest=0 !HOT JUPITER TEST
-      do i=1,nsp
-        if (ISPEC(i).eq.'HE') HJtest=1  !temp solution to get 3 reactions for hot jupiters at Ly alpha
-      enddo
+      ! HJtest=0 !HOT JUPITER TEST
+      ! do i=1,nsp
+      !   if (ISPEC(i).eq.'HE') HJtest=1  !temp solution to get 3 reactions for hot jupiters at Ly alpha
+      ! enddo
 
       DO i = 1, 4 ! skip first 4 rows
         READ(kin,*)
@@ -8566,11 +8688,11 @@
       CALL addpnt(x1,y1,kdata,n1,               zero,zero)
       CALL addpnt(x1,y1,kdata,n1,x1(n1)*(1.+deltax),zero)
       CALL addpnt(x1,y1,kdata,n1,            biggest,zero)
-      IF (HJtest.eq.1) THEN
-       CALL inter3(nw+1,wl,yg1,n1,x1,y1,ierr)
-      ELSE
-       CALL inter2(nw+1,wl,yg1,n1,x1,y1,ierr)
-      ENDIF
+      ! IF (HJtest.eq.1) THEN
+      !  CALL inter3(nw+1,wl,yg1,n1,x1,y1,ierr)
+      ! ELSE
+      CALL inter2(nw+1,wl,yg1,n1,x1,y1,ierr)
+      ! ENDIF
 
       IF (ierr .NE. 0) THEN
         WRITE(*,*) ierr, ' ***Something wrong in XS_HNCO***'
@@ -8591,7 +8713,7 @@
       ENDDO
       endif  !end option 1
 
-      photolabel(jn)='PHNCO'
+!      photolabel(jn)='PHNCO'
 
       jn=jn+1
 

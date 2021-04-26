@@ -1,6 +1,11 @@
 
       SUBROUTINE RAINOUT(Jtrop,Nrain,Usol,nq,nz)
-      use rainout_vars
+        use photochem_data, only: naq, planet, lh2co, lh2s, lso2, lso4aer, &
+                                  lh2so4, ispec, z
+        use photochem_vars, only: fCO2, T, den
+        use photochem_wrk, only: H, xsave, rain, raingc, &
+                                 alpharain, co2aq, h2cog0, hh2co, &
+                                 hplus, hso2, so2g0, so4_2
       implicit none
 
       ! global variables

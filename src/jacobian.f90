@@ -1,4 +1,14 @@
   subroutine jacobian(usol_flat,ddjac,neq,ldaa)
+    use photochem_data, only: nz, nz1, nq, kj, np, isl, lda, epsj, &
+                              agl, frak, hcdens, ino, io2, zy, &
+                              lco, lhcaer, lhcaer2, lh2o, lo, &
+                              ls8aer, lso4aer, &
+                              z, dz, jtrop, ispec, photoreac, photonums
+    use photochem_vars, only: lbound, fixedmr, vdep, vdep0, veff, veff0, smflux, sgflux, &
+                              distheight, distflux, mbound, den
+    use photochem_wrk, only: wfall, aersol, hscale, &
+                             sl, A, &
+                             adl, add, adu, dl, dd, du
     implicit none
     ! module variables
     ! all of them?
@@ -14,24 +24,23 @@
     real*8, dimension(nq,nz) :: fval, fv
     real*8, dimension(nq,nz) :: usol, usave
     real*8 Ha
-    real*8 Dt, time, tstop
-    integer nn, i, j, k, jj, nparti
+    integer i, j, k, jj, nparti
     integer jh2o,JO2_O1D,JO3_O1D,JCO2,JO1D,JO2, JCO2_O1D
     real*8 absorbers(kj,nz)
     real*8,dimension(nz) :: H2O, O2, O3, CO2
     real*8,dimension(kj,nz) :: prates
     integer NPSO4,NPS8, NPHC, NPHC2, MM
     real*8 VCO2
-    integer, dimension(neq) :: ipvt
+    ! integer, dimension(neq) :: ipvt
     real*8, dimension(nz) :: R
     real*8, dimension(nz,np) :: conver
     real*8, dimension(nq) :: U
-    integer LB, MB, L, is, m, n, LL
-    real*8 disth, dtsave, emax, smallest, RMAX, UMAX
-    integer jdisth, js, kd, ku, kl, info
-    integer j15, j25, j70, j50
-    integer lcountso4, lcounts8, lcountHC, lcountHC2, lpolyscount
-    real*8 ZTOP, ZTOP1, WNF, DTINV
+    integer LB, MB, L, m
+    real*8 disth
+    integer jdisth, kd, ku, kl
+    ! integer j15, j25, j70, j50
+    integer lpolyscount
+    real*8 ZTOP, ZTOP1, DTINV
     real*8 DPU(NZ,NP),DPL(NZ,NP)
     ! real*8, dimension(nq,nz) :: fv
     ! integer cr, cm, c1, c2
@@ -95,7 +104,7 @@
     enddo
     
     if (NP.GT.0) then   !particles in main loop
-      CALL SEDMNT(frak,HCDENS,ihztype,nz,np,conver, .false.)
+      CALL SEDMNT(frak,HCDENS,nz,np,conver, .false.)
     
       do J=1,NZ
         do JJ=1, NP

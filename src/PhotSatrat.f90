@@ -1,5 +1,8 @@
 
       SUBROUTINE PHOTSATRAT(Jtrop, nz, H2O)
+        use photochem_data, only: planet
+        use photochem_vars, only: T, P, den, H2Osat
+        ! use photochem_wrk
 
       IMPLICIT NONE
 

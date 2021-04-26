@@ -1,5 +1,6 @@
 
       subroutine read_planet(planet_dat)
+        use photochem_data, only: G, Fscale, Alb, ztrop,far,R0,P0, planet
         implicit none
 
         ! module variables

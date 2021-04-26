@@ -1,5 +1,7 @@
 
       subroutine read_photochem(input_photochem)
+        use photochem_data, only: AGL, EPSJ, prono, hcdens, zy, &
+                                  Lgrid, IO2, ino, frak, ihztype
         implicit none
 
         ! module variables

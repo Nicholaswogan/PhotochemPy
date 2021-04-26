@@ -1,6 +1,8 @@
 !*==DENSTY.spg  processed by SPAG 6.72Dc at 16:52 on 10 Dec 2020
       SUBROUTINE DENSTY
-
+        use photochem_data, only: nz, far, g, p0, r0, &
+                                  lo2, dz, z
+        use photochem_vars, only: den, T, P, Press, fco2, usol_init
       IMPLICIT NONE
 
       ! module variables

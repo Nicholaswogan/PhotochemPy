@@ -1,7 +1,12 @@
   subroutine setup(species_dat,reactions_rx,planet_dat,&
                  & photochem_dat, atmosphere_txt, flux_txt)
+                 
+    use photochem_data, only: nz, nz1 , nq, nq1, nw, isl, kw, frak, ihztype, jtrop, &
+                              lh, lh2, planet, wavl, dz
+    use photochem_vars, only: usol_init, veff, mbound, den
+    use photochem_wrk, only: scale_h, bhn2, bh2n2, hscale, du, dl, dk, dd, &
+                             adu, adl, add, h_atm
     implicit none
-    ! module variables
 
     ! local variables
     character(len=*),intent(in) :: species_dat
@@ -10,7 +15,7 @@
     character(len=*),intent(in) :: photochem_dat
     character(len=*),intent(in) :: atmosphere_txt
     character(len=*),intent(in) :: flux_txt
-    integer i,j,k
+    integer i,j
     real*8, dimension(nq,nz) :: Fval
     real*8, dimension(nz) :: H2O
 

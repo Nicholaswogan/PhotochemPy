@@ -1,5 +1,7 @@
 
       SUBROUTINE CHEMPL(D,Xp,Xl,K)
+        use photochem_data, only: nz, nsp2, numl, iloss, nump, iprod, jchem
+        use photochem_wrk, only: A
 
       IMPLICIT NONE
 

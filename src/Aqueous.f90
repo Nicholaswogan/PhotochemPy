@@ -1,6 +1,7 @@
 
       SUBROUTINE AQUEOUS(X, naq, F, I, RRRR, nz)
-      use rainout_vars
+        use photochem_wrk, only: alpharain, co2aq, h2cog0, hh2co, &
+                                 hplus, hso2, so2g0, so4_2
       implicit none
 
       ! module variables

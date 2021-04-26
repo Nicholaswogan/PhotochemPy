@@ -1,4 +1,7 @@
       subroutine rates
+        use photochem_data, only: nr, nz, planet, rateparams, reactype, chemj
+        use photochem_vars, only: T, den
+        use photochem_wrk, only: A
         implicit none
         ! might pass in T and Den and return A
 
@@ -16,6 +19,7 @@
         real*8 :: A362_0, A362_inf, A366_0, A366_inf, A367_EQ
         real*8 :: A71_3, A77_3, Ainf, AK0, AK2, AK3M, Alow, B0
         real*8 :: BI, Fc, JOO_O2, k0, kinf, PATM
+        ! real(8) :: tbdy
 
 
         ! rate constant units are cm^3/molecules/s
@@ -894,8 +898,8 @@
         enddo
       end subroutine rates
 
-      FUNCTION TBDY(A0,AI,CN,CM,T,D)
-        real*8 TBDY
+      FUNCTION TBDY(A0,AI,CN,CM,T,D) result (rate)
+        real*8 rate
         real*8 B0,BI,Y,X,A0,AI,CN,CM,T,D
         !this form of the three body equations allows us to copy the n and m factor directly from the JPL recomendations.
         !note that it is presented there as: (T/300)^(-n) which is done here as (300/T)^(n) either way. it should be n and m directly.
@@ -903,6 +907,5 @@
         BI = AI*(300./T)**CM
         Y = LOG10(B0*D/BI)
         X = 1./(1. + Y**2)
-        TBDY = B0*D/(1. + B0*D/BI) * 0.6**X
-        RETURN
-      END
+        rate = B0*D/(1. + B0*D/BI) * 0.6**X
+      END function

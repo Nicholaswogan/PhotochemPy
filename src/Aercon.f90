@@ -1,6 +1,8 @@
 
       SUBROUTINE AERCON(usol, nq, nz)
-
+        use photochem_data, only: nf, lh2o, vH2O, ftab, VH2SO4
+        use photochem_vars, only: P, T
+        use photochem_wrk, only: H2SO4S, S8S, fsulf
       IMPLICIT NONE
 
 

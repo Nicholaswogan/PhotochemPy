@@ -1,6 +1,7 @@
 
       SUBROUTINE AERTAB
-
+        use photochem_data, only: nz, nf, nt, VH2O, VH2SO4, ftab
+        use photochem_vars, only: rootdir, T
       IMPLICIT NONE
 
       ! module variables

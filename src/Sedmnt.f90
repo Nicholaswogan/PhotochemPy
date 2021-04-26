@@ -1,5 +1,9 @@
 
-      SUBROUTINE SEDMNT(Frak,Hcdens,Ihztype,nz,np, conver,change_radius)
+      SUBROUTINE SEDMNT(Frak,Hcdens,nz,np, conver,change_radius)
+        use photochem_data, only: nq, g, lhcaer, lhcaer2, ls8aer, lso4aer
+        use photochem_vars, only: T, den
+        use photochem_wrk, only: rpar, wfall, aersol, raingc, hscale, tauedd, &
+                                 fsulf
 
       IMPLICIT NONE
 
@@ -12,7 +16,7 @@
 
 
       ! local variables
-      integer, intent(in) :: nz, np, ihztype, frak
+      integer, intent(in) :: nz, np, frak
       real*8, intent(in) :: hcdens
       real*8, dimension(nz,np), intent(out) :: conver
       logical, intent(in) :: change_radius

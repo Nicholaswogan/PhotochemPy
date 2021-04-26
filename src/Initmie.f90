@@ -1,4 +1,6 @@
       SUBROUTINE INITMIE(nw,wl,kw,frak,ihztype)
+        use photochem_data, only: W0HC, QEXTHC, GHC, rstand
+        use photochem_vars, only: rootdir
       implicit none
 
       ! Module variables

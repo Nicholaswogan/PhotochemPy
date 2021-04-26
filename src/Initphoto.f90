@@ -1,5 +1,11 @@
 
       SUBROUTINE INITPHOTO(flux_txt)
+        use photochem_data, only: kj, nz, ks, nq, nw, nz1, &
+                                  g, io2, zy, lgrid, lo2,  &
+                                  photoreac, photospec, ispec, dz, photolabel, &
+                                  so2hz, nk, beta, alphap, wavl, wav, wavu, flux
+        use photochem_vars, only: rootdir, fCO2, usol_init, den, T
+        use photochem_wrk, only: SL
       implicit none !!!!!
 
       ! Module variables

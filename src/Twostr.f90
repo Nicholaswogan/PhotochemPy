@@ -1,5 +1,8 @@
 
       SUBROUTINE TWOSTR(Sigr,U0,Sq,Wav,Ll,nzp1,nz2,absorbers,S)
+        use photochem_data, only: nz, kj, alb, kw, np, dz
+        use photochem_vars, only: Den
+        use photochem_wrk, only: QEXTT, W0T, GFT, aersol, rpar
 
 !note i haven't yet done the work to fully abstract particles in this subroutine.
 !hydrocarbons are using optical properties files, while sulfate and sulfur are hardcoded.

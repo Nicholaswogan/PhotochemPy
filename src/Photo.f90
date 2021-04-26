@@ -1,7 +1,11 @@
 
 
       SUBROUTINE PHOTO(zy, agl, io2, ino, usol, nq, nz, kj, prates)
-
+        use photochem_data, only: np, nsp, nw, fscale, g, lh2, lo2, &
+                                  photoreac, ispec, rstand, qexthc, ghc, W0HC, &
+                                  wavl, wav, z, alphap, SO2HZ, nk, beta, sq, flux
+        use photochem_vars, only: verbose, fCO2, den, T
+        use photochem_wrk, only: sl, rpar, gft, w0T, QEXTT, signo
       implicit none
       ! Module variables
       ! integer :: nz ! number of heights
@@ -32,7 +36,7 @@
       real*8 D0(2)
       integer LLNO(35)
       integer icomp(10,nz)
-      real*8 PRATESNO(NZ)  !used in High resolution model
+      ! real*8 PRATESNO(NZ)  !used in High resolution model
       real*8 PM, BK, RGAS, wt, hc, pi
       integer JO2, JNO, jso2, js8l, js8r, js8
       integer l3, tempcount
@@ -43,7 +47,7 @@
       integer NZP1, nz2
       real*8 absorbers(kj,nz)
       integer lpolyscount
-      integer tmp1
+      ! integer tmp1
       ! real*8 start, finish
       ! call cpu_time(start)
 

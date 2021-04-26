@@ -1,5 +1,9 @@
 
       SUBROUTINE DIFCO
+        use photochem_data, only: nq, nz, nz1, far, g, planet, lo2, mass
+        use photochem_vars, only: fCO2, usol_init, edd, den, T
+        use photochem_wrk, only: hscale, tauedd, dk, H_atm, bhn2, bh2n2, scale_h
+
 
       IMPLICIT NONE
 
