@@ -1,11 +1,11 @@
   subroutine right_hand_side(usol_flat,rhs,neq)
-    use photochem_data, only: nz, nz1, nq, kj, np, isl, &
+    use photochem_data, only: nr, nz, nz1, nq, kj, np, isl, &
                               agl, frak, hcdens, ino, io2, zy, &
                               lco, lhcaer, lhcaer2, lh2o, lo, &
                               ls8aer, lso4aer, &
                               z, dz, jtrop, ispec, photoreac, photonums
     use photochem_vars, only: lbound, fixedmr, vdep, vdep0, veff, veff0, smflux, sgflux, &
-                              distheight, distflux, mbound, den
+                              distheight, distflux, mbound, den, T
     use photochem_wrk, only: wfall, aersol, hscale, &
                              sl, A, &
                              adl, add, adu, dl, dd, du
@@ -63,7 +63,7 @@
     KU = KD - NQ
     KL = KD + NQ
 
-    call rates
+    call rates(nz, nr, T, den, A)
 
     ! dochem needed to update SL (densities), which are then loaded
     ! into absorbers below
@@ -100,11 +100,11 @@
       O3(I) = absorbers(JO3_O1D,I)
       CO2(I) = absorbers(JCO2,I)
     enddo
-    
-    
+
+
     if (NP.GT.0) then   !particles in main loop
       CALL SEDMNT(frak,HCDENS,nz,np,conver, .false.)
-    
+
       do J=1,NZ
         do JJ=1, NP
           if (JJ.eq.1)  nparti = LSO4AER

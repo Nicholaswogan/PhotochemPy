@@ -1,11 +1,11 @@
   subroutine jacobian(usol_flat,ddjac,neq,ldaa)
-    use photochem_data, only: nz, nz1, nq, kj, np, isl, lda, epsj, &
+    use photochem_data, only: nr, nz, nz1, nq, kj, np, isl, lda, epsj, &
                               agl, frak, hcdens, ino, io2, zy, &
                               lco, lhcaer, lhcaer2, lh2o, lo, &
                               ls8aer, lso4aer, &
                               z, dz, jtrop, ispec, photoreac, photonums
     use photochem_vars, only: lbound, fixedmr, vdep, vdep0, veff, veff0, smflux, sgflux, &
-                              distheight, distflux, mbound, den
+                              distheight, distflux, mbound, den, T
     use photochem_wrk, only: wfall, aersol, hscale, &
                              sl, A, &
                              adl, add, adu, dl, dd, du
@@ -66,7 +66,7 @@
     ! DTINV = 1.d0/1.D-6
     DTINV = 0.d0
 
-    call rates
+    call rates(nz, nr, T, den, A)
     ! dochem needed to update SL (densities), which are then loaded
     ! into absorbers below
     call dochem(Fval,0,jtrop,isl,usol,nq,nz)
@@ -102,10 +102,10 @@
       O3(I) = absorbers(JO3_O1D,I)
       CO2(I) = absorbers(JCO2,I)
     enddo
-    
+
     if (NP.GT.0) then   !particles in main loop
       CALL SEDMNT(frak,HCDENS,nz,np,conver, .false.)
-    
+
       do J=1,NZ
         do JJ=1, NP
           if (JJ.eq.1)  nparti = LSO4AER

@@ -7,9 +7,9 @@ program main
   integer :: nnz, nnq, nnp, nnsp, nnr, kks, kkj
   integer converged
   logical success
-  
+
   rootdir = '../PhotochemPy/'
-  
+
   nnz = 200 ! number of vertical layers in the atmosphere
   nnq = 71 ! number of long-lived species (does not include inert and short-lived species)
   nnp = 4 ! number of particles
@@ -26,7 +26,6 @@ program main
              '../input/templates/Hadean+HCN/input_photchem.dat', &
              '../input/templates/Hadean+HCN/atmosphere.txt', &
              '../input/templates/Hadean+HCN/Sun_4.0Ga.txt')
-  ! call integrate(100,converged)
+  call integrate(100,converged)
   call cvode_equilibrium(1.d-3, 1.d-30, .true., success)
-  
 end program

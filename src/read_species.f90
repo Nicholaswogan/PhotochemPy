@@ -1,6 +1,6 @@
 
       subroutine read_species(species_dat)
-        
+
         use photochem_data, only: iSL, ISPEC, mass, CO2_inert, N2_inert, redoxstate, &
                                   atomsO, atomsH, atomsC, atomsS, atomsN, atomsCl, &
                                   LSO2, LH2CO, lh2so4, lso4aer, lh2s, &
@@ -9,9 +9,6 @@
                                   lno, lo, LCO2, ls, nq
         use photochem_vars, only: LBOUND, VDEP0, veff0, FIXEDMR, distflux, sgflux, &
                                   distheight, mbound, smflux, vdep, veff, FCO2, FN2
-                                  
-                          
-        ! use photochem_wrk
         implicit none
 
         ! module variables

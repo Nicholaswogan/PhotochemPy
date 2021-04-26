@@ -1,19 +1,15 @@
-      subroutine rates
-        use photochem_data, only: nr, nz, planet, rateparams, reactype, chemj
-        use photochem_vars, only: T, den
-        use photochem_wrk, only: A
+      subroutine rates(nz, nr, T, den, A)
+        use photochem_data, only: planet, rateparams, reactype, chemj
         implicit none
-        ! might pass in T and Den and return A
 
-        ! module variables
-        ! real*8, allocatable, dimension(:,:) :: rateparams ! a new one.
-        ! real*8, allocatable, dimension(:,:) :: A
-        ! real*8, allocatable, dimension(:) :: T
-        ! real*8, allocatable, dimension(:) :: Den
+        ! input
+        integer, intent(in) :: nz, nr
+        real(8), intent(in) :: T(nz), den(nz)
 
+        ! output
+        real(8), intent(out) :: A(nr,nz)
 
         ! local variables
-        ! character(len=10) :: PLANET
         integer :: j, i
         real*8 :: a0, a270a,  A270B, A271A, A271B, A272A, A272B
         real*8 :: A362_0, A362_inf, A366_0, A366_inf, A367_EQ

@@ -1,11 +1,11 @@
   subroutine setup(species_dat,reactions_rx,planet_dat,&
                  & photochem_dat, atmosphere_txt, flux_txt)
-                 
-    use photochem_data, only: nz, nz1 , nq, nq1, nw, isl, kw, frak, ihztype, jtrop, &
+
+    use photochem_data, only: nz, nr, nz1 , nq, nq1, nw, isl, kw, frak, ihztype, jtrop, &
                               lh, lh2, planet, wavl, dz
-    use photochem_vars, only: usol_init, veff, mbound, den
+    use photochem_vars, only: usol_init, veff, mbound, den, T
     use photochem_wrk, only: scale_h, bhn2, bh2n2, hscale, du, dl, dk, dd, &
-                             adu, adl, add, h_atm
+                             adu, adl, add, h_atm, A
     implicit none
 
     ! local variables
@@ -30,7 +30,7 @@
     call read_atmosphere(atmosphere_txt)
     call photgrid(100.0D5)
     call densty
-    call rates
+    call rates(nz, nr, T, den, A)
     call difco
     call photsatrat(jtrop,nz,h2o)
     call dochem(Fval,-1,jtrop,isl,usol_init,nq,nz)

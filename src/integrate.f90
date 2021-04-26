@@ -1,12 +1,12 @@
   subroutine integrate(nsteps,converged)
-    use photochem_data, only: nz, nz1, nq, nq1, kj, np, lda, neq, isl, &
+    use photochem_data, only: nr, nz, nz1, nq, nq1, kj, np, lda, neq, isl, &
                               agl, epsj, frak, hcdens, ino, io2, zy, &
                               lco, lh, lh2, lhcaer, lhcaer2, lh2o, lo, &
                               ls4, ls8aer, lso4aer, &
                               z, dz, jtrop, ispec, photoreac, photonums
     use photochem_vars, only: verbose, usol_init, usol_out, rpar_init, wfall_init, aersol_init, &
                               lbound, fixedmr, vdep, vdep0, veff, veff0, smflux, sgflux, &
-                              distheight, distflux, mbound, den, edd, fluxo, flow
+                              distheight, distflux, mbound, den, T, edd, fluxo, flow
     use photochem_wrk, only: rpar, wfall, aersol, hscale, scale_h, h_atm, bHN2, bH2N2, &
                              sl, A, yl, yp, raingc, &
                              adl, add, adu, dl, dd, du, dk
@@ -110,7 +110,7 @@
       TIME = TIME + DT
       nn = nn+1
 
-      call rates
+      call rates(nz, nr, T, den, A)
 
       lpolyscount = 0
       do k=1,kj
