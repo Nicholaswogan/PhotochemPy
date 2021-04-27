@@ -6,11 +6,14 @@
 - Increase number of arguments in each subroutine, to remove as much global data as possible. Ideally would remove `photochem_wrk` and `photochem_vars`. This should only be done for "lower" subroutines. Subroutines like `right_hand_side` will need a bunch of global data.
 
 
+We need a subroutine that checks for nonlinearities in SL species!
+
+
 
 notes:
 - initphoto - depends on usol via the column depth for O2 and NO xsection
 - rainout - depends on usol, T, den, fco2
-- lightning - 
+- lightning - DO THIS NEXT
 
 
 
