@@ -8,7 +8,7 @@
                               lbound, fixedmr, vdep, vdep0, veff, veff0, smflux, sgflux, &
                               distheight, distflux, mbound, den, T, edd, fluxo, flow
     use photochem_wrk, only: rpar, wfall, aersol, hscale, scale_h, h_atm, bHN2, bH2N2, &
-                             sl, A, yl, yp, raingc, &
+                             sl, A, yl, yp, rain, raingc, &
                              adl, add, adu, dl, dd, du, dk
     implicit none
     ! module variables
@@ -153,9 +153,9 @@
 
 
       if (n.eq.1) then
-        call rainout(Jtrop,0,Usol,nq,nz)
+        call rainout(.true.,Jtrop,Usol,nq,nz, rain, raingc)
       else
-        call rainout(Jtrop,1,Usol,nq,nz)
+        call rainout(.false.,Jtrop,Usol,nq,nz, rain, raingc)
       endif
 
 

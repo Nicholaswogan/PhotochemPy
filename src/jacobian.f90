@@ -6,7 +6,7 @@
                               z, dz, jtrop, ispec, photoreac, photonums
     use photochem_vars, only: lbound, fixedmr, vdep, vdep0, veff, veff0, smflux, sgflux, &
                               distheight, distflux, mbound, den, T
-    use photochem_wrk, only: wfall, aersol, hscale, &
+    use photochem_wrk, only: wfall, aersol, hscale, rain, raingc, &
                              sl, A, &
                              adl, add, adu, dl, dd, du
     implicit none
@@ -134,7 +134,7 @@
       enddo
     enddo
 
-    call rainout(Jtrop,1,Usol,nq,nz)
+    call rainout(.false.,Jtrop,Usol,nq,nz, rain, raingc)
 
 
     call aercon(usol,nq,nz)

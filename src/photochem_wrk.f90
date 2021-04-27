@@ -37,8 +37,6 @@ module photochem_wrk
   real*8, allocatable, dimension(:,:) :: RAINGC
   real*8, allocatable, dimension(:) :: RAIN
   real*8, allocatable, dimension(:,:) :: XSAVE
-  real*8 alpharain, co2aq, h2cog0, hh2co
-  real*8 hplus, hso2, so2g0, so4_2
   
   
   ! needed in ltning.f90

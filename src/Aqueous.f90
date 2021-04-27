@@ -1,7 +1,5 @@
 
-      SUBROUTINE AQUEOUS(X, naq, F, I, RRRR, nz)
-        use photochem_wrk, only: alpharain, co2aq, h2cog0, hh2co, &
-                                 hplus, hso2, so2g0, so4_2
+      SUBROUTINE AQUEOUS(X, naq, F, I, RRRR, nz, rain_parameters, hplus)
       implicit none
 
       ! module variables
@@ -12,12 +10,23 @@
       integer, intent(in) :: I
       real*8, dimension(6,nz), intent(in) :: RRRR
       integer,intent(in) :: nz
+      real(8), intent(in) :: rain_parameters(7)
+      real(8), intent(out) :: hplus
 
       real*8, dimension(naq),intent(out) :: F
       integer LSO2g,LH2COg,LSO2aq,LH2COaq,LHCO3_,LCO3_2,LHSO3_
       integer LSO3_2,LH2COSO3,LOH_, k
       real*8, dimension(nz) :: R4, R5, R6, R7, R8, R9
+      real*8 alpharain, co2aq, h2cog0, hh2co
+      real*8 hso2, so2g0, so4_2
 
+      alpharain = rain_parameters(1)
+      co2aq = rain_parameters(2)
+      h2cog0 = rain_parameters(3)
+      hh2co = rain_parameters(4)
+      hso2 = rain_parameters(5)
+      so2g0 = rain_parameters(6)
+      so4_2 = rain_parameters(7)
 
       r4(i) = RRRR(1,i)
       r5(i) = RRRR(2,i)

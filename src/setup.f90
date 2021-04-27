@@ -5,7 +5,7 @@
                               lh, lh2, planet, wavl, dz
     use photochem_vars, only: usol_init, veff, mbound, den, T
     use photochem_wrk, only: scale_h, bhn2, bh2n2, hscale, du, dl, dk, dd, &
-                             adu, adl, add, h_atm, A
+                             adu, adl, add, h_atm, A, rain, raingc
     implicit none
 
     ! local variables
@@ -119,8 +119,8 @@
        enddo
     endif  !end molecular diffusion for H and H2 loop
 
-    call rainout(Jtrop,0,Usol_init,nq,nz) ! help rainout not break on first step
-
+    call rainout(.true.,Jtrop,Usol_init,nq,nz, rain, raingc) ! help rainout not break on first step
+    
 
 
 

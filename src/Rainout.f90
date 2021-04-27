@@ -1,24 +1,23 @@
 
-      SUBROUTINE RAINOUT(Jtrop,Nrain,Usol,nq,nz)
+      SUBROUTINE RAINOUT(initialize,Jtrop,Usol,nq,nz, rain, raingc)
         use photochem_data, only: naq, planet, lh2co, lh2s, lso2, lso4aer, &
                                   lh2so4, ispec, z
         use photochem_vars, only: fCO2, T, den
-        use photochem_wrk, only: H, xsave, rain, raingc, &
-                                 alpharain, co2aq, h2cog0, hh2co, &
-                                 hplus, hso2, so2g0, so4_2
+        use photochem_wrk, only: H, xsave
+
       implicit none
 
-      ! global variables
-      ! real*8, allocatable, dimension(:,:) :: H
-      ! real*8, allocatable, dimension(:,:) :: RAINGC
-
-      ! local variables
-      integer, intent(in) :: nrain
+      ! in
+      logical, intent(in) :: initialize
       integer, intent(in) :: jtrop
       integer, intent(in) :: nq
       integer, intent(in) :: nz
       real*8, dimension(nq,nz), intent(in) :: usol
 
+      ! out
+      real(8), intent(out) :: rain(nz), raingc(nq,nz)
+
+      ! local
       real*8 HEFF(NQ),IPVT(NAQ),DJAC(NAQ,NAQ)
       real*8 F(NAQ),FP(NAQ),TAQ(NZ),X(NAQ)
       integer LSO2g,LH2COg,LSO2aq,LH2COaq,LHCO3_,LCO3_2,LHSO3_
@@ -32,12 +31,16 @@
       real*8, dimension(nz) :: HCO2
       real*8, dimension(nz) :: R4, R5, R6, R7, R8, R9
       real*8, dimension(6,nz) :: RRRR ! for passing Rs to aqueous
-      real*8, dimension(nq,nz) :: ENHAN
       real*8, dimension(nz) :: PH
 
       DATA lso2g , lh2cog , lso2aq , lh2coaq , lhco3_ , lco3_2 ,        &
          & lhso3_ , lso3_2 , lh2coso3 , loh_/1 , 2 , 3 , 4 , 5 , 6 , 7 ,&
          & 8 , 9 , 10/
+      real(8) :: hplus
+      real*8 alpharain, co2aq, h2cog0, hh2co
+      real*8 hso2, so2g0, so4_2
+      real(8) :: rain_parameters(7)
+
 
 
 !  I am wanting to adjust rainout downwards for another planet
@@ -134,7 +137,7 @@
 !
 !   CALCULATE NORMAL HENRY'S LAW COEFFICIENTS (PHYSICAL DISSOLUTION ONLY)
 !   lets play guess the units.  looks like mol/liter/atm
-      IF (Nrain.LE.0 ) THEN
+      IF (initialize) THEN
 
          DO i = 1 , nh
             tfac = (1./taq(i)-1./298.)
@@ -248,21 +251,6 @@
             ENDDO
          ENDDO
 
-!       print *, 'rain 3'
-
-!
-
-
-
-
-
-!
-         DO j = 1 , nq
-            DO i = 1 , nz
-               ENHAN(j,i) = 1.
-            ENDDO
-         ENDDO
-
 
 !   NOW ESTIMATE INITIAL CONCENTRATIONS AT GRID STEP 1 ON THE
 !     FIRST CALL
@@ -305,7 +293,7 @@
 ! ***** LOOP OVER ALTITUDE *****
       DO i = 1 , nh           !this is a big loop (NH is the tropopause height index JTROP elsewhere)
 
-         IF ( Nrain.NE.0 ) THEN
+         IF (.not. initialize) THEN
 
 
             DO k = 1 , naq
@@ -328,6 +316,8 @@
          h2cog0 = USOL(lh2co,i)
          hso2 = H(lso2,i)
          hh2co = H(lh2co,i)
+         rain_parameters = [alpharain, co2aq, h2cog0, hh2co, &
+                            hso2, so2g0, so4_2]
 
 
 
@@ -337,13 +327,13 @@
 
          DO in = 1 , inewt
             ! CALL AQUEOUS(x,f,i)
-            CALL AQUEOUS(x,naq,f,i,RRRR,nz) ! changed input a little
+            CALL AQUEOUS(x,naq,f,i,RRRR,nz, rain_parameters, hplus) ! changed input a little
 !
             DO j = 1 , naq
                xs = x(j)
                dx = eps*x(j)
                x(j) = x(j) + dx
-               CALL AQUEOUS(x,naq,fp,i,RRRR,nz)
+               CALL AQUEOUS(x,naq,fp,i,RRRR,nz, rain_parameters, hplus)
 !
                DO k = 1 , naq
                   djac(k,j) = (fp(k)-f(k))/dx
@@ -354,9 +344,9 @@
 
             CALL SGEFA(djac,naq,naq,ipvt,info)
             IF ( info.NE.0 ) THEN
-               PRINT 99001 , info , i , Nrain
+               PRINT 99001 , info , i
 99001          FORMAT (//1X,'NEWTON SOLVER FAILED IN AQUEOUS'/,5X,      &
-                      &'INFO =',I3,'  GRID STEP =',I3,2X,'NRAIN =',I3)
+                      &'INFO =',I3,'  GRID STEP =',I3)
                STOP
             ELSE
                CALL SGESL(djac,naq,naq,ipvt,f,0)
@@ -373,9 +363,9 @@
                                   ! loop has converged; jump out of loop
          ENDDO
 !
-         PRINT 99002 , i , Nrain
+         PRINT 99002 , i 
 99002    FORMAT (//1X,'NEWTON SOLVER FAILED TO CONVERGE IN AQUEOUS'/,5X,&
-                &'GRID STEP =',I3,2X,'NRAIN =',I3)
+                &'GRID STEP =',I3)
          STOP
 
 !
@@ -397,24 +387,10 @@
 !
 !   SAVE DENSITIES AND CALCULATE ENHANCEMENTS
 
-
          DO j = 1 , naq
             XSAVE(j,i) = x(j)
          ENDDO
 
-
-
-
-
-         ENHAN(lh2co,i) = heff(lh2co)/H(lh2co,i)
-         ENHAN(l1,i) = heff(l1)/H(l1,i)
-         ENHAN(l2,i) = heff(l2)/H(l2,i)
-!  17  CONTINUE !EWS - not used
-!
-! what follows is incomprehensible to me
-!  they state that the vertical integral of WH2O is the rainout rate
-!   hence I should scale rainout by scaling WH2O
-!
 !   NOW BEGIN GIORGI AND CHAMEIDES FORMULATION FOR RAINOUT RATES
          zkm = Z(i)/1.E5
                         !convert vertical grid into kilometers
@@ -493,6 +469,6 @@
          RAIN(i) = 0.
       ENDDO
 
+      end subroutine
 
 
-      END
