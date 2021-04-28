@@ -38,7 +38,8 @@
     if (len_trim(err) /= 0) return
     call read_planet(planet_dat)
     call read_photochem(photochem_dat)
-    call read_atmosphere(atmosphere_txt)
+    call read_atmosphere(atmosphere_txt, err)
+    if (len_trim(err) /= 0) return
     call photgrid(100.0D5)
     call densty
     call rates(nz, nr, T, den, A)
