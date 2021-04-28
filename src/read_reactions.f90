@@ -274,8 +274,4 @@
         endif
 
 
-        ! deallocate
-        ! deallocate(testvec) ! the program doesn't like this at all
-
-
       end subroutine

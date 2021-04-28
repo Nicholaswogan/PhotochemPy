@@ -16,12 +16,9 @@ notes:
 - lightning - DO THIS NEXT
 
 
-
-
-
-
-
-
+NEXT, lets 
+- add to read_reactions so that SL can not photolyze.
+- Write subroutine which determines the dimension of the problem
 
 Following catagories
 
