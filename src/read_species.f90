@@ -5,7 +5,7 @@ subroutine read_species(species_dat, err)
                             LSO2, LH2CO, lh2so4, lso4aer, lh2s, &
                             LCO, LH2O, LH2, LCH4, LO2, LH, &
                             Ls8aer, Lhcaer, Lhcaer2, ls2, ls3, ls4, &
-                            lno, lo, LCO2, ls, nq
+                            lno, lo, LCO2, ls
   use photochem_vars, only: LBOUND, VDEP0, veff0, FIXEDMR, distflux, sgflux, &
                             distheight, mbound, smflux, vdep, veff, FCO2, FN2
   implicit none

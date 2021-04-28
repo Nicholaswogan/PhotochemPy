@@ -1,6 +1,6 @@
 
 subroutine read_reactions(reactions_rx, err)
-  use photochem_data, only: kj, ks, nr, nsp, nsp2, nmax, &
+  use photochem_data, only: nq, kj, ks, nr, nsp, nsp2, nmax, &
                             reactype, rateparams, chemj, jchem, &
                             nump, numl, iprod, iloss, ispec, &
                             photospec, photoreac, photonums, &
@@ -12,7 +12,7 @@ subroutine read_reactions(reactions_rx, err)
   character(len=err_len), intent(out) :: err
   character(len=50) :: fmat1, fmat11, temp1, temp2, temp3, temp4
   character(len=50) :: fmat2, fmat22, temp
-  integer :: i, m, j, l, n, k, io
+  integer :: i, m, j, n, k, io
   integer :: rhOcount, rhHcount, rhCcount, rhScount
   integer :: rhNcount, rhCLcount, numprod, bad
   integer, allocatable, dimension(:) :: testvec
@@ -246,6 +246,11 @@ subroutine read_reactions(reactions_rx, err)
   juniq=1
   do i=1,nr
     if (testvec(i).eq.1.) then
+      if ((JCHEM(1,i) > nq) .and. ((CHEMJ(1,i) /= 'CO2') .and. (CHEMJ(1,i) /= 'N2'))) then
+        err = 'Short-lived species '//trim(CHEMJ(1,i))//' can not have photolysis reactions. '// &
+              'Only long-lived species can have photolysis reactions.'
+        return
+      endif
       ! Captures the species number of each photo reaction
       photoreac(jrcount)=JCHEM(1,i)
       ! Captures the reaction number of each photoreaction

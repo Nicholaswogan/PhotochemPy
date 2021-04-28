@@ -1,7 +1,7 @@
 
 subroutine read_atmosphere(atmosphere_txt, err)
   use photochem_data, only: np, nq, nsp2, nz, ispec
-  use photochem_vars, only: T, den, edd, usol_init, FCO2, &
+  use photochem_vars, only: T, edd, usol_init, FCO2, &
                             rpar_init, wfall_init, aersol_init
   use photochem_wrk, only: rpar, wfall, aersol
                            

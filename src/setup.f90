@@ -36,10 +36,19 @@
     if (len_trim(err) /= 0) return
     call read_reactions(reactions_rx, err)
     if (len_trim(err) /= 0) return
-    call read_planet(planet_dat)
-    call read_photochem(photochem_dat)
+    call read_planet(planet_dat,err)
+    if (len_trim(err) /= 0) return
+    call read_photochem(photochem_dat,err) 
+    if (len_trim(err) /= 0) return
     call read_atmosphere(atmosphere_txt, err)
     if (len_trim(err) /= 0) return
+    ! all above DO NOT depend on anything like T, den etc.
+    ! only need to be read in once at the beginning.
+    
+    ! all below depend on something (T, density, eddy, etc.)
+    ! so all of it should always be run before a calculation
+    
+    ! next step is to improve arguments in this functions, and to identify functions which depend on usol
     call photgrid(100.0D5)
     call densty
     call rates(nz, nr, T, den, A)
