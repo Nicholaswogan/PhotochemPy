@@ -1,7 +1,8 @@
   subroutine setup(species_dat,reactions_rx,planet_dat,&
-                 & photochem_dat, atmosphere_txt, flux_txt)
+                 & photochem_dat, atmosphere_txt, flux_txt, err)
 
-    use photochem_data, only: nz, nr, nz1 , nq, nq1, nw, isl, kw, frak, ihztype, jtrop, &
+    use photochem_data, only: nz, nr, nz1 , nq, nq1, nw, isl, &
+                              kw, frak, ihztype, jtrop, &
                               lh, lh2, planet, wavl, dz
     use photochem_vars, only: usol_init, veff, mbound, den, T
     use photochem_wrk, only: scale_h, bhn2, bh2n2, hscale, du, dl, dk, dd, &
@@ -15,15 +16,24 @@
     character(len=*),intent(in) :: photochem_dat
     character(len=*),intent(in) :: atmosphere_txt
     character(len=*),intent(in) :: flux_txt
+    character(len=err_len), intent(out) :: err
     integer i,j
-    real*8, dimension(nq,nz) :: Fval
-    real*8, dimension(nz) :: H2O
-
+    real*8, dimension(:,:), allocatable :: Fval
+    real*8, dimension(:), allocatable :: H2O
+    integer :: nnq, nnsp, nnp, nnr, kks, kkj, nnw, nnz
 
     ! this subroutine will load all the data into memory
     ! (e.g. cross sections, rate date, etc.)
-
-    call read_species(species_dat)
+    err = ''
+    call determine_dimensions(species_dat,reactions_rx,planet_dat, &
+                              photochem_dat, atmosphere_txt, flux_txt, &
+                              nnq, nnsp, nnp, nnr, kks, kkj, nnw, nnz, err)
+    if (len_trim(err) /= 0) return
+    call allocate_memory(nnz,nnq,nnp,nnsp,nnr,kks,kkj)
+    allocate(Fval(nq,nz))
+    allocate(H2O(nz))
+    call read_species(species_dat,err)
+    if (len_trim(err) /= 0) return
     call read_reactions(reactions_rx)
     call read_planet(planet_dat)
     call read_photochem(photochem_dat)

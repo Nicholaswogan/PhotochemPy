@@ -1,5 +1,5 @@
 
-subroutine read_species(species_dat)
+subroutine read_species(species_dat, err)
   use photochem_data, only: iSL, ISPEC, mass, CO2_inert, N2_inert, redoxstate, &
                             atomsO, atomsH, atomsC, atomsS, atomsN, atomsCl, &
                             LSO2, LH2CO, lh2so4, lso4aer, lh2s, &
@@ -12,8 +12,9 @@ subroutine read_species(species_dat)
 
   ! input
   character(len=*), intent(in) :: species_dat
+  character(len=err_len), intent(out) :: err
   integer :: iLL, iSP, iIN
-  integer :: i
+  integer :: io, io1
   character(len=8) :: species, spectype
   character(len=8) :: AX
   integer :: LX
@@ -21,7 +22,7 @@ subroutine read_species(species_dat)
   integer :: LBC, LG
   real*8 :: XX,YY,ZZ,XXX,YYY,ZZZ
   real*8, dimension(6) :: atom_mass
-
+  err = ''
   ! open species.dat
   open(4, file=trim(species_dat),status='OLD')
 
@@ -33,15 +34,14 @@ subroutine read_species(species_dat)
   ! counter for inert species
   iIN=0
 
-  i = 0
   FCO2=0.
   FN2=0.
   CO2_inert = 0
   N2_inert = 0
-  do while (I.LT.1000)
-  ! Note: Below will crash if species.dat is longer than 1000 lines.
-    read(4,*, end=96) SPECIES,SPECTYPE
-    if (scan(species,'*').LT.1) then  ! else ignore comments in species.dat file (lines that start with *)
+  io = 0
+  do while (io == 0)
+    read(4,*,iostat=io) SPECIES,SPECTYPE
+    if ((scan(species,'*').LT.1) .and. (io == 0)) then  
       iSP=iSP+1
       ISPEC(iSP)=species
       ! This loads the "Lnumbers" for ease of use later in the code
@@ -72,7 +72,12 @@ subroutine read_species(species_dat)
 
       ! read in atmoic number data, NEVER use LC,LH,LN,LO,LS as placeholders
       ! as they mean something else...
-      read(4,*) AX,AX,LA,LB,LD,LE,LF,LM
+      read(4,*,iostat = io1) AX,AX,LA,LB,LD,LE,LF,LM
+      if (io1 /= 0) then
+        err = 'Problem reading number of atoms for '//trim(species)//' in '// &
+              trim(species_dat)
+        return
+      endif
 
       if (SPECTYPE.EQ.'LL') then
         iLL=iLL+1
@@ -80,7 +85,29 @@ subroutine read_species(species_dat)
         backspace 4
 
         ! This section reads in the boundary conditions from species.dat.
-    read(4,*) AX,AX,LX,LX,LX,LX,LX,LX,LBC,XX,YY,ZZ,XXX,LG,YYY,ZZZ
+        read(4,*,iostat=io1) AX,AX,LX,LX,LX,LX,LX,LX,LBC,XX,YY,ZZ,XXX,LG,YYY,ZZZ
+        if (io1 /= 0) then
+          err = 'Problem reading boundary conditions for '//trim(species)//' in '// &
+                trim(species_dat)
+          return
+        endif
+        if ((lbc < 0) .or. (lbc > 3)) then
+          write(ax,'(i8)') lbc
+          err = 'lbound = '//trim(adjustl(AX))//' for '//trim(species)//' in '// &
+                trim(species_dat)//' is not a valid boundary condition'
+          return
+        endif
+        if ((LG < 0) .or. (LG > 2)) then
+          write(ax,'(i8)') lbc
+          err = 'mbound = '//trim(adjustl(AX))//' for '//trim(species)//' in '// &
+                trim(species_dat)//' is not a valid boundary condition'
+          return
+        endif
+        if (YY < -1.d-100) then
+          err = 'fixedmr for '//trim(species)//' in '// &
+                trim(species_dat)//' can not be negative.'
+          return
+        endif
 
         LBOUND(iLL)=LBC
         VDEP0(iLL)=XX
@@ -96,11 +123,15 @@ subroutine read_species(species_dat)
         MBOUND(iLL)=LG
         SMFLUX(iLL)=YYY
         VEFF0(iLL)=ZZZ
-      endif
-      if (SPECTYPE.EQ.'IN') then
+      elseif (SPECTYPE.EQ.'IN') then
         iIN=iIN+1
         backspace 4
-        read(4,*) AX,AX,LX,LX,LX,LX,LX,LX,XX
+        read(4,*,iostat=io1) AX,AX,LX,LX,LX,LX,LX,LX,XX
+        if (io1 /= 0) then
+          err = 'Problem reading boundary conditions for '//trim(species)//' in '// &
+                trim(species_dat)
+          return
+        endif
         if (species.EQ.'CO2') then
           FCO2=XX
           CO2_inert = 1
@@ -128,18 +159,14 @@ subroutine read_species(species_dat)
                           lf*atom_mass(5) + lm*atom_mass(6)
 
     endif
-    I=I+1
   enddo
-96   CONTINUE
   ! close the file
   close(4)
-
+  
   redoxstate = atomsO*1.0 + atomsH*(-0.5) + atomsS*(-2.) + &
                atomsCL*(-1.0) + atomsC*(-2)
 
-  do i=1,NQ
-    VDEP(i) = VDEP0(i)
-    VEFF(i) = VEFF0(i)
-  enddo
+  VDEP = VDEP0
+  VEFF = VEFF0
 
 end subroutine
