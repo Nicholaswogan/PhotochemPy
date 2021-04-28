@@ -17,7 +17,7 @@ subroutine determine_dimensions(species_dat,reactions_rx,planet_dat, &
   character(len=err_len), intent(out) :: err
   ! local
   integer :: io
-  character(len=str_length) :: line, spname, type
+  character(len=str_length) :: line, spname, sptype
   character(len=str_length), allocatable :: photosp(:) 
   integer :: i, j
   logical :: unique
@@ -36,21 +36,21 @@ subroutine determine_dimensions(species_dat,reactions_rx,planet_dat, &
   do while (io == 0)
     read(100,'(A)',iostat=io) line
     if (line(1:1) /= '*' .and. io == 0) then
-      read(line,*) spname, type
-      if (type == 'LL') then
+      read(line,*) spname, sptype
+      if (sptype == 'LL') then
         nq = nq + 1
         nsp = nsp + 1
         if (index(spname,'AER') /= 0) then
           np = np + 1
         endif
-      else if (type == 'SL') then
+      else if (sptype == 'SL') then
         nsp = nsp + 1
-      else if (type == 'IN') then
+      else if (sptype == 'IN') then
         nsp = nsp + 1
-      else if (type == "M" .or. type == "HV") then
+      else if (sptype == "M" .or. sptype == "HV") then
         ! nothing
       else
-        err = "Species type "//trim(type)//' in '//trim(species_dat)//' is not a valid species type.'
+        err = "Species type "//trim(sptype)//' in '//trim(species_dat)//' is not a valid species type.'
         return
       endif
     endif
@@ -68,6 +68,11 @@ subroutine determine_dimensions(species_dat,reactions_rx,planet_dat, &
   do while (io == 0)
     read(100,'(A)',iostat=io) line
     if (io == 0) then
+      if (len_trim(line) == 0) then
+        write(spname,'(i5)') nr+1
+        err = 'Line '//trim(adjustl(spname))//' in '//trim(reactions_rx)//' is blank. This is not allowed.'
+        return
+      endif
       nr = nr + 1
       if (trim(line(49:55)) == 'PHOTO') then
         kj = kj + 1
@@ -112,7 +117,7 @@ subroutine determine_dimensions(species_dat,reactions_rx,planet_dat, &
     else
       do i = 1,str_length
         if (line(1:5) == "LGRID") then
-          read(line,'(a,i2)') type, j
+          read(line,'(a,i2)') sptype, j
         endif
       enddo
     endif

@@ -206,13 +206,13 @@ CS2X      M         CS2       M                 2BODY     2.5E-11     0.        
 CS2X      O2        CS        SO2               2BODY     1.E-12      0.         0.                              ! Wine, Toon et al. [1987]  (duplicated as CS2X+CS2)
 CS2X      CS2       CS        CS        S2      2BODY     1.E-12      0.         0.                              ! Same as CS2X + O2 - > CS + SO2
 CS        HS        CS2       H                 WEIRD     1.5E-13     (1. + 0.6*PATM)                            ! Same as CO + OH -> CO2 + H
-CS2       O         CO        S2                2BODY     5.81E-14                                               ! Singleton et al. [1988]
+CS2       O         CO        S2                2BODY     5.81E-14    0.                                           ! Singleton et al. [1988]
 CS2       SO        OCS       S2                2BODY     2.4E-13     -2370.     0.                              ! not sure where Shawn got this - checking...
 CS2       S         CS        S2                WEIRD     1.9E-14     -580       3.97                            ! Woiki et al. [1995]
 CS        O         CO        S                 2BODY     2.7E-10     -760.      0.                              ! Atkinson et al. [2004]
 CS2       HV        CS        S                 PHOTO     1.00
 CS2       HV        CS2X                        PHOTO     1.00             !this reaction must follow CS2+HV -> CS+S in this table
-CH4       HS        CH3       H2S               2BODY     2.99E-31                                               ! Kerr et al. [1957]. Slllloooooooooow....
+CH4       HS        CH3       H2S               2BODY     2.99E-31    0.                                           ! Kerr et al. [1957]. Slllloooooooooow....
 H         CS        HCS                         WEIRD     2.0E-33     DEN(I)     -850.                           ! Same as H + CO + M -> HCO
 H         HCS       H2        CS                2BODY     1.2E-10     0.         0.                              ! Same as H + HCO -> H2 + CO
 S         HCS       H         CS2               2BODY     5.0E-11     0.         0.                              ! Same as O + HCO -> H + CO2

@@ -34,7 +34,8 @@
     allocate(H2O(nz))
     call read_species(species_dat,err)
     if (len_trim(err) /= 0) return
-    call read_reactions(reactions_rx)
+    call read_reactions(reactions_rx, err)
+    if (len_trim(err) /= 0) return
     call read_planet(planet_dat)
     call read_photochem(photochem_dat)
     call read_atmosphere(atmosphere_txt)
