@@ -1,12 +1,11 @@
 
-subroutine photgrid(top_atmosphere, nz, ztrop, z, dz, jtrop)
+subroutine photgrid(top_atmosphere, nz, z, dz)
   implicit none
 
   ! local variables
   integer, intent(in) :: nz
-  real(8), intent(in) :: top_atmosphere, ztrop
+  real(8), intent(in) :: top_atmosphere
   real(8), intent(out) :: z(nz), dz(nz)
-  integer, intent(out) :: jtrop
   
   
   real*8 :: dzgrid
@@ -22,8 +21,6 @@ subroutine photgrid(top_atmosphere, nz, ztrop, z, dz, jtrop)
   do I=2,NZ
     DZ(I)=Z(I)-Z(I-1)
   enddo
-
-  JTROP=minloc(Z,1, Z .ge. ztrop)-1
 
 end subroutine
 

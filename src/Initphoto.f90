@@ -1,14 +1,13 @@
 
-      SUBROUTINE INITPHOTO(flux_txt,err)
+      SUBROUTINE INITPHOTO(err)
         use photochem_data, only: kj, ks, nw, &
-                                  lgrid, &
                                   photospec, ispec, &
-                                  wavl, wav, wavu, flux
+                                  wavl, wav
         use photochem_vars, only: T
       implicit none !!!!!
 
       ! local variables
-      character(len=*),intent(in) :: flux_txt
+      ! character(len=*),intent(in) :: flux_txt
       character(len=err_len) :: err
       Integer j,i
 
@@ -30,7 +29,7 @@
 
 
       ! this function defines the wavelength grid and returns
-      CALL gridw(nw,wavl,wav,wavu,LGRID)
+      ! CALL gridw(nw,wavl,wav,wavu,LGRID)
       ! nw, the number of points on the grid
       ! wavl, a vector of lower grid points  !note wavl(nw+1)=wavu(nw) i.e. final grid point for interpolation
       ! wavu, a vector of upper grid points (i.w. wavl+delta)
@@ -38,7 +37,7 @@
 
 
       ! this subroutine returns the flux data interpolated to the wavelength grid along with
-      CALL readflux(flux_txt,nw,wavl,flux)
+      ! CALL readflux(flux_txt,nw,wavl,flux)
 
 
 !C *****  ***** ***** READ THE PHOTOLYSIS DATAFILE ***** ***** *****

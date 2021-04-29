@@ -1,10 +1,11 @@
   subroutine setup(species_dat,reactions_rx,planet_dat,&
                  & photochem_dat, atmosphere_txt, flux_txt, err)
 
-    use photochem_data, only: nz, nr, nz1 , nq, nq1, nw, isl, &
+    use photochem_data, only: nz, nr, nz1 , nq, nq1, nw, &
                               kw, frak, ihztype, jtrop, &
-                              lh, lh2, planet, wavl, dz, z, ztrop
-    use photochem_vars, only: usol_init, veff, mbound, den, T
+                              lh, lh2, planet, wavl, wav, wavu, dz, z, ztrop, &
+                              lgrid, flux
+    use photochem_vars, only: usol_init, veff, mbound, den, T, P, press
     use photochem_wrk, only: scale_h, bhn2, bh2n2, hscale, du, dl, dk, dd, &
                              adu, adl, add, h_atm, A, rain, raingc
     implicit none
@@ -42,26 +43,32 @@
     if (len_trim(err) /= 0) return
     call read_atmosphere(atmosphere_txt, err)
     if (len_trim(err) /= 0) return
-    ! all above DO NOT depend on anything like T, den etc.
-    ! only need to be read in once at the beginning.
+    call gridw(nw,wavl,wav,wavu,lgrid) ! makes grid (depends on nothing)
+    call readflux(flux_txt,nw,wavl,flux) ! reads flux (depnds on nothing, except gridw)
+    call initmie(nw,wavl,kw,frak,ihztype)
+    call photgrid(100.0D5, nz, z, dz) ! depends on jtrop
+    ! end depends on nothing
     
-    ! all below depend on something (T, density, eddy, etc.)
-    ! so all of it should always be run before a calculation
+    ! pre-integration stuff
+    JTROP=minloc(Z,1, Z .ge. ztrop)-1
+    call initphoto(err)
+    if (len_trim(err) /= 0) return
+    call aertab
+    call densty(nq, nz, usol_init, T, den, P, press) ! DEPENDS ON USOL
+    call rainout(.true.,Jtrop,Usol_init,nq,nz, rain, raingc) ! help rainout not break on first step
+    ! end pre-integration stuff
     
-    ! next step is to improve arguments in this functions, and to identify functions which depend on usol
-    call photgrid(100.0D5, nz, ztrop, z, dz, jtrop)
-    call densty ! DEPENDS ON USOL
-    call rates(nz, nr, T, den, A) ! DEPENDS ON USOL
-    call difco ! DEPENDS ON USOL
-    call photsatrat(jtrop,nz,h2o)
-    call dochem(Fval,-1,jtrop,isl,usol_init,nq,nz)
-
+    ! begin stuff that should be in rhs
+    call densty(nq, nz, usol_init, T, den, P, press) ! DEPENDS ON USOL
+    call rates(nz, nr, T, den, A) ! DEPENDS ON USOL (via den)
+    call difco ! DEPENDS ON USOL (mean molecular weight)
+    call photsatrat(jtrop,nz,h2o) ! depends on usol
+    if (planet .eq. 'EARTH') call ltning(usol_init,nq,nz)
     if (mbound(LH2) .gt. 0) then
       do i=1,nz
 !        !don't use molecular diffusion
         bHN2(i) = 0.0d0
         bH2N2(i) = 0.0d0
-
       enddo
     else
 !      !use effusion velocity formulation of diffusion limited flux
@@ -72,12 +79,6 @@
       - 1./scale_H(LH2,nz))
 
     endif
-
-    if (planet .eq. 'EARTH') call ltning(usol_init,nq,nz)
-    call aertab
-    call initphoto(flux_txt,err)
-    if (len_trim(err) /= 0) return
-    call initmie(nw,wavl,kw,frak,ihztype)
 
     ! Compute the jacobian coefficents
     do i=1,nq1
@@ -140,8 +141,6 @@
         ADD(LH2,j) = -ADU(LH2,j) - ADL(LH2,j)
        enddo
     endif  !end molecular diffusion for H and H2 loop
-
-    call rainout(.true.,Jtrop,Usol_init,nq,nz, rain, raingc) ! help rainout not break on first step
     
 
 

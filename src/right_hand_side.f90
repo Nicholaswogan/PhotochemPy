@@ -67,7 +67,7 @@
 
     ! dochem needed to update SL (densities), which are then loaded
     ! into absorbers below
-    call dochem(Fval,0,jtrop,isl,usol,nq,nz)
+    call dochem(Fval,-1,jtrop,isl,usol,nq,nz)
 
     lpolyscount = 0
     do k=1,kj

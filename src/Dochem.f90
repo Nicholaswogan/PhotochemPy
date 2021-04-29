@@ -1,6 +1,6 @@
 
 subroutine dochem(Fval,N,Jtrop,Nshort,Usol,nq,nz)
-  use photochem_data, only: nsp, nsp2, nq1, lco, &
+  use photochem_data, only: nsp, nsp2, lco, &
                             lh2, lh2o, &
                             lh2so4, lno, lo, lo2, lso4aer, &
                             planet
@@ -38,7 +38,7 @@ subroutine dochem(Fval,N,Jtrop,Nshort,Usol,nq,nz)
   D = 0.d0
 
 !compute number densities for long-lived and particle species
-  do i = 1 , nq1
+  do i = 1 , nq
     do j = 1 , nz
       d(i,j) = usol(i,j)*den(j)
     enddo
@@ -52,7 +52,7 @@ subroutine dochem(Fval,N,Jtrop,Nshort,Usol,nq,nz)
   
   IF ( N.GE.0 ) THEN
 ! ***** SOLVE FOR THE PHOTOCHEMICAL EQUILIBRIUM SPECIES *****
-  do i = nq1 + 1 , nq1 + Nshort
+  do i = nq + 1 , nq + Nshort
     CALL CHEMPL(d,xp,xl,i)
     do j = 1 , nz
       d(i,j) = xp(j)/xl(j)

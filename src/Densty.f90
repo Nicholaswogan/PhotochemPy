@@ -1,10 +1,13 @@
 
-subroutine densty
-  use photochem_data, only: nz, g, p0, r0, &
-                            dz, z, mass, background_mu, nq
-  use photochem_vars, only: den, T, P, Press, usol_init
+subroutine densty(nq, nz, usol, T, den, P, press)
+  use photochem_data, only: g, p0, r0, &
+                            dz, z, mass, background_mu
   implicit none
-
+  
+  integer, intent(in) :: nq, nz
+  real(8), intent(in) :: usol(nq,nz), T(nz)
+  real(8), intent(out) :: den(nz), P(nz), press(nz)
+  
   ! local varaibles
   real*8 g0, rgas, bk
   real*8 wt, roverm
@@ -16,7 +19,7 @@ subroutine densty
   rgas = 8.3143E7
   bk = 1.38054E-16
 
-  call mean_molecular_weight(nq, usol_init(:,1), mass, background_mu, wt)
+  call mean_molecular_weight(nq, usol(:,1), mass, background_mu, wt)
   roverm = rgas/wt
 
   t0 = T(1) + (T(1)-T(2))/2.
