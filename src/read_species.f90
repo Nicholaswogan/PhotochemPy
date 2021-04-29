@@ -39,7 +39,10 @@ subroutine read_species(species_dat, err)
   
   ! mass of O, H, C, S, N, Cl (g/mol)
   atom_mass = (/15.999, 1.00784, 12.0107, 32.065, 14.0067, 35.453/)
-
+  
+  ! will be zero if NO is not present
+  lno = 0
+  
   ! FN2=0.
   io = 0
   do while (io == 0)

@@ -1,26 +1,30 @@
-      SUBROUTINE XS(species,nw,wavl,wav,T,DEN,j,columndepth,zy,IO2)
-        use photochem_data, only: nz, kj
+      SUBROUTINE XS(species,nw,wavl,wav,T,j,err)
+        use photochem_data, only: nz
 !     INCLUDE 'PHOTOCHEM/INPUTFILES/parameters.inc'
       implicit none
       ! integer :: kin
-      character*8 species
-
-! input
-!------- EWS - these are the variables that need to be declared here-------!
-      real*8 columndepth(KJ,NZ)
-      INTEGER nw,j,IO2
-      REAL*8 wavl(nw+1), wav(nw)
-      REAL*8 T(NZ), DEN(NZ)
-      !real*8 sq(kj,nz,kw)
-      REAL*8 zy
+      character(len=8), intent(in) :: species
+      integer, intent(in) :: nw
+      integer, intent(inout) :: j
+      real*8, intent(in) :: wavl(nw+1), wav(nw)
+      real*8, intent(in) :: T(NZ)
+      ! real*8, intent(in) :: zy
+      character(len=err_len), intent(out) :: err
+      
+      ! real*8, intent(in) :: columndepth(KJ,NZ), DEN(NZ) ! need to get rid of these
+      ! integer, intent(in) :: iO2 ! get rid of this too
+      
       integer :: ja
       integer :: jb
       integer :: jc
       integer :: jd
+      integer :: jsave
+      err = ''
       Ja=0
       Jb=1
       Jc=2
       Jd=3
+      jsave = j
 !---------------------------------------------------------------------------!
 
 !---------EWS NOTE: I have removed unnecessary variables to avoid compilation warnings---!
@@ -97,10 +101,14 @@
       !returns H + CL.
       IF(species.eq.'HCL     ') CALL XS_HCL(nw,wavl,j)
       !returns O + O(1D) then O + O
-      IF(species.eq.'O2      ') CALL XS_O2(nw,wavl,T,DEN,j,&
-     &                                     columndepth,zy,IO2)
+      IF(species.eq.'O2      ') CALL XS_O2(nw,wavl,T,j)                                
       !returns  signo(I,L) for now
-      IF(species.eq.'NO      ') CALL XS_NO(T,DEN,j,columndepth)
+      IF(species.eq.'NO      ') then
+        ! CALL XS_NO(T,DEN,j,columndepth)
+        ! NO cross section needs to be called in the RHS
+        ! it dpends on usol
+        j = j + 1
+      endif
       IF(species.eq.'SO      ') CALL XS_SO(nw,wavl,j)
       IF(species.eq.'OCS     ') CALL XS_OCS(nw,wavl,j)
       !returns SO + O, SO21, SO23
@@ -154,9 +162,12 @@
 
 !       CALL XS_CHOCHO(nw,wavl,wav,T,DEN,100,101,102)  !ACK - hardcoded "J-numbers"
        !returns HCO + HCO, then H2 + CO + CO, then H2CO + CO  (never finished)
-
-      RETURN
-      END
+      if (jsave == j) then
+        err = 'Was unable to read in cross section data for '//trim(species)
+        return
+      endif
+          
+      end subroutine
 
 
        SUBROUTINE XS_HNO3(nw,wl,tlev,jn)
@@ -3217,7 +3228,7 @@
 
        !EWS - wc not used
 !      SUBROUTINE XS_O2(nw,wl,wc,tlev,airlev,jn,columndepth,zy,IO2)
-       SUBROUTINE XS_O2(nw,wl,tlev,airlev,jn,columndepth,zy,IO2)
+       SUBROUTINE XS_O2(nw,wl,tlev,jn)
          use photochem_data, only: sq, nz, kj
          use photochem_vars, only: rootdir
 !-----------------------------------------------------------------------------*
@@ -3246,7 +3257,7 @@
 !     SAVE/PBLOK/
 ! input
       INTEGER jn,nw
-      INTEGER IO2
+      ! INTEGER IO2
       REAL*8 wl(nw+1) ! EWS - wc not needed here (O2)
       REAL*8 tlev(nz) ! EWS - used here
       REAL*8 airlev(nz) ! - EWS - used here
@@ -3291,8 +3302,9 @@
 !     1)Kevin's photo.dat data
 !     2) High resolution O2 cross section
 
-      if(IO2.le.1) option=1
-      if(IO2.eq.2) option=2
+      ! if(IO2.le.1) option=1
+      ! if(IO2.eq.2) option=2
+      option = 2 ! other options suck. Only do the second. But I will keep the first for memories
 
       if (option.eq.1) then  !Kevin's data
 
@@ -3310,7 +3322,7 @@
 ! - actually, option 1 should only be called for the LR grid. it's easier that way.
 ! - eventually, i should enforce this somewhere in the main code.
       kin = 589
-      OPEN(UNIT=kin,&
+      OPEN(UNIT=kin, &
      &  file=trim(rootdir)//'DATA/XSECTIONS/O2/O2D_zahnle.abs',&
      &  STATUS='old')
 
@@ -3962,9 +3974,7 @@
 
        ! EWS - wl, wc, sq, and nw not used
 !      SUBROUTINE XS_NO(nw,wl,wc,tlev,airlev,jn,columndepth)
-       SUBROUTINE XS_NO(tlev,airlev,jn,columndepth)
-         use photochem_data, only: nz, kj, zy
-         use photochem_wrk, only: SIGNO
+       SUBROUTINE XS_NO(nz,kj,zy,tlev,airlev,columndepth,signo)
 !-----------------------------------------------------------------------------*
 !=  PURPOSE:                                                                 =*
 !=  Provide product of (cross section) x (quantum yield) for NO photolysis   =*
@@ -3976,7 +3986,12 @@
 !-----------------------------------------------------------------------------*
 !     INCLUDE 'PHOTOCHEM/INPUTFILES/parameters.inc'
       implicit none
-      ! real*8 :: signo(nz,2)
+      integer, intent(in) :: nz, kj
+      real(8), intent(in) :: zy
+      REAL*8, intent(in) :: tlev(nz) ! EWS - used here
+      REAL*8, intent(in) :: airlev(nz), columndepth(KJ,NZ) 
+      real(8), intent(out) :: signo(nz,2)
+      
       real*8 :: to2l(nz)
       real*8 :: e_15
       ! integer :: kin
@@ -3987,10 +4002,8 @@
 !     INCLUDE 'DATA/INCLUDE/PBLOK.inc'
 !     SAVE/PBLOK/
 ! input
-      INTEGER jn
+      ! INTEGER jn
 !      REAL*8 wl(nw+1), wc(nw) ! EWS - not used
-      REAL*8 tlev(nz) ! EWS - used here
-      REAL*8 airlev(nz) ! - EWS - used here
 
 ! weighting functions
 !      !real*8 sq(kj,nz,kw) !EWS - not used
@@ -4006,8 +4019,8 @@
 !      REAL*8 yg1(nw),yg2(nw) ! EWS - not used
 !      REAL*8 qy ! EWS - not used
       INTEGER i
-      INTEGER ierr,option
-      real*8 columndepth(KJ,NZ),PLOG(NZ),signol(NZ)
+      INTEGER ierr
+      real*8 PLOG(NZ),signol(NZ)
       real*8 BK,SD,AM,PI,ZYR,U0
       integer L,K
       real*8 SIGNO0(nz,2)
@@ -4043,10 +4056,10 @@
 ! options
 !     1)Kevin's photo.dat data
 
-      option=1
+      ! option=1
 
 
-      if (option.eq.1) then  !Kevin's data
+      ! if (option.eq.1) then  !Kevin's data
 
 !   REPEAT THIS SECTION ONLY IF PRESSURE AND TEMPERATURE VARY WITH TIME
 ! (i.e. call this subroutine when it needs to be called...)
@@ -4108,10 +4121,10 @@
 ! is computed in the big wavelength loop in Photo.f
 !this also means that NO is not counted in the absorbtion scheme
 
-      endif  !end option 1
+      ! endif  !end option 1
 
 !      photolabel(jn)='PNO'
-      jn=jn+1
+      ! jn=jn+1
 
       RETURN
       END

@@ -78,7 +78,6 @@ module photochem_data
   real*8, dimension(17,4) :: beta  ! this. Ultimately I'll get rid of it
   integer, dimension(17) :: nk !this
   real*8, dimension(kw) :: SO2HZ ! this
-  character(len=11),allocatable, dimension(:) :: photolabel
   real*8, allocatable, dimension(:,:,:) :: sq ! cross sections * qy
   
   ! needed in initmie.f90

@@ -116,9 +116,7 @@ contains
       deallocate(P)
       deallocate(z)
       deallocate(dz)
-      deallocate(photolabel)
       deallocate(sq)
-      deallocate(SIGNO)
       deallocate(VH2O)
       deallocate(VH2SO4)
       deallocate(FSULF)
@@ -258,11 +256,8 @@ contains
     dz = 0.d0
 
     ! needed in initphoto.f90.
-    allocate(photolabel(kj))
     allocate(sq(kj,nz,kw))
-    allocate(SIGNO(nz,2))
     sq = 0.d0
-    signo = 0.d0
 
     ! needed in Aertab.f90
     allocate(VH2O(Nf,nz))

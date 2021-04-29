@@ -43,6 +43,15 @@ subroutine read_photochem(input_photochem,err)
     err = 'frak must be 0 if no hydrocarbons are present. See '//trim(input_photochem)
     return
   endif
+  if (IO2 /= 2) then
+    err = "IO2 = 2 is the only option. See "//trim(input_photochem)
+    return
+  endif
+  if ((iNO /= 0) .and. (iNO /= 1)) then
+    err = "INO = 0 or 1 are the only options. See "//trim(input_photochem)
+    return
+  endif
+  
   
   ! need more errors for io2 and ino but later
 

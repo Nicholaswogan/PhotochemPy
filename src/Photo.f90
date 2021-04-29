@@ -3,10 +3,10 @@
       SUBROUTINE PHOTO(zy, agl, io2, ino, usol, nq, nz, kj, prates)
         use photochem_data, only: np, nsp, nw, fscale, g, lh2, &
                                   photoreac, ispec, rstand, qexthc, ghc, W0HC, &
-                                  wavl, wav, z, alphap, SO2HZ, nk, beta, sq, flux, mass, &
-                                  background_mu
+                                  wavl, wav, z, sq, flux, mass, &
+                                  background_mu, lno, nz1, dz
         use photochem_vars, only: verbose, den, T
-        use photochem_wrk, only: sl, rpar, gft, w0T, QEXTT, signo
+        use photochem_wrk, only: sl, rpar, gft, w0T, QEXTT
       implicit none
 
       ! local variables
@@ -29,14 +29,16 @@
       integer icomp(10,nz)
       ! real*8 PRATESNO(NZ)  !used in High resolution model
       real*8 PM, BK, RGAS, wt, hc, pi
-      integer JO2, JNO, jso2, js8l, js8r, js8
+      integer JNO, jso2, js8l, js8r, js8
+      ! integer JO2
       integer l3, tempcount
       real*8 ALNO, alp, am, anc, dij,dr, drs, flx
       integer k, kn, lold, nol
       real*8 qcol, qkno, rmg, rn2, scol, u0
       real*8 vmean, zyr
       integer NZP1, nz2
-      real*8 absorbers(kj,nz)
+      real*8 absorbers(kj,nz), columndepth(KJ,NZ), signo(nz,2), efac, ha
+      integer :: m
       integer lpolyscount
       ! integer tmp1
       ! real*8 start, finish
@@ -122,25 +124,28 @@
       enddo
 
 
-!       do k=1,kj   !kj=number of photolysis reactions
-!         columndepth(k,NZ)=absorbers(k,NZ)*HAD !zeros out top
-!       enddo
-!
-!       do k=1,kj
-!         DO  M=1,NZ1
-!           I = NZ - M      !run through heights from the top down.
-!           HA = RMG*0.5*(T(I) + T(I+1))  !scale height RT/MG
-!
-! ! c-mc        DZ = Z(I+1) - Z(I)  !ACK - this is good, but should already exist as a vector
-! ! c-mc in our new scheme DZ(I)=Z(I)-Z(I-1) so DZ(I+1)=Z(I+1)-Z(I)
-! ! C ACK - may have to return when I take this to a variable grid
-!
-!           EFAC = (1. - EXP(-DZ(I+1)/HA))*DEN(I)*HA     !column depth of each layer
-!           TTOT(I) = TTOT(I+1) + EFAC     !total column depth above height level I
-!           columndepth(k,I)= columndepth(k,I+1) &
-!                      + EFAC*SQRT(absorbers(k,i)*absorbers(k,i+1))
-!         enddo
-!       enddo
+      ! do k=1,kj   !kj=number of photolysis reactions
+      !   columndepth(k,NZ)=absorbers(k,NZ)*HAD !zeros out top
+      ! enddo
+    if (lno /= 0) then ! if NO is present, then compute the xsection
+      columndepth = 0.d0
+        do k=1,kj
+          DO  M=1,NZ1
+            I = NZ - M      !run through heights from the top down.
+            HA = RMG*0.5*(T(I) + T(I+1))  !scale height RT/MG
+  !
+  ! ! c-mc        DZ = Z(I+1) - Z(I)  !ACK - this is good, but should already exist as a vector
+  ! ! c-mc in our new scheme DZ(I)=Z(I)-Z(I-1) so DZ(I+1)=Z(I+1)-Z(I)
+  ! ! C ACK - may have to return when I take this to a variable grid
+  !
+            EFAC = (1. - EXP(-DZ(I+1)/HA))*DEN(I)*HA     !column depth of each layer
+            ! TTOT(I) = TTOT(I+1) + EFAC     !total column depth above height level I
+            columndepth(k,I)= columndepth(k,I+1) &
+                       + EFAC*SQRT(absorbers(k,i)*absorbers(k,i+1))
+          enddo
+        enddo
+        call XS_NO(nz,kj,zy,T,DEN,columndepth,signo)
+      endif
 
 
 ! c - cross section 'J numbers' that are used in the loop below
@@ -148,17 +153,17 @@
 ! c - the program will crash because the Jnumber will be returned as a '0'
 ! c which will cause the sq(jnumber,..) or prate(jnumber,..) call to crash
 ! c - consider some IF's here, but this would also entail changing the output files, etc.
-      JO2 = 0
+      ! JO2 = 0
       JNO = 0
       JSO2 = 0
       JS8L = 0
       JS8R = 0
       JS8 = 0
 
-      if (IO2.EQ.1) then
-        JO2=minloc(photoreac,1,ISPEC(INT(photoreac)).eq.'O2     ')+1
-      !note this is for the O2 + Hv -> O + O reaction,which is the second O2 reaction
-      endif
+      ! if (IO2.EQ.1) then
+        ! JO2=minloc(photoreac,1,ISPEC(INT(photoreac)).eq.'O2     ')+1
+      ! note this is for the O2 + Hv -> O + O reaction,which is the second O2 reaction
+      ! endif
 
       if (INO.LE.2) then  !used if INO=0 or INO=1 - on JPL grid only... !actually for now using in high res too...
         JNO=minloc(photoreac,1,ISPEC(INT(photoreac)).eq.'NO     ')
@@ -243,9 +248,9 @@
         KN = 1      !exponentional sum index - reset below if IO2=1
         ALP = 1.    !exponentional sum coefficient - reset below if IO2=1
 
-        IF (IO2.EQ.1 .AND. wavl(L).LE.2041. .AND. wavl(L).GE.1754.) then
-          KN = NK(Lold) ! NK(L) are the number of exponential sum coefficients needed for O2
-        endif  ! the coefficients are read in as ALPHAP(L,K) (where 1<K<4) and BETA(L,K)
+        ! IF (IO2.EQ.1 .AND. wavl(L).LE.2041. .AND. wavl(L).GE.1754.) then
+          ! KN = NK(Lold) ! NK(L) are the number of exponential sum coefficients needed for O2
+        ! endif  ! the coefficients are read in as ALPHAP(L,K) (where 1<K<4) and BETA(L,K)
 
 ! c-mc zero out Rayleigh scattering vectors:
         do i=1,nz
@@ -339,14 +344,14 @@
 
           endif   !end case for Rayleigh loop
 
-          if (IO2 .EQ. 1) then   !re-compute O2 cross section via exponential sums
-            if (wavl(L) .LE. 2041. .AND. wavl(L).GE.1754.) then
-              ALP = ALPHAP(Lold,K)  !ALPHAP(17,4) are coeficients where 1<K<4
-              do I=1,NZ
-                sq(JO2,I,L)= SO2HZ(Lold) + BETA(Lold,K)
-              enddo
-            endif !end O2 sum computation loop
-          endif !end IO2=1 loop
+          ! if (IO2 .EQ. 1) then   !re-compute O2 cross section via exponential sums
+          !   if (wavl(L) .LE. 2041. .AND. wavl(L).GE.1754.) then
+          !     ALP = ALPHAP(Lold,K)  !ALPHAP(17,4) are coeficients where 1<K<4
+          !     do I=1,NZ
+          !       sq(JO2,I,L)= SO2HZ(Lold) + BETA(Lold,K)
+          !     enddo
+          !   endif !end O2 sum computation loop
+          ! endif !end IO2=1 loop
 
 
 

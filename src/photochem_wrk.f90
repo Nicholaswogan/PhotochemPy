@@ -15,9 +15,6 @@ module photochem_wrk
   real*8, allocatable, dimension(:,:) :: wfall ! aersol parameter
   real*8, allocatable, dimension(:,:) :: rpar ! aersol parameter
   
-  ! needed in xsections and photo
-  real*8, allocatable, dimension(:,:) :: SIGNO
-  
   ! needed in Aercon.f90
   real*8, allocatable, dimension(:) :: FSULF
   real*8, allocatable, dimension(:) :: H2SO4S

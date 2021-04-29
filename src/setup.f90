@@ -75,7 +75,8 @@
 
     if (planet .eq. 'EARTH') call ltning(usol_init,nq,nz)
     call aertab
-    call initphoto(flux_txt)
+    call initphoto(flux_txt,err)
+    if (len_trim(err) /= 0) return
     call initmie(nw,wavl,kw,frak,ihztype)
 
     ! Compute the jacobian coefficents
