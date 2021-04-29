@@ -1,36 +1,34 @@
 
-      subroutine photgrid(top_atmosphere)
-        use photochem_data, only: nz, ztrop, z, dz, jtrop
-        implicit none
+subroutine photgrid(top_atmosphere, nz, ztrop, z, dz, jtrop)
+  implicit none
 
-        ! module variables
-        ! integer :: nz ! number of vertical grid points
-        ! real*8, allocatable, dimension(:) :: z
-        ! real*8, allocatable, dimension(:) :: dz
+  ! local variables
+  integer, intent(in) :: nz
+  real(8), intent(in) :: top_atmosphere, ztrop
+  real(8), intent(out) :: z(nz), dz(nz)
+  integer, intent(out) :: jtrop
+  
+  
+  real*8 :: dzgrid
+  integer :: i
 
-        ! local variables
-        real*8, intent(in) :: top_atmosphere !
-        real*8 :: dzgrid
-        integer :: i
+  dzgrid = top_atmosphere/nz
 
-        dzgrid = top_atmosphere/nz
+  do I=1,NZ
+   Z(I) = (I - 0.5)*dzgrid
+  enddo
 
-        do I=1,NZ
-         Z(I) = (I - 0.5)*dzgrid
-        enddo
+  DZ(1)=Z(1)+0.5*dzgrid
+  do I=2,NZ
+    DZ(I)=Z(I)-Z(I-1)
+  enddo
 
+  JTROP=minloc(Z,1, Z .ge. ztrop)-1
 
-        DZ(1)=Z(1)+0.5*dzgrid
-        do I=2,NZ
-          DZ(I)=Z(I)-Z(I-1)
-        enddo
-
-        JTROP=minloc(Z,1, Z .ge. ztrop)-1
-
-      end subroutine
+end subroutine
 
 
-      subroutine gridw(nw,wl,wc,wu,LGRID)
+subroutine gridw(nw,wl,wc,wu,LGRID)
 !*-----------------------------------------------------------------------------*
 !*=  PURPOSE:                                                                 =*
 !*=  Create the wavelength grid for all interpolations and radiative transfer =*
@@ -62,79 +60,79 @@
 !*= To obtain a copy of the GNU General Public License, write to:             =*
 !*= Free Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.   =*
 !*-----------------------------------------------------------------------------*
-      use photochem_vars, only: rootdir
-      implicit none
+use photochem_vars, only: rootdir
+implicit none
 
-      ! module variables
-      ! none!
+! module variables
+! none!
 
-      ! local variables
-      integer, parameter :: kw = 1000
-      integer, intent(in) :: LGRID ! input:
-      real*8, dimension(kw), intent(out) :: wl, wc, wu ! output
-      integer, intent(out) :: nw
-      integer iw, I, l, kin
-      logical ok
+! local variables
+integer, parameter :: kw = 1000
+integer, intent(in) :: LGRID ! input:
+real*8, dimension(kw), intent(out) :: wl, wc, wu ! output
+integer, intent(out) :: nw
+integer iw, I, l, kin
+logical ok
 
-      DO iw = 1, kw ! zero out
-        wl(iw) = 0.
-        wu(iw) = 0.
-        wc(iw) = 0.
-      ENDDO
+DO iw = 1, kw ! zero out
+  wl(iw) = 0.
+  wu(iw) = 0.
+  wc(iw) = 0.
+ENDDO
 
-      !**** chose wavelengths
+!**** chose wavelengths
 
-      !* some pre-set options
-      !*     mopt = 1    equal spacing
-      !*     mopt = 2    Isaksen's grid
-      !*     mopt = 3    combined Kockarts/Isaksen grid + Lyman-Alpha
-      !*     mopt = 4    user-defined
-      !*     mopt = 5    (Notes below)
-      ! grid from Kevin's code,used in Zahnle.flx/.grid
-      ! (This is also Allen Grid for S-R + old JPL grid)
-      !C-mab The present stellar flux files for Hot Jupiters also use this grid.
-      !*     mopt = 6    grid from Jim's climate code  (entirly a hack right now for interpolative purposes)
-      !*     mopt = 7    Jim's old grid, but high resolution from 175-220
+!* some pre-set options
+!*     mopt = 1    equal spacing
+!*     mopt = 2    Isaksen's grid
+!*     mopt = 3    combined Kockarts/Isaksen grid + Lyman-Alpha
+!*     mopt = 4    user-defined
+!*     mopt = 5    (Notes below)
+! grid from Kevin's code,used in Zahnle.flx/.grid
+! (This is also Allen Grid for S-R + old JPL grid)
+!C-mab The present stellar flux files for Hot Jupiters also use this grid.
+!*     mopt = 6    grid from Jim's climate code  (entirly a hack right now for interpolative purposes)
+!*     mopt = 7    Jim's old grid, but high resolution from 175-220
 
-      !note - before using, make sure that nw is the number of wavelengths to loop over and
-      !that wl(nw+1)=wu(nw)
-      ! this is needed for the interpolations to work correctly
-      if (LGRID.eq.0) then
-        nw = 118
-        kin = 797
-        OPEN(kin, file=trim(rootdir)//'DATA/GRIDS/wogan.grid',status='old')
+!note - before using, make sure that nw is the number of wavelengths to loop over and
+!that wl(nw+1)=wu(nw)
+! this is needed for the interpolations to work correctly
+if (LGRID.eq.0) then
+  nw = 118
+  kin = 797
+  OPEN(kin, file=trim(rootdir)//'DATA/GRIDS/wogan.grid',status='old')
 
-        DO i = 1,2
-          READ(kin,*)  !skip header
-        ENDDO
+  DO i = 1,2
+    READ(kin,*)  !skip header
+  ENDDO
 
-        do L=1,nw
-          READ(kin,*) WL(L),WU(L)
-          wc(L) = ( wl(L) + wu(L) )/2.
-        enddo
-        wl(nw+1) = wu(nw)  !final point for interpolative array
-        CLOSE (kin)
-      else
-        print*,'LGRID=0 is the only option'
-        stop
-      endif
-
-
-      !c-mc should probably print these out to output file rather than screen
-      ! print *, 'NW = ',nw,'   WAVELENGTH GRID:',wl(1),' -',wu(nw), &
-      !        ' Angstroms'
-      !* check grid for assorted improprieties:
-      CALL gridck(kw,nw,wl,ok)
-
-      IF (.NOT. ok) THEN
-        print *,'STOP in GRIDW:  The w-grid does not make sense'
-        STOP
-      ENDIF
-
-      end subroutine gridw
+  do L=1,nw
+    READ(kin,*) WL(L),WU(L)
+    wc(L) = ( wl(L) + wu(L) )/2.
+  enddo
+  wl(nw+1) = wu(nw)  !final point for interpolative array
+  CLOSE (kin)
+else
+  print*,'LGRID=0 is the only option'
+  stop
+endif
 
 
-      SUBROUTINE readflux(flux_txt,nw,wl,f)
+!c-mc should probably print these out to output file rather than screen
+! print *, 'NW = ',nw,'   WAVELENGTH GRID:',wl(1),' -',wu(nw), &
+!        ' Angstroms'
+!* check grid for assorted improprieties:
+CALL gridck(kw,nw,wl,ok)
+
+IF (.NOT. ok) THEN
+  print *,'STOP in GRIDW:  The w-grid does not make sense'
+  STOP
+ENDIF
+
+end subroutine gridw
+
+
+SUBROUTINE readflux(flux_txt,nw,wl,f)
 
 !*-----------------------------------------------------------------------------*
 !*=  PURPOSE:                                                                 =*
@@ -161,79 +159,79 @@
 !*-----------------------------------------------------------------------------*
 !*= Copyright (C) 1994,95,96  University Corporation for Atmospheric Research =*
 !*-----------------------------------------------------------------------------*
-      implicit none
+implicit none
 
-      ! module variables
-      ! none!
+! module variables
+! none!
 
-      ! local variables
-      real*8, PARAMETER :: deltax = 1.E-4, biggest=1.E+36, zero=0.0
-      integer, parameter :: kdata = 26500, kw=1000
-      ! * input: (wavelength grid)
-      INTEGER, intent(in) :: nw
-      REAL*8, intent(in) :: wl(kw)
-      character(len=*), intent(in) :: flux_txt
-      ! * output: (extra terrestrial solar flux)
-      REAL*8, intent(out) :: f(kw)
-      ! * work arrays for input data files:
-      REAL*8 x1(kdata), x2(kdata), x3(kdata)
-      REAL*8 y1(kdata), y3(kdata)
-      INTEGER nhead, n, i, ierr, kin, io, n3
-      INTEGER iw
-      ! * data gridded onto wl(kw) grid:
-      REAL*8 yg3(kw)
-      REAL*8, parameter :: hc = 6.62E-34 * 2.998E8
+! local variables
+real*8, PARAMETER :: deltax = 1.E-4, biggest=1.E+36, zero=0.0
+integer, parameter :: kdata = 26500, kw=1000
+! * input: (wavelength grid)
+INTEGER, intent(in) :: nw
+REAL*8, intent(in) :: wl(kw)
+character(len=*), intent(in) :: flux_txt
+! * output: (extra terrestrial solar flux)
+REAL*8, intent(out) :: f(kw)
+! * work arrays for input data files:
+REAL*8 x1(kdata), x2(kdata), x3(kdata)
+REAL*8 y1(kdata), y3(kdata)
+INTEGER nhead, n, i, ierr, kin, io, n3
+INTEGER iw
+! * data gridded onto wl(kw) grid:
+REAL*8 yg3(kw)
+REAL*8, parameter :: hc = 6.62E-34 * 2.998E8
 
-      nhead = 0
-      ierr = 0
-      kin = 797
-      OPEN(UNIT=kin, &
-      file=flux_txt, &
-      STATUS='old')
+nhead = 0
+ierr = 0
+kin = 797
+OPEN(UNIT=kin, &
+file=flux_txt, &
+STATUS='old')
 
-      n = 0
-      DO i=1,kdata
-        READ(kin,*,iostat=io) x1(i), y1(i)  !this flux in mw/m2/nm, but is sampled at subangstom resolution
-        if (io/=0) exit
-        x1(i)=x1(i)*10e0   !convert wavelength from nm to Angstoms
-        x2(i)=x1(i)      ! x2 also angstroms
-        x3(i)=x1(i)      ! x3 also angstroms
-        y3(i)=y1(i)/10e0   ! for y3, convert thuillier flux to mw/m2/A
-        n = n + 1
-      ENDDO
-      CLOSE (kin)
-
-
+n = 0
+DO i=1,kdata
+  READ(kin,*,iostat=io) x1(i), y1(i)  !this flux in mw/m2/nm, but is sampled at subangstom resolution
+  if (io/=0) exit
+  x1(i)=x1(i)*10e0   !convert wavelength from nm to Angstoms
+  x2(i)=x1(i)      ! x2 also angstroms
+  x3(i)=x1(i)      ! x3 also angstroms
+  y3(i)=y1(i)/10e0   ! for y3, convert thuillier flux to mw/m2/A
+  n = n + 1
+ENDDO
+CLOSE (kin)
 
 
-      n3=n
-      ierr=0
 
-      CALL addpnt(x3,y3,kdata,n3,x3(1)*(1.-deltax),zero)
-      CALL addpnt(x3,y3,kdata,n3,          zero,zero)
-      CALL addpnt(x3,y3,kdata,n3,x3(n3)*(1.+deltax),zero)
-      CALL addpnt(x3,y3,kdata,n3,        biggest,zero)
-      CALL inter2(nw+1,wl,yg3,n3,x3,y3,ierr)  !inter2 is points to bins
 
-      !so yg3 is flux on the model wavelength grid
+n3=n
+ierr=0
 
-        !error check for call to inter2
-       IF (ierr .NE. 0) THEN
-        WRITE(*,*) ierr,'  Something wrong in Grid.f/readflux'
-        STOP
-       ENDIF
+CALL addpnt(x3,y3,kdata,n3,x3(1)*(1.-deltax),zero)
+CALL addpnt(x3,y3,kdata,n3,          zero,zero)
+CALL addpnt(x3,y3,kdata,n3,x3(n3)*(1.+deltax),zero)
+CALL addpnt(x3,y3,kdata,n3,        biggest,zero)
+CALL inter2(nw+1,wl,yg3,n3,x3,y3,ierr)  !inter2 is points to bins
+
+!so yg3 is flux on the model wavelength grid
+
+  !error check for call to inter2
+ IF (ierr .NE. 0) THEN
+  WRITE(*,*) ierr,'  Something wrong in Grid.f/readflux'
+  STOP
+ ENDIF
 
 ! NOTE: This explicitly assumes the correct Lyman-Alpha flux *at the planet* has been included
 !      in the input spectrum. It would benefit you to ensure that this is really the case!
-      DO iw = 1, nw
-        f(iw) = yg3(iw)*(wl(iw+1)-wl(iw))*5.039e8*wl(iw)/10. !convert to photons/cm2/s
-        ! print *, wl(iw), yg3(iw)
-      ENDDO
+DO iw = 1, nw
+  f(iw) = yg3(iw)*(wl(iw+1)-wl(iw))*5.039e8*wl(iw)/10. !convert to photons/cm2/s
+  ! print *, wl(iw), yg3(iw)
+ENDDO
 
-      END subroutine
+END subroutine
 
 
-      SUBROUTINE gridck(k,n,x,ok)
+SUBROUTINE gridck(k,n,x,ok)
 
 !*-----------------------------------------------------------------------------*
 !*=  PURPOSE:                                                                 =*
@@ -274,62 +272,59 @@
 !*-----------------------------------------------------------------------------*
 !*= Copyright (C) 1994,95,96  University Corporation for Atmospheric Research =*
 !*-----------------------------------------------------------------------------*
-      IMPLICIT NONE
+IMPLICIT NONE
 
 !* input:
-      INTEGER k, n
-      REAL*8 x(k)
+INTEGER k, n
+REAL*8 x(k)
 
 !* output:
-      LOGICAL ok
+LOGICAL ok
 
 !* local:
-      INTEGER i
+INTEGER i
 !*_______________________________________________________________________
 
-      ok = .TRUE.
+ok = .TRUE.
 
 !* check if dimension meaningful and within bounds
 
-      IF (n .GT. k) THEN
-        ok = .false.
-        print *,'Number of data exceeds dimension'
-        print *, k,n
-        RETURN
-       ENDIF
+IF (n .GT. k) THEN
+  ok = .false.
+  print *,'Number of data exceeds dimension'
+  print *, k,n
+  RETURN
+ ENDIF
 
-      IF (n .LT. 2) THEN
-        ok = .FALSE.
-        print *, 'Too few data, number of data points must be >= 2'
-        RETURN
-      ENDIF
+IF (n .LT. 2) THEN
+  ok = .FALSE.
+  print *, 'Too few data, number of data points must be >= 2'
+  RETURN
+ENDIF
 
 !* disallow negative grid values
 
-      IF(x(1) .LT. 0.) THEN
-        ok = .FALSE.
-        print *,'Grid cannot start below zero'
-        RETURN
-      ENDIF
+IF(x(1) .LT. 0.) THEN
+  ok = .FALSE.
+  print *,'Grid cannot start below zero'
+  RETURN
+ENDIF
 
 !* check sorting
-      DO i = 2, n
-        IF( x(i) .LE. x(i-1)) THEN
-          ok = .FALSE.
-          print *,'Grid is not sorted or contains multiple values'
-          print *, i, x(i),x(i-1)
-          RETURN
-        ENDIF
-      enddo
+DO i = 2, n
+  IF( x(i) .LE. x(i-1)) THEN
+    ok = .FALSE.
+    print *,'Grid is not sorted or contains multiple values'
+    print *, i, x(i),x(i-1)
+    RETURN
+  ENDIF
+enddo
 
-      END subroutine
+END subroutine
 
 
 
-      SUBROUTINE addpnt ( x, y, ld, n, xnew, ynew )
-        use photochem_data
-        use photochem_vars
-        use photochem_wrk
+SUBROUTINE addpnt ( x, y, ld, n, xnew, ynew )
 
 !*-----------------------------------------------------------------------------*
 !*=  PURPOSE:                                                                 =*
@@ -347,84 +342,84 @@
 !*=  YNEW - REAL, y-value of point to be added                             (I)=*
 !*-----------------------------------------------------------------------------*
 
-      IMPLICIT NONE
+IMPLICIT NONE
 
 ! calling parameters
 
-      INTEGER ld, n
-      REAL*8 x(ld), y(ld)
-      REAL*8 xnew, ynew
-      INTEGER ierr
+INTEGER ld, n
+REAL*8 x(ld), y(ld)
+REAL*8 xnew, ynew
+INTEGER ierr
 
 !C local variables
-      INTEGER insert
-      INTEGER i
+INTEGER insert
+INTEGER i
 
 
 
 !* initialize error flag
 
-      ierr = 0
+ierr = 0
 
 !* check n<ld to make sure x will hold another point
 
-      IF (n .GE. ld) THEN
-        print *, '>>> ERROR (ADDPNT) <<<  Cannot expand array '
-        print *, '                        All elements used.'
-        STOP
-      ENDIF
+IF (n .GE. ld) THEN
+  print *, '>>> ERROR (ADDPNT) <<<  Cannot expand array '
+  print *, '                        All elements used.'
+  STOP
+ENDIF
 
-      insert = 1
-      i = 2
+insert = 1
+i = 2
 
 !* check, whether x is already sorted.
 !* also, use this loop to find the point at which xnew needs to be inserted
 !* into vector x, if x is sorted.
 
- 10   CONTINUE
-      IF (i .LT. n) THEN
-        IF (x(i) .LT. x(i-1)) THEN
-          print *, '>>> ERROR (ADDPNT) <<<  x-data must be '// &
-                     'in ascending order!', i,x(i),x(i-1)
-          STOP
-      ELSE
-        IF (xnew .GT. x(i)) insert = i + 1
-      ENDIF
-      i = i+1
-      GOTO 10
-      ENDIF
+10   CONTINUE
+IF (i .LT. n) THEN
+  IF (x(i) .LT. x(i-1)) THEN
+    print *, '>>> ERROR (ADDPNT) <<<  x-data must be '// &
+               'in ascending order!', i,x(i),x(i-1)
+    STOP
+ELSE
+  IF (xnew .GT. x(i)) insert = i + 1
+ENDIF
+i = i+1
+GOTO 10
+ENDIF
 
 !* if <xnew,ynew> needs to be appended at the end, just do so,
 !* otherwise, insert <xnew,ynew> at position INSERT
 
-      IF ( xnew .GT. x(n) ) THEN
+IF ( xnew .GT. x(n) ) THEN
 
-        x(n+1) = xnew
-        y(n+1) = ynew
+  x(n+1) = xnew
+  y(n+1) = ynew
 
-      ELSE
+ELSE
 
 !* shift all existing points one index up
 
-        DO i = n, insert, -1
-          x(i+1) = x(i)
-          y(i+1) = y(i)
-        ENDDO
+  DO i = n, insert, -1
+    x(i+1) = x(i)
+    y(i+1) = y(i)
+  ENDDO
 
 !* insert new point
 
-        x(insert) = xnew
-        y(insert) = ynew
+  x(insert) = xnew
+  y(insert) = ynew
 
-      ENDIF
+ENDIF
 
 !* increase total number of elements in x, y
 
-      n = n+1
+n = n+1
 
-      END subroutine
+END subroutine
 
-      SUBROUTINE inter2(ng,xg,yg,n,x,y,ierr)
+SUBROUTINE inter2(ng,xg,yg,n,x,y,ierr)
 
 !*-----------------------------------------------------------------------------*
 !*=  PURPOSE:                                                                 =*
@@ -456,70 +451,70 @@
 !*=  Y   - REAL, input y-data                                              (I)=*
 !*-----------------------------------------------------------------------------*
 
-      IMPLICIT NONE
+IMPLICIT NONE
 !* input:
-      INTEGER ng, n
-      REAL*8 x(n), y(n), xg(ng)
-      INTEGER ierr
+INTEGER ng, n
+REAL*8 x(n), y(n), xg(ng)
+INTEGER ierr
 !* output:
-      REAL*8 yg(ng)
+REAL*8 yg(ng)
 
 !* local:
-      REAL*8 area, xgl, xgu
-      REAL*8 darea, slope
-      REAL*8 a1, a2, b1, b2
-      INTEGER ngintv
-      INTEGER i, k, jstart
+REAL*8 area, xgl, xgu
+REAL*8 darea, slope
+REAL*8 a1, a2, b1, b2
+INTEGER ngintv
+INTEGER i, k, jstart
 
 
 !*_______________________________________________________________________
 
 !*  test for correct ordering of data, by increasing value of x
 
-      DO 10, i = 2, n
-         IF (x(i) .LE. x(i-1)) THEN
+DO 10, i = 2, n
+   IF (x(i) .LE. x(i-1)) THEN
 
-            ierr = 1
-            WRITE(*,*)'data not sorted', i,x(i),x(i-1)
-            RETURN
-         ENDIF
-   10 CONTINUE
+      ierr = 1
+      WRITE(*,*)'data not sorted', i,x(i),x(i-1)
+      RETURN
+   ENDIF
+10 CONTINUE
 
 
-      DO i = 2, ng
-        IF (xg(i) .LE. xg(i-1)) THEN
-           ierr = 2
-          WRITE(0,*) '>>> ERROR (inter2) <<<  xg-grid not sorted!'
-          RETURN
-        ENDIF
-      ENDDO
+DO i = 2, ng
+  IF (xg(i) .LE. xg(i-1)) THEN
+     ierr = 2
+    WRITE(0,*) '>>> ERROR (inter2) <<<  xg-grid not sorted!'
+    RETURN
+  ENDIF
+ENDDO
 
 
 
 
 !* check for xg-values outside the x-range
 
-      IF ( (x(1) .GT. xg(1)) .OR. (x(n) .LT. xg(ng)) ) THEN
-          WRITE(0,*) '>>> ERROR (inter2) <<<  Data do not span '// &
-                    'grid.  '
-          WRITE(0,*) '                        Use ADDPNT to '// &
-                    'expand data and re-run.'
-          STOP
-      ENDIF
+IF ( (x(1) .GT. xg(1)) .OR. (x(n) .LT. xg(ng)) ) THEN
+    WRITE(0,*) '>>> ERROR (inter2) <<<  Data do not span '// &
+              'grid.  '
+    WRITE(0,*) '                        Use ADDPNT to '// &
+              'expand data and re-run.'
+    STOP
+ENDIF
 
 !*  find the integral of each grid interval and use this to
 !*  calculate the average y value for the interval
 !*  xgl and xgu are the lower and upper limits of the grid interval
 
-      jstart = 1
-      ngintv = ng - 1
-      DO 50, i = 1,ngintv
+jstart = 1
+ngintv = ng - 1
+DO 50, i = 1,ngintv
 
 !* initalize:
 
-            area = 0.0
-            xgl = xg(i)
-            xgu = xg(i+1)
+      area = 0.0
+      xgl = xg(i)
+      xgu = xg(i+1)
 
 !*  discard data before the first grid interval and after the
 !*  last grid interval
@@ -527,68 +522,68 @@
 !*  between the last point which lies in the previous interval and the
 !*  first point inside the current interval
 
-            k = jstart
+      k = jstart
 
-            IF (k .LE. n-1) THEN
+      IF (k .LE. n-1) THEN
 
 !*  if both points are before the first grid, go to the next point
-   30         CONTINUE
-                IF (x(k+1) .LE. xgl) THEN
-                   jstart = k - 1
-                   k = k+1
-                   IF (k .LE. n-1) GO TO 30
-                ENDIF
+30         CONTINUE
+          IF (x(k+1) .LE. xgl) THEN
+             jstart = k - 1
+             k = k+1
+             IF (k .LE. n-1) GO TO 30
+          ENDIF
 
 !*  if the last point is beyond the end of the grid, complete and go to the next
 !*  grid
-   40         CONTINUE
-                 IF ((k .LE. n-1) .AND. (x(k) .LT. xgu)) THEN
+40         CONTINUE
+           IF ((k .LE. n-1) .AND. (x(k) .LT. xgu)) THEN
 
-                    jstart = k-1
+              jstart = k-1
 
 !* compute x-coordinates of increment
 
-                    a1 = MAX(x(k),xgl)
-                    a2 = MIN(x(k+1),xgu)
+              a1 = MAX(x(k),xgl)
+              a2 = MIN(x(k+1),xgu)
 
 !*  if points coincide, contribution is zero
 
-                    IF (x(k+1).EQ.x(k)) THEN
-                       darea = 0.e0
-                    ELSE
-                       slope = (y(k+1) - y(k))/(x(k+1) - x(k))
-                       b1 = y(k) + slope*(a1 - x(k))
-                       b2 = y(k) + slope*(a2 - x(k))
-                       darea = (a2 - a1)*(b2 + b1)/2.
+              IF (x(k+1).EQ.x(k)) THEN
+                 darea = 0.e0
+              ELSE
+                 slope = (y(k+1) - y(k))/(x(k+1) - x(k))
+                 b1 = y(k) + slope*(a1 - x(k))
+                 b2 = y(k) + slope*(a2 - x(k))
+                 darea = (a2 - a1)*(b2 + b1)/2.
 !c                       print *,a2,a1,k,y(k),slope,b2,b1,darea
-                    ENDIF
+              ENDIF
 
 
 !*  find the area under the trapezoid from a1 to a2
 
-                    area = area + darea
+              area = area + darea
 
 !* go to next point
 
-                    k = k+1
-                    GO TO 40
+              k = k+1
+              GO TO 40
 
-                ENDIF
+          ENDIF
 
-            ENDIF
+      ENDIF
 
 !*  calculate the average y after summing the areas in the interval
-            yg(i) = area/(xgu - xgl)
+      yg(i) = area/(xgu - xgl)
 
 
-   50 CONTINUE
+50 CONTINUE
 !*_______________________________________________________________________
 
 
-      END subroutine
+END subroutine
 
 
-      SUBROUTINE inter3(ng,xg,yg, n,x,y, FoldIn)
+SUBROUTINE inter3(ng,xg,yg, n,x,y, FoldIn)
 
 !*-----------------------------------------------------------------------------*
 !*=  PURPOSE:                                                                 =*
@@ -651,91 +646,91 @@
 !*= Copyright (C) 1994,95,96  University Corporation for Atmospheric Research =*
 !*-----------------------------------------------------------------------------*
 
-      IMPLICIT NONE
+IMPLICIT NONE
 
 !* input:
-      INTEGER n, ng
-      REAL*8 xg(ng)
-      REAL*8 x(n), y(n)
+INTEGER n, ng
+REAL*8 xg(ng)
+REAL*8 x(n), y(n)
 
-      INTEGER FoldIn
+INTEGER FoldIn
 
 !* output:
-      REAL*8 yg(ng)
+REAL*8 yg(ng)
 
 !* local:
-      REAL*8 a1, a2, sum
-      REAL*8 tail
-      INTEGER jstart, i, jl, k
+REAL*8 a1, a2, sum
+REAL*8 tail
+INTEGER jstart, i, jl, k
 !*_______________________________________________________________________
 
 !* check whether flag given is legal
-      IF ((FoldIn .NE. 0) .AND. (FoldIn .NE. 1)) THEN
-         WRITE(0,*) '>>> ERROR (inter3) <<<  Value for FOLDIN invalid. '
-         WRITE(0,*) '                        Must be 0 or 1'
-         STOP
-      ENDIF
+IF ((FoldIn .NE. 0) .AND. (FoldIn .NE. 1)) THEN
+   WRITE(0,*) '>>> ERROR (inter3) <<<  Value for FOLDIN invalid. '
+   WRITE(0,*) '                        Must be 0 or 1'
+   STOP
+ENDIF
 
 !* do interpolation
 
-      jstart = 1
-      jl = 0
+jstart = 1
+jl = 0
 
-      DO 30, i = 1, ng - 1
+DO 30, i = 1, ng - 1
 
-         yg(i) = 0.
-         sum = 0.
-         jl = jstart
+   yg(i) = 0.
+   sum = 0.
+   jl = jstart
 
-         IF (jl .LE. n-1) THEN
+   IF (jl .LE. n-1) THEN
 
-   20      CONTINUE
+20      CONTINUE
 
-             IF (x(jl+1) .LT. xg(i)) THEN
-                jstart = jl
-                jl = jl+1
-                IF (jl .LE. n-1) GO TO 20
-             ENDIF
+       IF (x(jl+1) .LT. xg(i)) THEN
+          jstart = jl
+          jl = jl+1
+          IF (jl .LE. n-1) GO TO 20
+       ENDIF
 
-   25      CONTINUE
+25      CONTINUE
 
-             IF ((x(jl) .LE. xg(i+1)) .AND. (jl .LE. n-1)) THEN
+       IF ((x(jl) .LE. xg(i+1)) .AND. (jl .LE. n-1)) THEN
 
-                a1 = MAX(x(jl),xg(i))
-                a2 = MIN(x(jl+1),xg(i+1))
+          a1 = MAX(x(jl),xg(i))
+          a2 = MIN(x(jl+1),xg(i+1))
 
-                sum = sum + y(jl) * (a2-a1)/(x(jl+1)-x(jl))
-                jl = jl+1
-                GO TO 25
+          sum = sum + y(jl) * (a2-a1)/(x(jl+1)-x(jl))
+          jl = jl+1
+          GO TO 25
 
-             ENDIF
+       ENDIF
 
-           yg(i) = sum
+     yg(i) = sum
 
-         ENDIF
+   ENDIF
 
-   30 CONTINUE
+30 CONTINUE
 
 
 !* if wanted, integrate data "overhang" and fold back into last bin
 
-      IF (FoldIn .EQ. 1) THEN
+IF (FoldIn .EQ. 1) THEN
 
-         jl = jl-1
-         a1 = xg(ng)     ! upper limit of last interpolated bin
-         a2 = x(jl+1)     ! upper limit of last input bin considered
+   jl = jl-1
+   a1 = xg(ng)     ! upper limit of last interpolated bin
+   a2 = x(jl+1)     ! upper limit of last input bin considered
 
 !*        do folding only if grids don't match up and there is more input
-         IF ((a2 .GT. a1) .OR. (jl+1 .LT. n)) THEN
-           tail = y(jl) * (a2-a1)/(x(jl+1)-x(jl))
-           DO k = jl+1, n-1
-              tail = tail + y(k) * (x(k+1)-x(k))
-           ENDDO
-           yg(ng-1) = yg(ng-1) + tail
-         ENDIF
+   IF ((a2 .GT. a1) .OR. (jl+1 .LT. n)) THEN
+     tail = y(jl) * (a2-a1)/(x(jl+1)-x(jl))
+     DO k = jl+1, n-1
+        tail = tail + y(k) * (x(k+1)-x(k))
+     ENDDO
+     yg(ng-1) = yg(ng-1) + tail
+   ENDIF
 
-      ENDIF
+ENDIF
 !*_______________________________________________________________________
-      !
-      ! RETURN
-      END
+!
+! RETURN
+END
