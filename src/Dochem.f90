@@ -1,11 +1,11 @@
 
 subroutine dochem(Fval,N,Jtrop,Nshort,Usol,nq,nz)
-  use photochem_data, only: nsp, nsp2, nq1, CO2_inert, N2_inert, lco, &
-                            lco2, lh2, lh2o, &
+  use photochem_data, only: nsp, nsp2, nq1, lco, &
+                            lh2, lh2o, &
                             lh2so4, lno, lo, lo2, lso4aer, &
                             planet
                             
-  use photochem_vars, only: fco2, den, H2OSAT
+  use photochem_vars, only: den, H2OSAT
   use photochem_wrk, only: zapco, zaph2, zapno, zapo, rain, raingc, &
                            yp, yl, sl, H2SO4S
 
@@ -45,9 +45,8 @@ subroutine dochem(Fval,N,Jtrop,Nshort,Usol,nq,nz)
   enddo
 !now do the last 4 inert species that are the same in both codes
   do j = 1 , nz
-    if (CO2_inert.eq.1) D(LCO2,j) = FCO2*Den(j) !If CO2 is inert, then put it in D
-    if (N2_inert.eq.1) D(NSP,j) = (1. - USOL(LO2,J) - FCO2 - USOL(LCO,J))* DEN(J) 
-    d(nsp2-1,j) = 1.         ! HV has density of 1 for photorate calculations
+    D(nsp,j) = Den(j) * (1.d0 - sum(usol(:,j))) ! density of the background atmosphere
+    d(nsp2-1,j) = 1.d0         ! HV has density of 1 for photorate calculations
     d(nsp2,j) = DEN(j)     ! M - background density for three body reactions
   enddo
   

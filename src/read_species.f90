@@ -1,19 +1,20 @@
 
 subroutine read_species(species_dat, err)
-  use photochem_data, only: iSL, ISPEC, mass, CO2_inert, N2_inert, redoxstate, &
+  use photochem_data, only: iSL, ISPEC, mass, redoxstate, &
                             atomsO, atomsH, atomsC, atomsS, atomsN, atomsCl, &
                             LSO2, LH2CO, lh2so4, lso4aer, lh2s, &
                             LCO, LH2O, LH2, LCH4, LO2, LH, &
                             Ls8aer, Lhcaer, Lhcaer2, ls2, ls3, ls4, &
-                            lno, lo, LCO2, ls
+                            lno, lo, LCO2, ln2, ls, background_mu, background_spec, &
+                            nq, nsp, np
   use photochem_vars, only: LBOUND, VDEP0, veff0, FIXEDMR, distflux, sgflux, &
-                            distheight, mbound, smflux, vdep, veff, FCO2, FN2
+                            distheight, mbound, smflux, vdep, veff
   implicit none
 
   ! input
   character(len=*), intent(in) :: species_dat
   character(len=err_len), intent(out) :: err
-  integer :: iLL, iSP, iIN
+  integer :: iLL, iSP, iIN, iM_HV
   integer :: io, io1
   character(len=8) :: species, spectype
   character(len=8) :: AX
@@ -31,13 +32,15 @@ subroutine read_species(species_dat, err)
   iSL=0
   ! counter for number of lines in species.dat file
   iSP=0
-  ! counter for inert species
+  ! counter for inert species. There should only be one
   iIN=0
+  ! counter for HV and M
+  iM_HV = 0
+  
+  ! mass of O, H, C, S, N, Cl (g/mol)
+  atom_mass = (/15.999, 1.00784, 12.0107, 32.065, 14.0067, 35.453/)
 
-  FCO2=0.
-  FN2=0.
-  CO2_inert = 0
-  N2_inert = 0
+  ! FN2=0.
   io = 0
   do while (io == 0)
     read(4,*,iostat=io) SPECIES,SPECTYPE
@@ -67,6 +70,7 @@ subroutine read_species(species_dat, err)
       if(trim(species).eq.'O') lo=iSP
       if(trim(species).eq.'H') lh=iSP
       if(trim(species).eq.'CO2') lco2=iSP
+      if(trim(species).eq.'N2') lN2=iSP
       ! Return to previous line in species.dat file
       backspace 4
 
@@ -123,40 +127,64 @@ subroutine read_species(species_dat, err)
         MBOUND(iLL)=LG
         SMFLUX(iLL)=YYY
         VEFF0(iLL)=ZZZ
-      elseif (SPECTYPE.EQ.'IN') then
-        iIN=iIN+1
-        backspace 4
-        read(4,*,iostat=io1) AX,AX,LX,LX,LX,LX,LX,LX,XX
-        if (io1 /= 0) then
-          err = 'Problem reading boundary conditions for '//trim(species)//' in '// &
-                trim(species_dat)
+        
+        mass(iLL) = la*atom_mass(1) + lb*atom_mass(2) + &
+                    ld*atom_mass(3) + le*atom_mass(4) + &
+                    lf*atom_mass(5) + lm*atom_mass(6)
+        if (iSP > nq) then
+          err = "All long lived species must preceed short lived species in "//trim(species_dat)
           return
         endif
-        if (species.EQ.'CO2') then
-          FCO2=XX
-          CO2_inert = 1
+        if ((index(species,'AER') /= 0) .and. ((iSP <= nq-np) .or. (iSP > nq))) then
+          err = "Aersols must be the last long lived species in "//trim(species_dat)
+          return
         endif
-        if (species.EQ.'N2') then
-          FN2=XX
-          N2_inert = 1
+        
+      elseif (SPECTYPE.EQ.'IN') then
+        iIN=iIN+1
+        if (iSP /= nsp) then
+          err = "The background inert (IN) species must follow the short lived species in " &
+                //trim(species_dat)
+          return
         endif
+        background_spec = species
+        background_mu = la*atom_mass(1) + lb*atom_mass(2) + &
+                        ld*atom_mass(3) + le*atom_mass(4) + &
+                        lf*atom_mass(5) + lm*atom_mass(6)
+        if ((species /= "CO2") .and. (species /= "N2") .and. (species /= "H2")) then
+          err = "Only H2, N2, or CO2 can be the background atmosphere."
+          return
+        endif
+      elseif (SPECTYPE.EQ.'SL') then
+        if (iSP < nq) then
+          err = "Short lived species must follow the long lived species in "//trim(species_dat)
+          return
+        endif
+        iSL=iSL+1
+      elseif (SPECTYPE.EQ.'HV') then
+        if (ISP /= nsp+1) then
+          err = '"M" must be the last species in the file '//trim(species_dat)
+          return
+        endif
+        iM_HV=iM_HV+1
+      elseif (SPECTYPE.EQ.'M') then
+        if (ISP /= nsp+2) then
+          err = '"M" must be the last species in the file '//trim(species_dat)
+          return
+        endif
+        iM_HV=iM_HV+1
+      else
+        err = "Species type "//trim(spectype)//' in the file '//trim(species_dat)// &
+              ' is not a valid species type.'
+        return
       endif
-      if (SPECTYPE.EQ.'SL') iSL=iSL+1
-      if (SPECTYPE.EQ.'HV') iIN=iIN+1
-      if (SPECTYPE.EQ.'M') iIN=iIN+1
 
-      atomsO(iLL+iSL+iIN)=LA
-      atomsH(iLL+iSL+iIN)=LB
-      atomsC(iLL+iSL+iIN)=LD
-      atomsS(iLL+iSL+iIN)=LE
-      atomsN(iLL+iSL+iIN)=LF
-      atomsCL(iLL+iSL+iIN)=LM
-
-      ! molar mass of each atom [O, H, C, S, N, Cl]
-      atom_mass = (/15.999, 1.00784, 12.0107, 32.065, 14.0067, 35.453/)
-      mass(iLL+iSL+iIN) = la*atom_mass(1) + lb*atom_mass(2) + &
-                          ld*atom_mass(3) + le*atom_mass(4) + &
-                          lf*atom_mass(5) + lm*atom_mass(6)
+      atomsO(iLL+iSL+iIN+iM_HV)=LA
+      atomsH(iLL+iSL+iIN+iM_HV)=LB
+      atomsC(iLL+iSL+iIN+iM_HV)=LD
+      atomsS(iLL+iSL+iIN+iM_HV)=LE
+      atomsN(iLL+iSL+iIN+iM_HV)=LF
+      atomsCL(iLL+iSL+iIN+iM_HV)=LM
 
     endif
   enddo
@@ -168,5 +196,13 @@ subroutine read_species(species_dat, err)
 
   VDEP = VDEP0
   VEFF = VEFF0
+  
+  if (iIN > 1) then
+    err = 'Only one background inert ("IN") gas, like N2, is allowed.'
+    return
+  elseif (iIN < 1) then
+    err = 'The atmosphere is missing a background gas.'
+    return
+  endif
 
 end subroutine

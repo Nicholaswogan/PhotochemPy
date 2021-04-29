@@ -1,20 +1,13 @@
 
       SUBROUTINE INITPHOTO(flux_txt)
         use photochem_data, only: kj, nz, ks, nq, nw, nz1, &
-                                  g, io2, zy, lgrid, lo2,  &
+                                  g, io2, zy, lgrid, &
                                   photoreac, photospec, ispec, dz, photolabel, &
-                                  so2hz, nk, beta, alphap, wavl, wav, wavu, flux
-        use photochem_vars, only: rootdir, fCO2, usol_init, den, T
+                                  so2hz, nk, beta, alphap, wavl, wav, wavu, flux, &
+                                  background_mu, mass
+        use photochem_vars, only: rootdir, usol_init, den, T
         use photochem_wrk, only: SL
       implicit none !!!!!
-
-      ! Module variables
-      ! real*8, allocatable, dimension(:) :: Flux ! Solar flux photons/(cm2 s)
-      ! real*8, allocatable, dimension(:) :: wavl, wav, wavu ! wavelength bins
-      ! real*8, dimension(17,4) :: alphap ! this
-      ! real*8, dimension(17,4) :: beta  ! this
-      ! integer, dimension(17) :: nk !this
-      ! real*8, dimension(2900) :: SO2HZ ! this
 
       ! local variables
       character(len=*),intent(in) :: flux_txt
@@ -131,7 +124,7 @@
       enddo
 
       RGAS = 8.3143D7             !erg/mol/K
-      WT = usol_init(LO2,1)*32. + FCO2*44. + (1.-usol_init(LO2,1)-FCO2)*28. + 0.4 !(g) mean molar mass
+      call mean_molecular_weight(nq, usol_init(:,1), mass, background_mu, wt)
       RMG = RGAS/(WT*G)           !gm cm^2/s^2/mol/K  / g *s^2/cm ->  cm/mol/K
 
       do k=1,kj

@@ -3,7 +3,7 @@
 
     use photochem_data, only: nz, nr, nz1 , nq, nq1, nw, isl, &
                               kw, frak, ihztype, jtrop, &
-                              lh, lh2, planet, wavl, dz
+                              lh, lh2, planet, wavl, dz, z, ztrop
     use photochem_vars, only: usol_init, veff, mbound, den, T
     use photochem_wrk, only: scale_h, bhn2, bh2n2, hscale, du, dl, dk, dd, &
                              adu, adl, add, h_atm, A, rain, raingc
@@ -49,10 +49,10 @@
     ! so all of it should always be run before a calculation
     
     ! next step is to improve arguments in this functions, and to identify functions which depend on usol
-    call photgrid(100.0D5)
-    call densty
-    call rates(nz, nr, T, den, A)
-    call difco
+    call photgrid(100.0D5, nz, ztrop, z, dz, jtrop)
+    call densty ! DEPENDS ON USOL
+    call rates(nz, nr, T, den, A) ! DEPENDS ON USOL
+    call difco ! DEPENDS ON USOL
     call photsatrat(jtrop,nz,h2o)
     call dochem(Fval,-1,jtrop,isl,usol_init,nq,nz)
 

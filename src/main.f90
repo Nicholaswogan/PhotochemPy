@@ -4,7 +4,6 @@ program main
   use photochem, only: setup, integrate, cvode_equilibrium, allocate_memory
   use photochem_vars, only: rootdir
   implicit none
-  integer :: nnz, nnq, nnp, nnsp, nnr, kks, kkj, nnw
   integer converged
   logical success
   character(len=1000) :: err
@@ -22,8 +21,7 @@ program main
     print*,'error worked properly'
     stop
   endif
-
   
-  call integrate(100,converged)
+  call integrate(1000,converged)
   call cvode_equilibrium(1.d-3, 1.d-30, .true., success)
 end program

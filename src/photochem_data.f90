@@ -30,14 +30,15 @@ module photochem_data
   
   ! Defined in species.dat
   integer :: iSL ! number of sl species
-  integer :: CO2_inert, N2_inert
+  real(8) :: background_mu
+  character(len=8) :: background_spec
   character(len=8), allocatable, dimension(:) :: ISPEC
   real*8, allocatable, dimension(:) :: redoxstate
   real*8, allocatable, dimension(:) :: mass
   integer LSO2, LH2CO, lh2so4, lso4aer, lh2s ! indexes of a few things
   integer LCO, LH2O, LH2, LCH4, LO2, LH
   integer Ls8aer, Lhcaer, Lhcaer2, ls2, ls3, ls4
-  integer lno, lo, LCO2, ls
+  integer lno, lo, LCO2, ln2, ls
   integer, allocatable, dimension(:) :: atomsO
   integer, allocatable, dimension(:) :: atomsH
   integer, allocatable, dimension(:) :: atomsC

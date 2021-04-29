@@ -1,13 +1,13 @@
 
 subroutine densty
-  use photochem_data, only: nz, far, g, p0, r0, &
-                            lo2, dz, z
-  use photochem_vars, only: den, T, P, Press, fco2, usol_init
+  use photochem_data, only: nz, g, p0, r0, &
+                            dz, z, mass, background_mu, nq
+  use photochem_vars, only: den, T, P, Press, usol_init
   implicit none
 
   ! local varaibles
   real*8 g0, rgas, bk
-  real*8 wt, ft, roverm
+  real*8 wt, roverm
   real*8 t0, p1, ha, r, tav, gz
   integer i
 !   THIS SUBROUTINE CALCULATES ATMOSPHERIC NUMBER DENSITIES, ASSUM-
@@ -16,8 +16,7 @@ subroutine densty
   rgas = 8.3143E7
   bk = 1.38054E-16
 
-  ft = usol_init(lo2,1) + fco2 + far
-  wt = usol_init(lo2,1)*32. + fco2*44. + (1.-ft)*28. + far*40.  !assuming O2,CO2,N2 and Ar are the main players and pN2=1-pO2+pCO2+pAr
+  call mean_molecular_weight(nq, usol_init(:,1), mass, background_mu, wt)
   roverm = rgas/wt
 
   t0 = T(1) + (T(1)-T(2))/2.
@@ -44,26 +43,24 @@ subroutine densty
 
 end subroutine
 
-subroutine mean_molecular_weight(nq, nz, usol, mass, mu_background, mubar)
+subroutine mean_molecular_weight(nq, usol_layer, mass, background_mu, mubar)
   implicit none
   
-  integer, intent(in) :: nq, nz 
-  real(8), intent(in) :: usol(nq,nz)
+  integer, intent(in) :: nq
+  real(8), intent(in) :: usol_layer(nq)
   real(8), intent(in) :: mass(nq)
-  real(8), intent(in) :: mu_background
+  real(8), intent(in) :: background_mu
   
-  real(8), intent(out) :: mubar(nz)
-  integer :: i, j
+  real(8), intent(out) :: mubar
+  integer :: j
   real(8) :: f_background
 
   mubar = 0.d0
-  do i = 1, nz
-    do j = 1, nq
-      mubar(i) = mubar(i) + usol(j,i) * mass(j)
-    enddo
-    f_background = 1 - sum(usol(:,i))
-    mubar(i) = mubar(i) + f_background * mu_background
+  do j = 1, nq
+    mubar = mubar + usol_layer(j) * mass(j)
   enddo
+  f_background = 1 - sum(usol_layer)
+  mubar = mubar + f_background * background_mu
   
 end subroutine
 

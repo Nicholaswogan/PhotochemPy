@@ -1,7 +1,8 @@
 
       SUBROUTINE DIFCO
-        use photochem_data, only: nq, nz, nz1, far, g, planet, lo2, mass
-        use photochem_vars, only: fCO2, usol_init, edd, den, T
+        use photochem_data, only: nq, nz, nz1, g, planet, mass, &
+                                  background_mu
+        use photochem_vars, only: usol_init, edd, den, T
         use photochem_wrk, only: hscale, tauedd, dk, H_atm, bhn2, bh2n2, scale_h
 
 
@@ -22,7 +23,7 @@
 
 
 
-      wt = usol_init(lO2,1)*32. + fco2*44. + far*40. + (1.-usol_init(lO2,1)-fco2-far)*28.
+      call mean_molecular_weight(nq, usol_init(:,1), mass, background_mu, wt)
       bkmg = 1.38E-16/(1.67E-24*wt*g)    !a good pressure
       tav = 0.d0
 !

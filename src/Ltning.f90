@@ -1,7 +1,7 @@
 
       SUBROUTINE LTNING(usol,nq,nz)
-        use photochem_data, only: far, lCH4, lco, lh2, lo2, lh2o, N2_inert, P0, prono
-        use photochem_vars, only: fco2
+        use photochem_data, only: lCH4, lco, lh2, lo2, lh2o, P0, prono, &
+                                  ln2, lco2, background_spec
         use photochem_wrk, only: zapNO,zapO2,proNOP,zapCO,zapH2,zapO
 !  3-21-06   This subroutine does not work
 !  it does not conserve redc  it needs to be replaced by something that isn't wrong
@@ -23,7 +23,7 @@
 
       real*8 fx, fpx
       
-      real(8) :: fn2
+      real(8) :: fn2, fco2
 
       integer n, ns
 
@@ -51,8 +51,15 @@
 
 
       fh2o = ph2o/pbar
-      if (n2_inert.eq.1) then
-        fn2 = 1. - USOL(lo2,1) - fco2 - fco - far - USOL(lH2O,1) - USOL(lCH4,1)   ! EWS - now includes Argon
+      if (background_spec == 'N2') then
+        fn2 = 1 - sum(usol(:,1))
+      else
+        fn2 = usol(ln2,1)
+      endif 
+      if (background_spec == 'CO2') then
+        fco2 = 1 - sum(usol(:,1))
+      else
+        fco2 = usol(lco2,1)
       endif
 
       pn2 = fn2*pbar

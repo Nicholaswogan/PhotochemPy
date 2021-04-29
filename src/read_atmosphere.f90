@@ -1,7 +1,7 @@
 
 subroutine read_atmosphere(atmosphere_txt, err)
   use photochem_data, only: np, nq, nsp2, nz, ispec
-  use photochem_vars, only: T, edd, usol_init, FCO2, &
+  use photochem_vars, only: T, edd, usol_init, &
                             rpar_init, wfall_init, aersol_init
   use photochem_wrk, only: rpar, wfall, aersol
                            
@@ -88,10 +88,6 @@ subroutine read_atmosphere(atmosphere_txt, err)
             trim(atmosphere_txt)//' . The program will assume initial mixing ratios of zero.'
   endif
 
-  ind = findloc(ispec,'CO2')
-  if ((ind(1) /= 0) .and. (ind(1) <= nq)) then
-    FCO2 = usol_init(i,ind(1))
-  endif
   rewind(4)
   read(4,*)
   ! reads in temperature

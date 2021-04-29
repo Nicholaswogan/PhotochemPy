@@ -1,8 +1,8 @@
 
       SUBROUTINE RAINOUT(initialize,Jtrop,Usol,nq,nz, rain, raingc)
         use photochem_data, only: naq, planet, lh2co, lh2s, lso2, lso4aer, &
-                                  lh2so4, ispec, z
-        use photochem_vars, only: fCO2, T, den
+                                  lh2so4, ispec, z, lco2, background_spec
+        use photochem_vars, only: T, den
         use photochem_wrk, only: H, xsave
 
       implicit none
@@ -26,7 +26,7 @@
       integer NH, nh1, i, in, inewt, info, j, k, l1, l2, ltest
       real*8 ch2oh2, dx, fac, fhso3_, fz, h2cog
       real*8 hso3_, qj, rkj, so2aq, so2g, so3_2
-      real*8 t_triple, temp, test, tfac, wh2o, y
+      real*8 t_triple, temp, test, tfac, wh2o, y, fco2
 
       real*8, dimension(nz) :: HCO2
       real*8, dimension(nz) :: R4, R5, R6, R7, R8, R9
@@ -254,6 +254,12 @@
 
 !   NOW ESTIMATE INITIAL CONCENTRATIONS AT GRID STEP 1 ON THE
 !     FIRST CALL
+         ! get CO2 mixing ratio
+         if (background_spec == "CO2") then
+           fco2 = 1 - sum(usol(:,1))
+         else
+           fco2 = usol(lco2,1)
+         endif
 
          alpharain = wl*1.E-9*6.02E23/DEN(1)
          co2aq = fco2*DEN(1)*HCO2(1)*r*taq(1)
@@ -300,6 +306,12 @@
                x(k) = XSAVE(k,i)
             ENDDO
          ENDIF
+         
+         if (background_spec == "CO2") then
+           fco2 = 1 - sum(usol(:,i))
+         else
+           fco2 = usol(lco2,i)
+         endif
 
          alpharain = wl*1.E-9*6.02E23/DEN(i)
 

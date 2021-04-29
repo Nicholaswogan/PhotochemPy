@@ -177,7 +177,7 @@ contains
     allocate(atomsN(nsp2))
     allocate(atomsCl(nsp2))
     allocate(redoxstate(nsp2))
-    allocate(mass(nsp2))
+    allocate(mass(nq))
     ispec = ''
     lbound = 0
     vdep0 = 0.d0

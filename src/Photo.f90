@@ -1,22 +1,13 @@
 
 
       SUBROUTINE PHOTO(zy, agl, io2, ino, usol, nq, nz, kj, prates)
-        use photochem_data, only: np, nsp, nw, fscale, g, lh2, lo2, &
+        use photochem_data, only: np, nsp, nw, fscale, g, lh2, &
                                   photoreac, ispec, rstand, qexthc, ghc, W0HC, &
-                                  wavl, wav, z, alphap, SO2HZ, nk, beta, sq, flux
-        use photochem_vars, only: verbose, fCO2, den, T
+                                  wavl, wav, z, alphap, SO2HZ, nk, beta, sq, flux, mass, &
+                                  background_mu
+        use photochem_vars, only: verbose, den, T
         use photochem_wrk, only: sl, rpar, gft, w0T, QEXTT, signo
       implicit none
-      ! Module variables
-      ! integer :: nz ! number of heights
-      ! integer :: kj ! number photolysis species
-      ! integer :: nj ! number of photo reactions
-      ! integer :: nw ! number of wavelength bins
-      ! real*8 :: sq(nj,nz,nw) ! cross sections * qy
-      ! prates
-
-      ! real*8 :: AGL, EPSJ, prono, hcdens, zy
-      ! integer :: Lgrid, IO2, ino, frak, ihztype
 
       ! local variables
       real*8, intent(in) :: zy, agl
@@ -63,12 +54,7 @@
       RGAS = 8.3143D7             !erg/mol/K
 
       ! NEED molecular wt of atmosphere
-      ! wt = FCO2*44.+ FN2*28.
-      ! do i=1,nq
-      !   wt = wt + usol(i,1)*mass(i)
-      ! enddo
-      WT = USOL(LO2,1)*32. + FCO2*44. + (1.-USOL(LO2,1)-FCO2)*28. + 0.4 !(g) mean molar mass
-      ! should work for every case (whether N2 and CO2 are inert or not)
+      call mean_molecular_weight(nq, usol(:,1), mass, background_mu, wt)
 
       RMG = RGAS/(WT*G)           !gm cm^2/s^2/mol/K  / g *s^2/cm ->  cm/mol/K
       PI = 3.14159
@@ -279,7 +265,6 @@
           if (k.eq.1) then !compute Rayleigh scattering cross section (as a function of height?)
             do i=1,nz
 
-              ! SIGR(i) = SIGRAY(WAV(L)) * (1. + 1.5*FCO2)  !Old rayleigh cross section
 
        !set up new Rayleigh scattering vectors
               do j=1,NSP

@@ -9,7 +9,6 @@ module photochem_vars
   logical :: verbose = .true.
   
   ! Defined in species.dat
-  real*8 :: FCO2, FN2 ! mixing ratios of N2 and CO2
   integer, allocatable, dimension(:) :: LBOUND
   real*8, allocatable, dimension(:) :: VDEP0
   real*8, allocatable, dimension(:) :: VDEP
