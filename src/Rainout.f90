@@ -1,19 +1,18 @@
 
-      SUBROUTINE RAINOUT(initialize,Jtrop,Usol,nq,nz, rain, raingc)
+      SUBROUTINE RAINOUT(initialize,Jtrop,Usol,nq,nz, T,den, rain, raingc)
         use photochem_data, only: naq, planet, lh2co, lh2s, lso2, lso4aer, &
                                   lh2so4, ispec, z, lco2, background_spec
-        use photochem_vars, only: T, den
         use photochem_wrk, only: H, xsave
 
       implicit none
 
-      ! in
       logical, intent(in) :: initialize
       integer, intent(in) :: jtrop
       integer, intent(in) :: nq
       integer, intent(in) :: nz
       real*8, dimension(nq,nz), intent(in) :: usol
-
+      real(8), intent(in) :: T(nz), den(nz)
+      
       ! out
       real(8), intent(out) :: rain(nz), raingc(nq,nz)
 

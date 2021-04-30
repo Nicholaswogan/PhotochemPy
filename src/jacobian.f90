@@ -133,8 +133,9 @@
         A(INT(photonums(j)),i)=prates(j,i)
       enddo
     enddo
-
-    call rainout(.false.,Jtrop,Usol,nq,nz, rain, raingc)
+    
+    
+    call rainout(.false.,Jtrop,Usol,nq,nz, T,den, rain, raingc)
 
 
     call aercon(usol,nq,nz)

@@ -2,7 +2,7 @@
 subroutine cvode(T0, usol_start, nnq, nnz, t_eval, num_t_eval, rtol, atol, &
                  use_fast_jacobian, solution, success)
   use photochem_data, only: neq, nq, nz, jtrop
-  use photochem_vars, only: verbose, lbound, fixedmr
+  use photochem_vars, only: verbose, lbound, fixedmr, T, den
   use photochem_wrk, only: cvode_stepper, rain, raingc
   implicit none
 
@@ -43,7 +43,7 @@ subroutine cvode(T0, usol_start, nnq, nnz, t_eval, num_t_eval, rtol, atol, &
   ITASK = 1 ! for output
 
   ! so rainout works
-  call rainout(.true.,Jtrop,Usol_start,nq,nz, rain, raingc)
+  call rainout(.true.,Jtrop,Usol_start,nq,nz, T,den, rain, raingc)
 
   ! initial conditions
   DO I=1,NQ
@@ -168,7 +168,7 @@ end subroutine
 subroutine cvode_save(T0, usol_start, nnq, nnz, t_eval, num_t_eval, rtol, atol, &
                       use_fast_jacobian, outfilename, success)
   use photochem_data, only: neq, nq, nz, jtrop, ispec
-  use photochem_vars, only: verbose, lbound, fixedmr
+  use photochem_vars, only: verbose, lbound, fixedmr, T, den
   use photochem_wrk, only: cvode_stepper, rain, raingc
   implicit none
 
@@ -219,7 +219,7 @@ subroutine cvode_save(T0, usol_start, nnq, nnz, t_eval, num_t_eval, rtol, atol, 
   close(1)
 
   ! so rainout works
-  call rainout(.true.,Jtrop,Usol_start,nq,nz, rain, raingc)
+  call rainout(.true.,Jtrop,Usol_start,nq,nz, T,den, rain, raingc)
 
   ! initial conditions
   DO I=1,NQ

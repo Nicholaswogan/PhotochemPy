@@ -6,7 +6,7 @@
                               z, dz, jtrop, ispec, photoreac, photonums
     use photochem_vars, only: verbose, usol_init, usol_out, rpar_init, wfall_init, aersol_init, &
                               lbound, fixedmr, vdep, vdep0, veff, veff0, smflux, sgflux, &
-                              distheight, distflux, mbound, den, T, edd, fluxo, flow
+                              distheight, distflux, mbound, den, T, edd, fluxo, flow, H2Osat, P
     use photochem_wrk, only: rpar, wfall, aersol, hscale, scale_h, h_atm, bHN2, bH2N2, &
                              sl, A, yl, yp, rain, raingc, &
                              adl, add, adu, dl, dd, du, dk
@@ -73,9 +73,9 @@
     do i=1,nq
       if (LBOUND(i).EQ.1) USOL(i,1)=fixedmr(i)
     enddo
-    call photsatrat(jtrop,nz,h2o)
+    call photsatrat(nz, T, P, den, Jtrop, H2Osat, H2O)
     DO J=1,JTROP
-      USOL(LH2O,J) = H2O(J) ! problme!!
+      USOL(LH2O,J) = H2O(J) 
     enddo
 
     HA = HSCALE(NZ)
@@ -154,12 +154,7 @@
         enddo
       enddo
 
-
-      if (n.eq.1) then
-        call rainout(.true.,Jtrop,Usol,nq,nz, rain, raingc)
-      else
-        call rainout(.false.,Jtrop,Usol,nq,nz, rain, raingc)
-      endif
+      call rainout(.false.,Jtrop,Usol,nq,nz, T,den, rain, raingc)
 
 
       call aercon(usol,nq,nz)

@@ -71,6 +71,7 @@ subroutine gridw(nw,wl,wc,wu,LGRID,err)
   character(len=err_len), intent(out) :: err
   integer iw, I, l, kin
   logical ok
+  err = ''
 
   DO iw = 1, kw ! zero out
     wl(iw) = 0.
@@ -180,6 +181,7 @@ SUBROUTINE readflux(flux_txt,nw,wl,f,err)
   ! * data gridded onto wl(kw) grid:
   REAL*8 yg3(kw)
   REAL*8, parameter :: hc = 6.62E-34 * 2.998E8
+  err = ''
 
   nhead = 0
   ierr = 0
