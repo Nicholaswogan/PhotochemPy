@@ -43,8 +43,10 @@
     if (len_trim(err) /= 0) return
     call read_atmosphere(atmosphere_txt, err)
     if (len_trim(err) /= 0) return
-    call gridw(nw,wavl,wav,wavu,lgrid) ! makes grid (depends on nothing)
-    call readflux(flux_txt,nw,wavl,flux) ! reads flux (depnds on nothing, except gridw)
+    call gridw(nw,wavl,wav,wavu,lgrid, err) ! makes grid (depends on nothing)
+    if (len_trim(err) /= 0) return
+    call readflux(flux_txt,nw,wavl,flux,err) ! reads flux (depnds on gridw)
+    if (len_trim(err) /= 0) return
     call initmie(nw,wavl,kw,frak,ihztype)
     call photgrid(100.0D5, nz, z, dz) ! depends on jtrop
     ! end depends on nothing
