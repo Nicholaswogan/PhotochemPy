@@ -1,19 +1,21 @@
 
 
-      SUBROUTINE PHOTO(zy, agl, io2, ino, usol, nq, nz, kj, prates)
+      SUBROUTINE PHOTO(zy, agl, io2, ino, usol, D, nsp2, nq, nz, kj, prates)
         use photochem_data, only: np, nsp, nw, fscale, g, lh2, &
                                   photoreac, ispec, rstand, qexthc, ghc, W0HC, &
                                   wavl, wav, z, sq, flux, mass, &
                                   background_mu, lno, nz1, dz
         use photochem_vars, only: verbose, den, T
-        use photochem_wrk, only: sl, rpar, gft, w0T, QEXTT
+        use photochem_wrk, only: rpar, gft, w0T, QEXTT
       implicit none
 
       ! local variables
       real*8, intent(in) :: zy, agl
       integer, intent(in) :: io2, ino
-      integer, intent(in) :: nq, nz, kj
+      integer, intent(in) :: nq, nz, kj, nsp2
       real*8, dimension(nq,nz), intent(in) :: usol
+      real*8, dimension(nsp2,nz), intent(out) :: D
+      
       real*8, dimension(kj,nz), intent(out) :: prates
 
       real*8, dimension(kj,nz) :: partial_prates
@@ -99,12 +101,12 @@
         do i=1,nz
 
 !     this gets any SL/IN species that have photorates
-          if (photoreac(k).gt.nq) then
-
-            absorbers(k,i)=ABS(SL(INT(photoreac(k)),i))/DEN(I)
+          ! if (photoreac(k).gt.nq) then
+          ! 
+          !   absorbers(k,i)=ABS(SL(INT(photoreac(k)),i))/DEN(I)
 
 !     quasi-hardcoded S8 behavior WARNING
-          else if (ISPEC(INT(photoreac(k))).eq.'S8      ') then
+          if (ISPEC(INT(photoreac(k))).eq.'S8      ') then
 
             absorbers(k,i)=ABS(usol(INT(photoreac(k)),i))
             if (lpolyscount .eq. 2) absorbers(k,i)=0.0
@@ -273,27 +275,27 @@
 
        !set up new Rayleigh scattering vectors
               do j=1,NSP
-                if (SL(j,i)/DEN(i).GE. 0.01) then  !if more than 1% of atmosphere, consider Rayleigh contribution
+                if (D(j,i)/DEN(i).GE. 0.01) then  !if more than 1% of atmosphere, consider Rayleigh contribution
 
 ! c              if (Z(i)/1e5.eq.107.5) print *, ispec(j)
 
                   if (ISPEC(j).eq.'CO2') then
                     ncomp(i)=ncomp(i)+1
-                    volmix(ncomp(i),i)=SL(j,i)/DEN(i)
+                    volmix(ncomp(i),i)=D(j,i)/DEN(i)
                     icomp(ncomp(i),i)=2
                   else if (ISPEC(j).eq.'N2') then
                     ncomp(i)=ncomp(i)+1
-                    volmix(ncomp(i),i)=SL(j,i)/DEN(i)
+                    volmix(ncomp(i),i)=D(j,i)/DEN(i)
                     icomp(ncomp(i),i)=3
                   else if (ISPEC(j).eq.'O2') then
                     ncomp(i)=ncomp(i)+1
-                    volmix(ncomp(i),i)=SL(j,i)/DEN(i)
+                    volmix(ncomp(i),i)=D(j,i)/DEN(i)
                     icomp(ncomp(i),i)=4
 ! c-mab: Added H2O 12/2016 as the 5th item. H2 is now 6 and He 7. Try this?
 ! c-mab: See "Rayleigh" routine for data reference...
                   else if (ISPEC(j).eq.'H2O') then
                     ncomp(i)=ncomp(i)+1
-                    volmix(ncomp(i),i)=SL(j,i)/DEN(i)
+                    volmix(ncomp(i),i)=D(j,i)/DEN(i)
                     icomp(ncomp(i),i)=5
                   else if (ISPEC(j).eq.'H2') then
                     ncomp(i)=ncomp(i)+1
@@ -317,14 +319,14 @@
 ! c-mab assuming "rest" to be Earth air is not valid for giant planets!
 ! c-mab this H2 fraction-based loop is a temporary fix--don't want to hardcode ignoring H
                       ncomp(i)=ncomp(i)+1
-                      volmix(ncomp(i),i)=SL(j,i)/DEN(i)
+                      volmix(ncomp(i),i)=D(j,i)/DEN(i)
                       icomp(ncomp(i),i)=1
 !using Earth 'air' for the rocky planets - better than nothing? hard to know...
                       if (wavl(L).eq.2273) then
                         if (tempcount.eq.0) then
                           if (verbose) then
                             print *, ISPEC(j),'at ', Z(i)/1e5, 'km is major '// &
-                            'species without Rayleigh data - using AIR', SL(j,i)/DEN(i)
+                            'species without Rayleigh data - using AIR', D(j,i)/DEN(i)
                             tempcount=1
                           endif
                         endif

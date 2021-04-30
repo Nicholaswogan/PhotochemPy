@@ -40,9 +40,9 @@ contains
   include "Twostr.f90"
   include "setup.f90"
   include "integrate.f90"
-  include "right_hand_side.f90"
-  include "jacobian.f90"
-  include "cvode.f90"
+  ! include "right_hand_side.f90"
+  ! include "jacobian.f90"
+  ! include "cvode.f90"
 
   include "redox_conservation.f90"
 
@@ -125,7 +125,6 @@ contains
       deallocate(QEXTT)
       deallocate(W0T)
       deallocate(GFT)
-      deallocate(SL)
       deallocate(A)
       deallocate(H)
       deallocate(RAINGC)
@@ -280,12 +279,7 @@ contains
     qextt = 0.0d0
     w0t = 0.0d0
     gft = 0.0d0
-
-    ! needed in dochem.f90
-    allocate(SL(NSP,NZ))
-    sl = 0.0d0
-
-
+    
     ! needed in rates.f90
     allocate(A(NR,NZ))
     ! zero out

@@ -23,9 +23,6 @@ module photochem_wrk
   ! needed in photo.f90
   real*8, allocatable, dimension(:,:,:) :: QEXTT, W0T, GFT
   
-  ! needed in dochem.f90
-  real*8, allocatable, dimension(:,:) :: SL
-  
   ! needed in rates.f90
   real*8, allocatable, dimension(:,:) :: A ! reaction rate coefficients
   

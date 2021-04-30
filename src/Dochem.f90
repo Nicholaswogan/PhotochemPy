@@ -1,13 +1,13 @@
 
-subroutine dochem(Fval,N,Jtrop,Nshort,Usol,nq,nz)
-  use photochem_data, only: nsp, nsp2, lco, &
+subroutine dochem(N, nsp2, nq, nz, usol, nshort, jtrop, D, fval)
+  use photochem_data, only: nsp, lco, &
                             lh2, lh2o, &
                             lh2so4, lno, lo, lo2, lso4aer, &
                             planet
                             
   use photochem_vars, only: den, H2OSAT
   use photochem_wrk, only: zapco, zaph2, zapno, zapo, rain, raingc, &
-                           yp, yl, sl, H2SO4S
+                           yp, yl, H2SO4S
 
   implicit none
 
@@ -15,14 +15,14 @@ subroutine dochem(Fval,N,Jtrop,Nshort,Usol,nq,nz)
   integer, intent(in) :: n
   integer, intent(in) :: jtrop
   integer, intent(in) :: nshort
-  integer, intent(in) :: nq
+  integer, intent(in) :: nq, nsp2
   integer, intent(in) :: nz
   real*8, dimension(nq,nz),intent(in) :: usol
   real*8, dimension(nq,nz),intent(out) :: Fval
+  real*8, dimension(nsp2,nz), intent(out) :: D
   ! real*8, dimension(nq,nz) :: YP, YL
 
   integer i, j, ll, lla
-  real*8, dimension(nsp2,nz) :: D
   real*8 xp(nz), xl(nz), conso4(nz)
   real*8 xlj, confac, scale
   integer jt1
@@ -49,15 +49,16 @@ subroutine dochem(Fval,N,Jtrop,Nshort,Usol,nq,nz)
     d(nsp2-1,j) = 1.d0         ! HV has density of 1 for photorate calculations
     d(nsp2,j) = DEN(j)     ! M - background density for three body reactions
   enddo
-  
-  IF ( N.GE.0 ) THEN
-! ***** SOLVE FOR THE PHOTOCHEMICAL EQUILIBRIUM SPECIES *****
+! short lived densities
   do i = nq + 1 , nq + Nshort
     CALL CHEMPL(d,xp,xl,i)
     do j = 1 , nz
       d(i,j) = xp(j)/xl(j)
     enddo
   enddo
+  
+  IF ( N.GE.0 ) THEN
+
 ! ***** LONG-LIVED SPECIES CHEMISTRY *****
   do i = 1 , nq
     CALL CHEMPL(d,xp,xl,i)
@@ -204,12 +205,6 @@ subroutine dochem(Fval,N,Jtrop,Nshort,Usol,nq,nz)
 !          ENDIF
              !end S8 skip loop
   ENDIF  !end normal operation loop (i.e. if IDO = 0 or 1)
-  
-  DO i = 1 , nsp
-    DO j = 1 , nz
-      SL(i,j) = d(i,j)
-    ENDDO
-  ENDDO
   
 end subroutine
 

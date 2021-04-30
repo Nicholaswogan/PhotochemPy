@@ -1,11 +1,11 @@
 
 
 program main
-  use photochem, only: setup, integrate, cvode_equilibrium, allocate_memory
+  use photochem, only: setup, integrate, allocate_memory
   use photochem_vars, only: rootdir
   implicit none
   integer converged
-  logical success
+  ! logical success
   character(len=1000) :: err
 
   rootdir = '../PhotochemPy/'
@@ -23,5 +23,5 @@ program main
   endif
   
   call integrate(1000,converged)
-  call cvode_equilibrium(1.d-3, 1.d-30, .true., success)
+  ! call cvode_equilibrium(1.d-3, 1.d-30, .true., success)
 end program
