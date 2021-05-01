@@ -3,6 +3,7 @@
 subroutine determine_dimensions(species_dat,reactions_rx,planet_dat, &
                                 photochem_dat, atmosphere_txt, flux_txt, &
                                 nq, nsp, np, nr, ks, kj, nw, nz, err)
+  use photochem_vars, only: rootdir
   implicit none
   integer, parameter :: str_length  = 1000
   ! input
@@ -124,7 +125,7 @@ subroutine determine_dimensions(species_dat,reactions_rx,planet_dat, &
   enddo
   close(100)
   if (j == 0) then
-    open(100,file='../PhotochemPy/DATA/GRIDS/wogan.grid',status = 'old',iostat = io)
+    open(100,file=trim(rootdir)//'DATA/GRIDS/wogan.grid',status = 'old',iostat = io)
     if (io /= 0) then
       err = 'Was not able to find wogan.grid'
       return

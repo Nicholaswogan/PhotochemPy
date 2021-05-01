@@ -1,27 +1,29 @@
 
 
 program main
-  use photochem, only: setup, integrate, allocate_memory
+  use photochem, only: setup, integrate, allocate_memory, cvode_equilibrium
   use photochem_vars, only: rootdir
   implicit none
   integer converged
-  ! logical success
+  logical success
   character(len=1000) :: err
 
   rootdir = '../PhotochemPy/'
 
-  call setup('../input/templates/Hadean+HCN/species.dat', &
-             '../input/templates/Hadean+HCN/reactions.rx', &
-             '../input/templates/Hadean+HCN/planet.dat', &
-             '../input/templates/Hadean+HCN/input_photchem.dat', &
-             '../input/templates/Hadean+HCN/atmosphere.txt', &
-             '../input/templates/Hadean+HCN/Sun_4.0Ga.txt', err)
+  call setup('../input/templates/Archean2Proterozoic/species.dat', &
+             '../input/templates/Archean2Proterozoic/reactions.rx', &
+             '../input/templates/Archean2Proterozoic/planet.dat', &
+             '../input/templates/Archean2Proterozoic/input_photchem.dat', &
+             '../input/templates/Archean2Proterozoic/atmosphere.txt', &
+             '../input/templates/Archean2Proterozoic/Sun_2.7Ga.txt', err)
   if (len_trim(err) /= 0) then
     print*,trim(err)
     print*,'error worked properly'
     stop
   endif
   
-  call integrate(1000,converged)
-  ! call cvode_equilibrium(1.d-3, 1.d-30, .true., success)
+  ! call integrate(1,converged)
+  call cvode_equilibrium(1.d-3, 1.d-26, .true., success)
+  ! call right_hand_side(usol_flat,rhs,neq)
+  
 end program

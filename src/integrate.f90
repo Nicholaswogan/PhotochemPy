@@ -7,7 +7,7 @@
                               background_spec, planet
     use photochem_vars, only: verbose, usol_init, usol_out, rpar_init, wfall_init, aersol_init, &
                               lbound, fixedmr, vdep, vdep0, veff, veff0, smflux, sgflux, &
-                              distheight, distflux, mbound, den, T, edd, fluxo, flow, H2Osat, P, &
+                              distheight, distflux, mbound, T, den, edd, fluxo, flow, H2Osat, P, &
                               press
     use photochem_wrk, only: rpar, wfall, aersol, hscale, scale_h, h_atm, bHN2, bH2N2, &
                              A, yl, yp, rain, raingc, &
@@ -24,14 +24,12 @@
     real*8, dimension(nq,nz) :: usol
     real*8, dimension(nq,nz) :: usaveold
     real*8, dimension(nq,nz) :: usave
-    real*8, dimension(nq,nz) :: usolprev
-    real*8, dimension(nq,nz) :: REL
-    real*8 Ha
+    ! real*8, dimension(nq,nz) :: usolprev
     real*8 Dt,dtinv, time, tstop
     integer nn, i, j, k, jj, nparti
-    integer jh2o,JO2_O1D,JO3_O1D,JCO2,JO1D,JO2, JCO2_O1D
+    integer JO2_O1D,JCO2,JO2, JCO2_O1D
     real*8 absorbers(kj,nz)
-    real*8,dimension(nz) :: H2O, O2, O3, CO2
+    real*8,dimension(nz) :: H2O, O2, CO2
     real*8,dimension(kj,nz) :: prates
     integer NPSO4,NPS8, NPHC, NPHC2, MM
     real*8 VCO2
@@ -44,7 +42,7 @@
     integer LB, MB, L, is, m, n, LL
     real*8 disth, dtsave, emax, erel, smallest, RMAX, UMAX
     integer jdisth, js, kd, ku, kl, info
-    integer j15, j25, j70, j50
+    integer j25, j70, j50
     integer lcountso4, lcounts8, lcountHC, lcountHC2, lpolyscount
     real*8 ZTOP, ZTOP1, WNF
     real*8 DPU(NZ,NP),DPL(NZ,NP)
@@ -58,20 +56,21 @@
 
     ! set atmosphere to inital atmosphere
     usol = usol_init
-
-
     ! aersol parameters to initial parameters
     if (np.gt.0) then
       rpar = rpar_init
       wfall = wfall_init
       aersol = aersol_init
     endif
+    ! begin stuff that needs to be inizialized
+    call densty(nq, nz, usol_init, T, den, P, press) 
+    call rainout(.true.,Jtrop,usol_init,nq,nz, T,den, rain, raingc) 
+    ! end stuff that needs to be inizialized
 
     do i=1,nq
       if (LBOUND(i).EQ.1) USOL(i,1)=fixedmr(i)
     enddo
-
-    HA = HSCALE(NZ)
+    
     DT = 1.D-6
     DTINV = 1./DT
     TIME = 0.
@@ -89,9 +88,6 @@
     is = 1
     emax = 0.d0
 
-
-
-
     ! start the time-stepping loop
     call system_clock(count = c1, count_rate = cr, count_max = cm)
     do n = 1,nsteps
@@ -103,15 +99,14 @@
       TIME = TIME + DT
       nn = nn+1
       
-      call densty(nq, nz, usol, T, den, P, press) ! DEPENDS ON USOL
-      call rates(nz, nr, T, den, A) ! DEPENDS ON USOL (via den)
+      call densty(nq, nz, usol, T, den, P, press) 
       call difco(nq,nz,usol, T, den, edd, &
                 hscale, tauedd, DK, H_atm, bhn2, bh2n2, scale_H)
-      call photsatrat(nz, T, P, den, Jtrop, H2Osat, H2O) ! depends on usol
+      call photsatrat(nz, T, P, den, Jtrop, H2Osat, H2O) ! H2o mixing ratio
       DO J=1,JTROP
         USOL(LH2O,J) = H2O(J) 
       enddo
-      if (planet .eq. 'EARTH') call ltning(nq, nz, usol_init, &
+      if (planet .eq. 'EARTH') call ltning(nq, nz, usol, &
                                     zapNO, zapO2, proNOP, zapCO, zapH2, zapO)
       call diffusion_coeffs(nq, nz, den, dz, DK, bhN2, bh2N2, scale_H, H_atm, &
                            DU, DL, DD, ADU, ADL, ADD)
@@ -119,35 +114,21 @@
       ! below is H escape
       if (background_spec /= 'H2') then ! then we can consider its upper and lower boundary
         if (mbound(LH2) == 0) then
-    !       do i=1,nz
-    ! !        !don't use molecular diffusion
-    !         bHN2(i) = 0.0d0
-    !         bH2N2(i) = 0.0d0
-    !       enddo
-    !     else
     !      !use effusion velocity formulation of diffusion limited flux
           Veff(LH) = 1.0*bhN2(nz)/DEN(NZ)*(1./Hscale(nz) &
            - 1./scale_H(LH,nz))
     !      !diff lim flux
           Veff(LH2) = 1.0*bH2N2(nz)/DEN(NZ)*(1./Hscale(nz) &
           - 1./scale_H(LH2,nz))
-
         endif
       endif    
       
-
       call rates(nz, nr, T, den, A)
-      ! dochem needed to update SL (densities), which are then loaded
-      ! into absorbers below
-      call dochem(-1, nsp2, nq, nz, usol, isl, jtrop, D, fval)
+      call dochem(-1, nr, nsp2, nq, nz, usol, A, isl, jtrop, D, fval)
 
       lpolyscount = 0
       do k=1,kj
         do i=1,nz
-      !     this gets any SL/IN species that have photorates
-          ! if (photoreac(k).gt.nq) then
-          !   absorbers(k,i)=ABS(SL(INT(photoreac(k)),i))/DEN(I)
-      !     quasi-hardcoded S8 behavior WARNING
           if (ISPEC(INT(photoreac(k))).eq.'S8      ') then
             absorbers(k,i)=ABS(usol(INT(photoreac(k)),i))
             if (lpolyscount .eq. 2) absorbers(k,i)=0.0
@@ -160,16 +141,11 @@
         enddo
       enddo
 
-      JH2O=minloc(photoreac,1,ISPEC(INT(photoreac)).eq.'H2O    ')
       JO2_O1D=minloc(photoreac,1,ISPEC(INT(photoreac)).eq.'O2    ')
-      JO3_O1D=minloc(photoreac,1,ISPEC(INT(photoreac)).eq.'O3    ')
       JCO2=minloc(photoreac,1,ISPEC(INT(photoreac)).eq.'CO2    ')
-      JO1D=minloc(photoreac,1,ISPEC(INT(photoreac)).eq.'O1D    ')
       JO2=minloc(photoreac,1,ISPEC(INT(photoreac)).eq.'O2     ')
       do I=1,NZ
-        H2O(I) = absorbers(JH2O,I)
         O2(I) =  absorbers(JO2_O1D,I)
-        O3(I) = absorbers(JO3_O1D,I)
         CO2(I) = absorbers(JCO2,I)
       enddo
 
@@ -219,7 +195,7 @@
 ! and return CO + O to the upper grid point
 ! this behavior is turned on and off by setting MBOUND=2 for CO2 in species.dat
       JCO2_O1D = JCO2+1
-      VCO2 = (prates(JCO2,NZ) + prates(JCO2_O1D,NZ) ) * HA
+      VCO2 = (prates(JCO2,NZ) + prates(JCO2_O1D,NZ) ) * HSCALE(NZ)
       SMFLUX(LO) = - VCO2*CO2(NZ)*DEN(NZ)
       SMFLUX(LCO) = SMFLUX(LO)
 
@@ -243,29 +219,15 @@
             DPL(I,J) = WFALL(I-1,J)*DEN(I-1)/DEN(I)/(2.*DZ(I))
           enddo
         enddo
-      else
-        print*,'Note: Since NP = 0, did not call SDMNT...'
+      ! else
+        ! print*,'Note: Since NP = 0, did not call SDMNT...'
       endif
 
 ! ***** SET UP THE JACOBIAN MATRIX AND RIGHT-HAND SIDE *****
+      djac = 0.d0
+      rhs = 0.d0
 
-      DO J=1,LDA
-        DO K=1,NEQ
-          DJAC(J,K) = 0.d0
-        enddo
-      enddo
-      DO K=1,NEQ
-        RHS(K) = 0.d0
-      enddo
-
-
-
-      call dochem(0, nsp2,nq, nz, usol, isl, jtrop, D, fval)
-
-
-
-      ! print*,fval
-
+      call dochem(0, nr, nsp2, nq, nz, usol, A, isl, jtrop, D, fval)
 
       DO I=1,NQ
         DO J=1,NZ
@@ -277,7 +239,7 @@
         enddo
       enddo
 
-      !$OMP PARALLEL PRIVATE(i,j,R,usol,mm,m,k,fv)
+      !$OMP PARALLEL PRIVATE(i,j,R,usol,mm,m,k,fv,D)
       DO I=1,NQ
         DO J=1,NZ
           USOL(I,J) = USAVE(I,J)
@@ -300,7 +262,7 @@
         enddo
       !   Call the photochemistry routine
       !      FV has dimension (NQ,NZ) and holds gas densities
-        call dochem(0, nsp2, nq, nz, usol, isl, jtrop, D, fv)
+        call dochem(0, nr, nsp2, nq, nz, usol, A, isl, jtrop, D, fv)
 
 
 
@@ -473,7 +435,6 @@
 
       CALL SGBSL(DJAC,LDA,NEQ,NQ,NQ,IPVT,RHS,0)
 
-      J15=minloc(Z,1, Z/1.e5 .ge. 15)-1
       J25=minloc(Z,1, Z/1.e5 .ge. 25)-1
       J70=minloc(Z,1, Z/1.e5 .ge. 70)-1
       J50=minloc(Z,1, Z/1.e5 .ge. 50)-1
@@ -497,8 +458,7 @@
           ELSEIF(USOL(I,J).LT. 1.E-20) THEN
             USOL(I,J) = USOL(I,J) + RHS(K)
           else
-            REL(I,J) = RHS(K)/USOL(I,J)
-            EREL = ABS(REL(I,J))
+            EREL = ABS(RHS(K)/USOL(I,J))
             EMAX = max(EMAX,EREL)
             IF(EREL.LT.EMAX) THEN
               USOL(I,J) = USOL(I,J) + RHS(K)
@@ -618,12 +578,12 @@
           enddo
         enddo
 !   valid timestep, so update USOLPREV vector
-      ELSE
-        do i=1,nq
-          do j=1,nz
-            USOLPREV(I,J)=USAVEOLD(I,J)
-          enddo
-        enddo
+      ! ELSE
+      !   do i=1,nq
+      !     do j=1,nz
+      !       USOLPREV(I,J)=USAVEOLD(I,J)
+      !     enddo
+      !   enddo
       endif
 
       IF (INFO.NE.0) STOP
@@ -660,7 +620,7 @@
     enddo
 
     ! the flux
-    call dochem(-1,nsp2, nq, nz, usol, isl, jtrop, D, fval)
+    call dochem(0, nr, nsp2, nq, nz, usol, A, isl, jtrop, D, fval)
     DO K=1,NQ
       DO I=1,NZ
       D(K,I) = USOL(K,I)*DEN(I)
@@ -681,17 +641,18 @@
       enddo
     endif
 
-
-    do i=1,NZ-1
-      fluxo(LH,i) = fluxo(LH,i) &
-        - bHN2(i)*(usol(LH,i+1) - usol(LH,i))/dz(i) &
-        + bHN2(i)*0.5*(usol(LH,i) + usol(LH,i+1)) &
-        *(1./H_atm(i) - 1./scale_H(LH,i))
-      fluxo(LH2,i) =fluxo(LH2,i) &
-        - bH2N2(i)*(usol(LH2,i+1) - usol(LH2,i))/dz(i) &
-        + bH2N2(i)*0.5*(usol(LH2,i) + usol(LH2,i+1)) &
-        *(1./H_atm(i) - 1./scale_H(LH2,i))
-    enddo
+    if (background_spec /= 'H2') then
+      do i=1,NZ-1
+        fluxo(LH,i) = fluxo(LH,i) &
+          - bHN2(i)*(usol(LH,i+1) - usol(LH,i))/dz(i) &
+          + bHN2(i)*0.5*(usol(LH,i) + usol(LH,i+1)) &
+          *(1./H_atm(i) - 1./scale_H(LH,i))
+        fluxo(LH2,i) =fluxo(LH2,i) &
+          - bH2N2(i)*(usol(LH2,i+1) - usol(LH2,i))/dz(i) &
+          + bH2N2(i)*0.5*(usol(LH2,i) + usol(LH2,i+1)) &
+          *(1./H_atm(i) - 1./scale_H(LH2,i))
+      enddo
+    endif
 
 
     DO K=1,NQ
@@ -713,4 +674,4 @@
     endif ! end if converged
 
 
-    end subroutine
+  end subroutine

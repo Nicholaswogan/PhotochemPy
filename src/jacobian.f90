@@ -1,14 +1,19 @@
   subroutine jacobian(usol_flat,ddjac,neq,ldaa)
-    use photochem_data, only: nr, nz, nz1, nq, kj, np, isl, lda, epsj, &
+    use photochem_data, only: nr, nz, nz1, nq, nsp2, kj, np, isl, &
                               agl, frak, hcdens, ino, io2, zy, &
                               lco, lhcaer, lhcaer2, lh2o, lo, &
-                              ls8aer, lso4aer, &
-                              z, dz, jtrop, ispec, photoreac, photonums
+                              ls8aer, lso4aer, background_spec, lh, lh2, &
+                              z, dz, jtrop, ispec, photoreac, photonums, planet, &
+                              lda, epsj
+                              
     use photochem_vars, only: lbound, fixedmr, vdep, vdep0, veff, veff0, smflux, sgflux, &
-                              distheight, distflux, mbound, den, T
-    use photochem_wrk, only: wfall, aersol, hscale, rain, raingc, &
-                             sl, A, &
-                             adl, add, adu, dl, dd, du
+                              distheight, distflux, mbound, T, den, edd, H2Osat, P, &
+                              press
+                              
+    use photochem_wrk, only: wfall, aersol, hscale, scale_h, h_atm, bHN2, bH2N2, &
+                             A, rain, raingc, &
+                             adl, add, adu, dl, dd, du, dk, &
+                             zapNO, zapO2, proNOP, zapCO, zapH2, zapO, tauedd
     implicit none
     ! module variables
     ! all of them?
@@ -23,11 +28,10 @@
     real*8, dimension(neq) :: rhs
     real*8, dimension(nq,nz) :: fval, fv
     real*8, dimension(nq,nz) :: usol, usave
-    real*8 Ha
     integer i, j, k, jj, nparti
-    integer jh2o,JO2_O1D,JO3_O1D,JCO2,JO1D,JO2, JCO2_O1D
+    integer JO2_O1D,JCO2,JO2, JCO2_O1D
     real*8 absorbers(kj,nz)
-    real*8,dimension(nz) :: H2O, O2, O3, CO2
+    real*8,dimension(nz) :: H2O, O2, CO2
     real*8,dimension(kj,nz) :: prates
     integer NPSO4,NPS8, NPHC, NPHC2, MM
     real*8 VCO2
@@ -42,6 +46,7 @@
     integer lpolyscount
     real*8 ZTOP, ZTOP1, DTINV
     real*8 DPU(NZ,NP),DPL(NZ,NP)
+    real*8, dimension(nsp2,nz) :: D
     ! real*8, dimension(nq,nz) :: fv
     ! integer cr, cm, c1, c2
 
@@ -57,28 +62,43 @@
       if (LBOUND(i).EQ.1) USOL(i,1)=fixedmr(i)
     enddo
 
-    HA = HSCALE(NZ)
-
     KD = 2*NQ + 1
     KU = KD - NQ
     KL = KD + NQ
 
     ! DTINV = 1.d0/1.D-6
     DTINV = 0.d0
-
+    call densty(nq, nz, usol, T, den, P, press) 
+    call difco(nq,nz,usol, T, den, edd, &
+              hscale, tauedd, DK, H_atm, bhn2, bh2n2, scale_H)
+    call photsatrat(nz, T, P, den, Jtrop, H2Osat, H2O) ! H2o mixing ratio
+    DO J=1,JTROP
+      USOL(LH2O,J) = H2O(J) 
+    enddo
+    if (planet .eq. 'EARTH') call ltning(nq, nz, usol, &
+                                  zapNO, zapO2, proNOP, zapCO, zapH2, zapO)
+    call diffusion_coeffs(nq, nz, den, dz, DK, bhN2, bh2N2, scale_H, H_atm, &
+                         DU, DL, DD, ADU, ADL, ADD)
+                                  
+    ! below is H escape
+    if (background_spec /= 'H2') then ! then we can consider its upper and lower boundary
+      if (mbound(LH2) == 0) then
+  !      !use effusion velocity formulation of diffusion limited flux
+        Veff(LH) = 1.0*bhN2(nz)/DEN(NZ)*(1./Hscale(nz) &
+         - 1./scale_H(LH,nz))
+  !      !diff lim flux
+        Veff(LH2) = 1.0*bH2N2(nz)/DEN(NZ)*(1./Hscale(nz) &
+        - 1./scale_H(LH2,nz))
+      endif
+    endif    
+    
     call rates(nz, nr, T, den, A)
-    ! dochem needed to update SL (densities), which are then loaded
-    ! into absorbers below
-    call dochem(Fval,-1,jtrop,isl,usol,nq,nz)
+    call dochem(-1, nr, nsp2, nq, nz, usol, A, isl, jtrop, D, fval)
 
     lpolyscount = 0
     do k=1,kj
       do i=1,nz
-    !     this gets any SL/IN species that have photorates
-        if (photoreac(k).gt.nq) then
-          absorbers(k,i)=ABS(SL(INT(photoreac(k)),i))/DEN(I)
-    !     quasi-hardcoded S8 behavior WARNING
-        else if (ISPEC(INT(photoreac(k))).eq.'S8      ') then
+        if (ISPEC(INT(photoreac(k))).eq.'S8      ') then
           absorbers(k,i)=ABS(usol(INT(photoreac(k)),i))
           if (lpolyscount .eq. 2) absorbers(k,i)=0.0
           if (i.eq.nz) then
@@ -90,56 +110,26 @@
       enddo
     enddo
 
-    JH2O=minloc(photoreac,1,ISPEC(INT(photoreac)).eq.'H2O    ')
     JO2_O1D=minloc(photoreac,1,ISPEC(INT(photoreac)).eq.'O2    ')
-    JO3_O1D=minloc(photoreac,1,ISPEC(INT(photoreac)).eq.'O3    ')
     JCO2=minloc(photoreac,1,ISPEC(INT(photoreac)).eq.'CO2    ')
-    JO1D=minloc(photoreac,1,ISPEC(INT(photoreac)).eq.'O1D    ')
     JO2=minloc(photoreac,1,ISPEC(INT(photoreac)).eq.'O2     ')
     do I=1,NZ
-      H2O(I) = absorbers(JH2O,I)
       O2(I) =  absorbers(JO2_O1D,I)
-      O3(I) = absorbers(JO3_O1D,I)
       CO2(I) = absorbers(JCO2,I)
     enddo
-
-    if (NP.GT.0) then   !particles in main loop
-      CALL SEDMNT(frak,HCDENS,nz,np,conver, .false.)
-
-      do J=1,NZ
-        do JJ=1, NP
-          if (JJ.eq.1)  nparti = LSO4AER
-          if (JJ.eq.2)  nparti = LS8AER
-          if (JJ.eq.3)  nparti = LHCAER
-          if (JJ.eq.4)  nparti = LHCAER2
-          AERSOL(J,JJ) = USOL(nparti,J)*DEN(J)/(CONVER(J,JJ))
-        enddo
-      enddo
-    do J=1,NP
-      DPU(1,J) = WFALL(2,J)*DEN(2)/DEN(1)/(2.*DZ(1))
-      DPL(NZ,J) = WFALL(NZ1,J)*DEN(NZ1)/DEN(NZ)/(2.*DZ(NZ))
-      DO I=2,NZ1
-        DPU(I,J) = WFALL(I+1,J)*DEN(I+1)/DEN(I)/(2.*DZ(I))
-        DPL(I,J) = WFALL(I-1,J)*DEN(I-1)/DEN(I)/(2.*DZ(I))
-      enddo
-    enddo
-    else
-    !   print*,'Note: Since NP = 0, did not call SDMNT...'
-    endif
-
-    call photo(zy, agl, io2, ino, usol, nq, nz, kj, prates)
+    
+    call photo(zy, agl, io2, ino, usol, D, nsp2, nq, nz, kj, prates)
     do j=1,kj
       do i=1,nz
         A(INT(photonums(j)),i)=prates(j,i)
       enddo
     enddo
     
-    
     call rainout(.false.,Jtrop,Usol,nq,nz, T,den, rain, raingc)
 
 
     call aercon(usol,nq,nz)
-
+    
     ! TIME-DEPENDENT BOUNDARY CONDITIONS
     if(NP.EQ.0) then
 !-mab Time-dependent boundary conditions for particles set to 0
@@ -169,35 +159,44 @@
         endif
       endif
     endif
+    
+    ! estimate CO2 photolysis above the top of the grid
+    ! and return CO + O to the upper grid point
+    ! this behavior is turned on and off by setting MBOUND=2 for CO2 in species.dat
+        JCO2_O1D = JCO2+1
+        VCO2 = (prates(JCO2,NZ) + prates(JCO2_O1D,NZ) ) * HSCALE(NZ)
+        SMFLUX(LO) = - VCO2*CO2(NZ)*DEN(NZ)
+        SMFLUX(LCO) = SMFLUX(LO)
 
-! estimate CO2 photolysis above the top of the grid
-! and return CO + O to the upper grid point
-! this behavior is turned on and off by setting MBOUND=2 for CO2 in species.dat
-    JCO2_O1D = JCO2+1
-    VCO2 = (prates(JCO2,NZ) + prates(JCO2_O1D,NZ) ) * HA
-    SMFLUX(LO) = - VCO2*CO2(NZ)*DEN(NZ)
-    SMFLUX(LCO) = SMFLUX(LO)
+    if (NP.GT.0) then   !particles in main loop
+      CALL SEDMNT(frak,HCDENS,nz,np,conver, .false.)
 
-
-! ***** SET UP THE JACOBIAN MATRIX AND RIGHT-HAND SIDE *****
-
-    DO J=1,LDA
-      DO K=1,NEQ
-        DJAC(J,K) = 0.d0
+      do J=1,NZ
+        do JJ=1, NP
+          if (JJ.eq.1)  nparti = LSO4AER
+          if (JJ.eq.2)  nparti = LS8AER
+          if (JJ.eq.3)  nparti = LHCAER
+          if (JJ.eq.4)  nparti = LHCAER2
+          AERSOL(J,JJ) = USOL(nparti,J)*DEN(J)/(CONVER(J,JJ))
+        enddo
+      enddo
+    do J=1,NP
+      DPU(1,J) = WFALL(2,J)*DEN(2)/DEN(1)/(2.*DZ(1))
+      DPL(NZ,J) = WFALL(NZ1,J)*DEN(NZ1)/DEN(NZ)/(2.*DZ(NZ))
+      DO I=2,NZ1
+        DPU(I,J) = WFALL(I+1,J)*DEN(I+1)/DEN(I)/(2.*DZ(I))
+        DPL(I,J) = WFALL(I-1,J)*DEN(I-1)/DEN(I)/(2.*DZ(I))
       enddo
     enddo
-    DO K=1,NEQ
-      RHS(K) = 0.d0
-    enddo
+    ! else
+    !   print*,'Note: Since NP = 0, did not call SDMNT...'
+    endif
 
+! ***** SET UP THE JACOBIAN MATRIX AND RIGHT-HAND SIDE *****
+    djac = 0.d0
+    rhs = 0.d0
 
-
-    call dochem(Fval,0,jtrop,isl,usol,nq,nz)
-
-
-
-
-
+    call dochem(0, nr, nsp2, nq, nz, usol, A, isl, jtrop, D, fval)
 
     DO I=1,NQ
       DO J=1,NZ
@@ -209,7 +208,7 @@
       enddo
     enddo
 
-    !$OMP PARALLEL PRIVATE(i,j,R,usol,mm,m,k,fv)
+    !$OMP PARALLEL PRIVATE(i,j,R,usol,mm,m,k,fv,D)
     DO I=1,NQ
       DO J=1,NZ
         USOL(I,J) = USAVE(I,J)
@@ -230,7 +229,7 @@
       enddo
     !   Call the photochemistry routine
     !      FV has dimension (NQ,NZ) and holds gas densities
-      call dochem(Fv,0,jtrop,isl,usol,nq,nz)
+      call dochem(0, nr, nsp2, nq, nz, usol, A, isl, jtrop, D, fv)
 
 
 
@@ -294,7 +293,7 @@
 !       CONSTANT DEPOSITION VELOCITY/SPECIES WITH DISTRIBUTED FLUXES
         RHS(K) = RHS(K) + DU(k,1)*(USOL(K,2) - U(K)) &
         + ADU(k,1)*(USOL(K,2) + U(K)) - VDEP(K)*U(K)/DZ(1)
-        DJAC(KD,K) = DJAC(KD,K)+DTINV +DU(k,1) -ADU(k,1) &
+        DJAC(KD,K) = DJAC(KD,K) +DTINV +DU(k,1) -ADU(k,1) &
         + VDEP(K)/DZ(1)
         DJAC(KU,K+NQ) = - DU(k,1) - ADU(k,1)
 !  is this right for particles??
@@ -325,7 +324,7 @@
 !       CONSTANT EFFUSION VELOCITY
         RHS(K) = RHS(K) + DL(i,NZ)*(USOL(I,NZ1) - U(I)) &
         + ADL(i,NZ)*(USOL(I,NZ1) + U(I)) - VEFF(I)*U(I)/DZ(NZ)
-        DJAC(KD,K) = DJAC(KD,K)+DTINV +DL(i,NZ) -ADL(i,NZ) &
+        DJAC(KD,K) = DJAC(KD,K) +DTINV +DL(i,NZ) -ADL(i,NZ) &
         + VEFF(I)/DZ(NZ)
         DJAC(KL,K-NQ) = - DL(i,NZ) -ADL(i,NZ)
       else if (MB.eq. 1) then
@@ -341,7 +340,7 @@
 !   CONSTANT UPWARD FLUX
         RHS(K) = RHS(K) + DL(i,NZ)*(USOL(I,NZ1) - U(I)) &
         + ADL(i,NZ)*(USOL(I,NZ1) + U(I)) - SMFLUX(I)/DEN(NZ)/DZ(NZ)
-        DJAC(KD,K) = DJAC(KD,K)+ DTINV + DL(i,NZ) - ADL(i,NZ)
+        DJAC(KD,K) = DJAC(KD,K) + DTINV + DL(i,NZ) - ADL(i,NZ)
         DJAC(KL,K-NQ) = - DL(i,NZ) - ADL(i,NZ)
       endif
     enddo

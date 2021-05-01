@@ -40,9 +40,9 @@ contains
   include "Twostr.f90"
   include "setup.f90"
   include "integrate.f90"
-  ! include "right_hand_side.f90"
-  ! include "jacobian.f90"
-  ! include "cvode.f90"
+  include "right_hand_side.f90"
+  include "jacobian.f90"
+  include "cvode.f90"
 
   include "redox_conservation.f90"
 

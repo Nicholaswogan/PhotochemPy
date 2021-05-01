@@ -1,5 +1,5 @@
 subroutine redox_conservation(flow,fup,sr)
-  use photochem_data, only: nq, nq1, lco, lh2, lh2s, lo2, redoxstate                    
+  use photochem_data, only: nq, nq1, lco, lh2, lh2s, lo2, redoxstate, background_spec                    
   use photochem_vars, only: redox_factor, distflux
   implicit none
   double precision, dimension(nq), intent(in) :: FLOW
@@ -38,8 +38,11 @@ subroutine redox_conservation(flow,fup,sr)
   !ACK - hardcoding - the below needs to be wrapped in an IF loop on the LBOUND...
 
   oxid_in_new=oxid_in_new + 2.0*distflux(LO2)
-  red_in_new=red_in_new + distflux(LCO) + distflux(LH2) + 3.*distflux(LH2S)! +1.5*distflux(LHCL)    !ACK
-
+  if (background_spec == 'H2') then
+    red_in_new=red_in_new + distflux(LCO) + 3.*distflux(LH2S)
+  else
+    red_in_new=red_in_new + distflux(LCO) + distflux(LH2) + 3.*distflux(LH2S)! +1.5*distflux(LHCL)    !ACK
+  endif
   oxid_rain_new = oxid_out_new
   red_rain_new = red_rain_new
 

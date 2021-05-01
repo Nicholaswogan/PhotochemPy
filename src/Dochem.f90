@@ -1,5 +1,5 @@
 
-subroutine dochem(N, nsp2, nq, nz, usol, nshort, jtrop, D, fval)
+subroutine dochem(N, nr, nsp2, nq, nz, usol, A, nshort, jtrop, D, fval)
   use photochem_data, only: nsp, lco, &
                             lh2, lh2o, &
                             lh2so4, lno, lo, lo2, lso4aer, &
@@ -16,8 +16,9 @@ subroutine dochem(N, nsp2, nq, nz, usol, nshort, jtrop, D, fval)
   integer, intent(in) :: jtrop
   integer, intent(in) :: nshort
   integer, intent(in) :: nq, nsp2
-  integer, intent(in) :: nz
+  integer, intent(in) :: nz, nr
   real*8, dimension(nq,nz),intent(in) :: usol
+  real(8), intent(in) :: A(nr,nz)
   real*8, dimension(nq,nz),intent(out) :: Fval
   real*8, dimension(nsp2,nz), intent(out) :: D
   ! real*8, dimension(nq,nz) :: YP, YL
@@ -51,7 +52,7 @@ subroutine dochem(N, nsp2, nq, nz, usol, nshort, jtrop, D, fval)
   enddo
 ! short lived densities
   do i = nq + 1 , nq + Nshort
-    CALL CHEMPL(d,xp,xl,i)
+    CALL CHEMPL(A,d,xp,xl,i)
     do j = 1 , nz
       d(i,j) = xp(j)/xl(j)
     enddo
@@ -61,7 +62,7 @@ subroutine dochem(N, nsp2, nq, nz, usol, nshort, jtrop, D, fval)
 
 ! ***** LONG-LIVED SPECIES CHEMISTRY *****
   do i = 1 , nq
-    CALL CHEMPL(d,xp,xl,i)
+    CALL CHEMPL(A, d,xp,xl,i)
     DO j = 1 , nz
       xlj = xl(j) + RAINGC(i,j)
       Fval(i,j) = xp(j)/DEN(j) - xlj*USOL(i,j)

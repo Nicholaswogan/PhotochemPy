@@ -1,7 +1,6 @@
 
-      SUBROUTINE CHEMPL(D,Xp,Xl,K)
-        use photochem_data, only: nz, nsp2, numl, iloss, nump, iprod, jchem
-        use photochem_wrk, only: A
+      SUBROUTINE CHEMPL(A,D,Xp,Xl,K)
+        use photochem_data, only: nz, nsp2, numl, iloss, nump, iprod, jchem, nr
 
       IMPLICIT NONE
 
@@ -9,6 +8,7 @@
 
 
       ! local variables
+      real(8), intent(in) :: A(nr,nz)
       real*8, dimension(nz), intent(out) :: XP
       real*8, dimension(nz), intent(out) :: XL
       real*8, dimension(nsp2,nz), intent(in) :: D

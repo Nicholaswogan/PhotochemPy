@@ -2,7 +2,7 @@
 subroutine cvode(T0, usol_start, nnq, nnz, t_eval, num_t_eval, rtol, atol, &
                  use_fast_jacobian, solution, success)
   use photochem_data, only: neq, nq, nz, jtrop
-  use photochem_vars, only: verbose, lbound, fixedmr, T, den
+  use photochem_vars, only: verbose, lbound, fixedmr, T, den, P, Press
   use photochem_wrk, only: cvode_stepper, rain, raingc
   implicit none
 
@@ -42,8 +42,10 @@ subroutine cvode(T0, usol_start, nnq, nnz, t_eval, num_t_eval, rtol, atol, &
   ml = nq ! lower diagonal
   ITASK = 1 ! for output
 
-  ! so rainout works
-  call rainout(.true.,Jtrop,Usol_start,nq,nz, T,den, rain, raingc)
+  ! begin stuff that needs to be inizialized
+  call densty(nq, nz, usol_start, T, den, P, press) 
+  call rainout(.true.,Jtrop,usol_start,nq,nz, T,den, rain, raingc) 
+  ! end stuff that needs to be inizialized
 
   ! initial conditions
   DO I=1,NQ
@@ -168,7 +170,7 @@ end subroutine
 subroutine cvode_save(T0, usol_start, nnq, nnz, t_eval, num_t_eval, rtol, atol, &
                       use_fast_jacobian, outfilename, success)
   use photochem_data, only: neq, nq, nz, jtrop, ispec
-  use photochem_vars, only: verbose, lbound, fixedmr, T, den
+  use photochem_vars, only: verbose, lbound, fixedmr, T, den, P, Press
   use photochem_wrk, only: cvode_stepper, rain, raingc
   implicit none
 
@@ -218,8 +220,10 @@ subroutine cvode_save(T0, usol_start, nnq, nnz, t_eval, num_t_eval, rtol, atol, 
   enddo
   close(1)
 
-  ! so rainout works
-  call rainout(.true.,Jtrop,Usol_start,nq,nz, T,den, rain, raingc)
+  ! begin stuff that needs to be inizialized
+  call densty(nq, nz, usol_start, T, den, P, press) 
+  call rainout(.true.,Jtrop,usol_start,nq,nz, T,den, rain, raingc) 
+  ! end stuff that needs to be inizialized
 
   ! initial conditions
   DO I=1,NQ
@@ -357,12 +361,12 @@ end subroutine
 
 
 subroutine cvode_equilibrium(rtol, atol, use_fast_jacobian, success)
-  use photochem_data, only: nq, np, nz1, nq1, isl, nz, jtrop, &
-                            lh, lh2, lh2o, dz
+  use photochem_data, only: nr, nq, np, nz1, nq1, isl, nz, jtrop, &
+                            lh, lh2, lh2o, dz, nsp2, background_spec, jtrop
   use photochem_vars, only: verbose, usol_init, usol_out, &
-                            den, fluxo, flow
-  use photochem_wrk, only: cvode_stepper, sl, wfall, dk, scale_h, h_atm, yp, yl, &
-                           bh2n2, bhn2, raingc
+                            den, fluxo, flow, T, P, den, press
+  use photochem_wrk, only: cvode_stepper, wfall, dk, scale_h, h_atm, yp, yl, &
+                           bh2n2, bhn2, raingc, A, rain
   implicit none
   ! input
   double precision, intent(in) :: rtol ! relative tolerance
@@ -383,8 +387,13 @@ subroutine cvode_equilibrium(rtol, atol, use_fast_jacobian, success)
   real*8,dimension(nq1) :: SR, FUP
   double precision :: wnf
   real*8, dimension(nq,nz) :: Fval
+  real*8, dimension(nsp2,nz) :: D
 
   cvode_stepper = 0
+  ! begin stuff that needs to be inizialized
+  call densty(nq, nz, usol_init, T, den, P, press) 
+  call rainout(.true.,Jtrop,usol_init,nq,nz, T,den, rain, raingc) 
+  ! end stuff that needs to be inizialized
 
   t_eval(1) = 1.d17
   call system_clock(count = c1, count_rate = cr, count_max = cm)
@@ -406,10 +415,10 @@ subroutine cvode_equilibrium(rtol, atol, use_fast_jacobian, success)
     enddo
 
     ! the flux lots of stuff below
-    call dochem(Fval,0,jtrop,isl,usol,nq,nz)
+    call dochem(0, nr, nsp2, nq, nz, usol, A, isl, jtrop, D, fval)
     DO K=1,NQ
       DO I=1,NZ
-      SL(K,I) = USOL(K,I)*DEN(I)
+      D(K,I) = USOL(K,I)*DEN(I)
       enddo
       DO I=1,NZ-1
         FLUXO(K,I) = - DK(I)*(USOL(K,I+1) - USOL(K,I))/DZ(I)
@@ -427,20 +436,22 @@ subroutine cvode_equilibrium(rtol, atol, use_fast_jacobian, success)
       enddo
     endif
 
-    do i=1,NZ-1
-      fluxo(LH,i) = fluxo(LH,i) &
-        - bHN2(i)*(usol(LH,i+1) - usol(LH,i))/dz(i) &
-        + bHN2(i)*0.5*(usol(LH,i) + usol(LH,i+1)) &
-        *(1./H_atm(i) - 1./scale_H(LH,i))
-      fluxo(LH2,i) =fluxo(LH2,i) &
-        - bH2N2(i)*(usol(LH2,i+1) - usol(LH2,i))/dz(i) &
-        + bH2N2(i)*0.5*(usol(LH2,i) + usol(LH2,i+1)) &
-        *(1./H_atm(i) - 1./scale_H(LH2,i))
-    enddo
+    if (background_spec /= 'H2') then
+      do i=1,NZ-1
+        fluxo(LH,i) = fluxo(LH,i) &
+          - bHN2(i)*(usol(LH,i+1) - usol(LH,i))/dz(i) &
+          + bHN2(i)*0.5*(usol(LH,i) + usol(LH,i+1)) &
+          *(1./H_atm(i) - 1./scale_H(LH,i))
+        fluxo(LH2,i) =fluxo(LH2,i) &
+          - bH2N2(i)*(usol(LH2,i+1) - usol(LH2,i))/dz(i) &
+          + bH2N2(i)*0.5*(usol(LH2,i) + usol(LH2,i+1)) &
+          *(1./H_atm(i) - 1./scale_H(LH2,i))
+      enddo
+    endif
 
     DO K=1,NQ
-      FLOW(K) = FLUXO(K,1) - (YP(K,1) - YL(K,1)*SL(K,1))*DZ(1)
-      FUP(K) = FLUXO(K,NZ1) + (YP(K,NZ) - YL(K,NZ)*SL(K,NZ))*DZ(NZ)
+      FLOW(K) = FLUXO(K,1) - (YP(K,1) - YL(K,1)*D(K,1))*DZ(1)
+      FUP(K) = FLUXO(K,NZ1) + (YP(K,NZ) - YL(K,NZ)*D(K,NZ))*DZ(NZ)
     enddo
     FLOW(LH2O) = FLUXO(LH2O,jtrop)
 

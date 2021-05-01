@@ -1,7 +1,7 @@
 
 
       SUBROUTINE PHOTO(zy, agl, io2, ino, usol, D, nsp2, nq, nz, kj, prates)
-        use photochem_data, only: np, nsp, nw, fscale, g, lh2, &
+        use photochem_data, only: np, nsp, nw, fscale, g, &
                                   photoreac, ispec, rstand, qexthc, ghc, W0HC, &
                                   wavl, wav, z, sq, flux, mass, &
                                   background_mu, lno, nz1, dz
@@ -299,7 +299,7 @@
                     icomp(ncomp(i),i)=5
                   else if (ISPEC(j).eq.'H2') then
                     ncomp(i)=ncomp(i)+1
-                    volmix(ncomp(i),i) = USOL(LH2,1) !should matter for gas giants only
+                    volmix(ncomp(i),i) = D(j,i)/DEN(i)!should matter for gas giants only
 ! c-mab: Rayleigh scattering routines typically assume the major species abundance don't change much vertically.
 ! c-mab: Thus ignoring any H2 loss due to photolysis and other reactions that are prevalent at high alt. for HJs.
 ! c-mab: Using fixedmr value for H2 allows for fastest convergence without qualitatively changing profiles.
@@ -325,8 +325,8 @@
                       if (wavl(L).eq.2273) then
                         if (tempcount.eq.0) then
                           if (verbose) then
-                            print *, ISPEC(j),'at ', Z(i)/1e5, 'km is major '// &
-                            'species without Rayleigh data - using AIR', D(j,i)/DEN(i)
+                            ! print *, ISPEC(j),'at ', Z(i)/1e5, 'km is major '// &
+                            ! 'species without Rayleigh data - using AIR', D(j,i)/DEN(i)
                             tempcount=1
                           endif
                         endif

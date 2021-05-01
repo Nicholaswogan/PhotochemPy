@@ -1,15 +1,15 @@
 
 FC=gfortran
-FCFLAGS=-g -freal-4-real-8 -O -Wunused-variable #-fbounds-check # I think fbounds-check is finding a false-positive
+FCFLAGS=-g -freal-4-real-8 -O3 -fopenmp -Wunused-variable #-fbounds-check # I think fbounds-check is finding a false-positive
 SRC=photochem_data.f90 \
 		photochem_vars.f90 \
 		photochem_wrk.f90 \
 		photochem.f90 \
+		cvode_funcs.f90	\
 		lin_alg.f \
 		main.f90
 OBJ=$(SRC:.f90=.o)
 	
-	# cvode_funcs.f90	\
 
 IDIR=cvode-5.7.0/install/include
 LDIR=cvode-5.7.0/install/lib

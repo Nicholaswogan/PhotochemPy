@@ -1,14 +1,12 @@
   subroutine setup(species_dat,reactions_rx,planet_dat,&
                  & photochem_dat, atmosphere_txt, flux_txt, err)
 
-    use photochem_data, only: nz, nr, nq, nw, &
+    use photochem_data, only: nq, nz, nw, &
                               kw, frak, ihztype, jtrop, &
-                              lh, lh2, planet, wavl, wav, wavu, dz, z, ztrop, &
-                              lgrid, flux, background_spec
-    use photochem_vars, only: usol_init, veff, mbound, den, T, P, press, edd, H2Osat
-    use photochem_wrk, only: scale_h, bhn2, bh2n2, tauedd, hscale, du, dl, dk, dd, &
-                             adu, adl, add, h_atm, A, rain, raingc, &
-                             zapNO, zapO2, proNOP, zapCO, zapH2, zapO
+                              wavl, wav, wavu, dz, z, ztrop, &
+                              lgrid, flux
+    use photochem_vars, only: den, P, press, T, usol_init
+    use photochem_wrk, only: rain, raingc
     implicit none
 
     ! local variables
@@ -18,10 +16,7 @@
     character(len=*),intent(in) :: photochem_dat
     character(len=*),intent(in) :: atmosphere_txt
     character(len=*),intent(in) :: flux_txt
-    character(len=err_len), intent(out) :: err
-    ! integer i,j
-    real*8, dimension(:,:), allocatable :: Fval
-    real*8, dimension(:), allocatable :: H2O
+    character(len=1000), intent(out) :: err
     integer :: nnq, nnsp, nnp, nnr, kks, kkj, nnw, nnz
 
     ! this subroutine will load all the data into memory
@@ -32,8 +27,6 @@
                               nnq, nnsp, nnp, nnr, kks, kkj, nnw, nnz, err)
     if (len_trim(err) /= 0) return
     call allocate_memory(nnz,nnq,nnp,nnsp,nnr,kks,kkj)
-    allocate(Fval(nq,nz))
-    allocate(H2O(nz))
     call read_species(species_dat,err)
     if (len_trim(err) /= 0) return
     call read_reactions(reactions_rx, err)
@@ -59,40 +52,13 @@
     ! end Stuff that depends on T
     
     ! begin stuff that needs to be inizialized
-    call densty(nq, nz, usol_init, T, den, P, press) ! DEPENDS ON USOL
-    call rainout(.true.,Jtrop,Usol_init,nq,nz, T,den, rain, raingc) ! initial conditions for rainout solve
+    call densty(nq, nz, usol_init, T, den, P, press) 
+    call rainout(.true.,Jtrop,usol_init,nq,nz, T,den, rain, raingc) 
     ! end stuff that needs to be inizialized
-    
-    ! begin stuff that should be in RHS (depends on usol)
-    call densty(nq, nz, usol_init, T, den, P, press) ! DEPENDS ON USOL
-    call rates(nz, nr, T, den, A) ! DEPENDS ON USOL (via den)
-    call difco(nq,nz,usol_init, T, den, edd, &
-              hscale, tauedd, DK, H_atm, bhn2, bh2n2, scale_H)
-    call photsatrat(nz, T, P, den, Jtrop, H2Osat, H2O) ! depends on usol
-    if (planet .eq. 'EARTH') call ltning(nq, nz, usol_init, &
-                                  zapNO, zapO2, proNOP, zapCO, zapH2, zapO)
-    call diffusion_coeffs(nq, nz, den, dz, DK, bhN2, bh2N2, scale_H, H_atm, &
-                         DU, DL, DD, ADU, ADL, ADD)
-                                  
-    ! below is H escape
-    if (background_spec /= 'H2') then ! then we can consider its upper and lower boundary
-      if (mbound(LH2) == 0) then
-  !       do i=1,nz
-  ! !        !don't use molecular diffusion
-  !         bHN2(i) = 0.0d0
-  !         bH2N2(i) = 0.0d0
-  !       enddo
-  !     else
-  !      !use effusion velocity formulation of diffusion limited flux
-        Veff(LH) = 1.0*bhN2(nz)/DEN(NZ)*(1./Hscale(nz) &
-         - 1./scale_H(LH,nz))
-  !      !diff lim flux
-        Veff(LH2) = 1.0*bH2N2(nz)/DEN(NZ)*(1./Hscale(nz) &
-        - 1./scale_H(LH2,nz))
-
-      endif
-    endif    
+       
   end subroutine
+  
+  
   
   subroutine diffusion_coeffs(nq, nz, den, dz, DK, bhN2, bh2N2, scale_H, H_atm, &
                               DU, DL, DD, ADU, ADL, ADD)
