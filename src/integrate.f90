@@ -1,4 +1,4 @@
-  subroutine integrate(nsteps,converged)
+  subroutine integrate(nsteps,converged,err)
     use photochem_data, only: nr, nz, nz1, nq, nq1, kj, np, lda, neq, isl, &
                               agl, epsj, frak, hcdens, ino, io2, zy, &
                               lco, lh, lh2, lhcaer, lhcaer2, lh2o, lo, &
@@ -19,7 +19,8 @@
 
     ! local variables
     integer,intent(in) :: nsteps
-    integer,intent(out) :: converged
+    logical,intent(out) :: converged
+    character(len=1000), intent(out) :: err
 
     real*8, dimension(nq,nz) :: usol
     real*8, dimension(nq,nz) :: usaveold
@@ -51,7 +52,8 @@
     real*8,dimension(nq1) :: SR, FUP
     real*8, dimension(nsp2,nz) :: D
 
-    converged = 1
+    converged = .true.
+    err = ''
     info = 0
 
     ! set atmosphere to inital atmosphere
@@ -64,7 +66,8 @@
     endif
     ! begin stuff that needs to be inizialized
     call densty(nq, nz, usol_init, T, den, P, press) 
-    call rainout(.true.,Jtrop,usol_init,nq,nz, T,den, rain, raingc) 
+    call rainout(.true.,Jtrop,usol_init,nq,nz, T,den, rain, raingc, err) 
+    if (len_trim(err) /= 0) return
     ! end stuff that needs to be inizialized
 
     do i=1,nq
@@ -149,7 +152,8 @@
         CO2(I) = absorbers(JCO2,I)
       enddo
 
-      call rainout(.false.,Jtrop,Usol,nq,nz, T,den, rain, raingc)
+      call rainout(.false.,Jtrop,Usol,nq,nz, T,den, rain, raingc, err)
+      if (len_trim(err) /= 0) return
 
       call aercon(usol,nq,nz)
 
@@ -424,9 +428,10 @@
 
       CALL SGBFA(DJAC,LDA,NEQ,NQ,NQ,IPVT,INFO)
       IF(INFO.NE.0) then
-        print *, N,INFO
-        print *, 'ERROR in SGBFA'
-        stop
+        ! print *, N,INFO
+        ! print *, 'ERROR in SGBFA'
+        err = 'Linear solve failed in subroutine integrate'
+        return
       endif
 
 !-mc  we have set up RHS so that DJAC*X=RHS
@@ -587,7 +592,7 @@
 
       IF (INFO.NE.0) STOP
       IF (NN.EQ.NSTEPS) then
-        converged = 0
+        converged = .false.
         if (verbose) then
           print"('Photochemical model did not converge in ',i6,' steps')",&
                   nsteps
@@ -596,16 +601,16 @@
       endif
 
       IF (TIME.GT.TSTOP) then
-        converged = 1
+        converged = .true.
         exit
       endif
     ! should never finish the loop if converged
-    converged = 0
+    converged = .false.
     enddo
 ! ***** END THE TIME-STEPPING LOOP *****
     call system_clock(count = c2)
 
-    if (converged .eq. 1) then
+    if (converged) then
       if (verbose) then
         print"('Time to find equilibrium =',f10.3,' seconds')", &
               (c2-c1)/real(cr)

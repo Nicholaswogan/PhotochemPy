@@ -1,5 +1,5 @@
 
-      SUBROUTINE RAINOUT(initialize,Jtrop,Usol,nq,nz, T,den, rain, raingc)
+      SUBROUTINE RAINOUT(initialize,Jtrop,Usol,nq,nz, T,den, rain, raingc, err)
         use photochem_data, only: naq, planet, lh2co, lh2s, lso2, lso4aer, &
                                   lh2so4, ispec, z, lco2, background_spec
         use photochem_wrk, only: H, xsave
@@ -15,6 +15,7 @@
       
       ! out
       real(8), intent(out) :: rain(nz), raingc(nq,nz)
+      character(len=err_len), intent(out) :: err
 
       ! local
       real*8 HEFF(NQ),IPVT(NAQ),DJAC(NAQ,NAQ)
@@ -39,6 +40,7 @@
       real*8 alpharain, co2aq, h2cog0, hh2co
       real*8 hso2, so2g0, so4_2
       real(8) :: rain_parameters(7)
+      err = ''
 
 
 
@@ -355,10 +357,11 @@
 
             CALL SGEFA(djac,naq,naq,ipvt,info)
             IF ( info.NE.0 ) THEN
-               PRINT 99001 , info , i
-99001          FORMAT (//1X,'NEWTON SOLVER FAILED IN AQUEOUS'/,5X,      &
-                      &'INFO =',I3,'  GRID STEP =',I3)
-               STOP
+!                PRINT 99001 , info , i
+! 99001          FORMAT (//1X,'NEWTON SOLVER FAILED IN AQUEOUS'/,5X,      &
+!                       &'INFO =',I3,'  GRID STEP =',I3)
+               err = 'Newton solve failed in rainout calculation.'
+               return
             ELSE
                CALL SGESL(djac,naq,naq,ipvt,f,0)
             ENDIF
@@ -374,10 +377,12 @@
                                   ! loop has converged; jump out of loop
          ENDDO
 !
-         PRINT 99002 , i 
-99002    FORMAT (//1X,'NEWTON SOLVER FAILED TO CONVERGE IN AQUEOUS'/,5X,&
-                &'GRID STEP =',I3)
-         STOP
+         ! PRINT 99002 , i 
+! 99002    FORMAT (//1X,'NEWTON SOLVER FAILED TO CONVERGE IN AQUEOUS'/,5X,&
+                ! &'GRID STEP =',I3)
+         ! STOP
+         err = 'Newton solve failed to converge in rainout calculation.'
+         return
 
 !
 !   CALCULATE EFFECTIVE HENRY'S LAW COEFFICIENTS (INCLUDING AQUEOUS

@@ -1,4 +1,4 @@
-  subroutine jacobian(usol_flat,ddjac,neq,ldaa)
+  subroutine jacobian(usol_flat,ddjac,neq,ldaa, err)
     use photochem_data, only: nr, nz, nz1, nq, nsp2, kj, np, isl, &
                               agl, frak, hcdens, ino, io2, zy, &
                               lco, lhcaer, lhcaer2, lh2o, lo, &
@@ -24,6 +24,7 @@
     real*8, dimension(neq), intent(in) :: usol_flat
     real*8, dimension(lda,neq) :: djac
     real*8, dimension(ldaa,neq), intent(out) :: ddjac ! ldaa = nq+nq+1
+    character(len=1000), intent(out) :: err
 
     real*8, dimension(neq) :: rhs
     real*8, dimension(nq,nz) :: fval, fv
@@ -49,6 +50,7 @@
     real*8, dimension(nsp2,nz) :: D
     ! real*8, dimension(nq,nz) :: fv
     ! integer cr, cm, c1, c2
+    err = ''
 
     ! usol_flat to usol
     DO I=1,NQ
@@ -121,7 +123,8 @@
       CO2(I) = absorbers(JCO2,I)
     enddo
     
-    call rainout(.false.,Jtrop,Usol,nq,nz, T,den, rain, raingc)
+    call rainout(.false.,Jtrop,Usol,nq,nz, T,den, rain, raingc, err)
+    if (len_trim(err) /= 0) return
 
     call aercon(usol,nq,nz)
     

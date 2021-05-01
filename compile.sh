@@ -7,8 +7,8 @@ python -m numpy.f2py -c src/photochem_data.f90 \
                     		src/lin_alg.f \
 -m Photochem \
 --opt="-O3" \
---f90flags='-freal-4-real-8' \
---f77flags='-freal-4-real-8' \
+--f90flags='-freal-4-real-8 -fopenmp' \
+--f77flags='-freal-4-real-8 -fopenmp' \
 -lgomp \
 -Isrc/cvode-5.7.0/install/include \
 -Lsrc/cvode-5.7.0/install/lib \

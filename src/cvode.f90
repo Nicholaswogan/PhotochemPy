@@ -1,9 +1,9 @@
 
 subroutine cvode(T0, usol_start, nnq, nnz, t_eval, num_t_eval, rtol, atol, &
-                 use_fast_jacobian, solution, success)
+                 use_fast_jacobian, solution, success, err)
   use photochem_data, only: neq, nq, nz, jtrop
-  use photochem_vars, only: verbose, lbound, fixedmr, T, den, P, Press
-  use photochem_wrk, only: cvode_stepper, rain, raingc
+  use photochem_vars, only: verbose, lbound, fixedmr, T, den, P, Press, max_cvode_steps 
+  use photochem_wrk, only: cvode_stepper, rain, raingc, global_err
   implicit none
 
   ! inputs
@@ -15,7 +15,9 @@ subroutine cvode(T0, usol_start, nnq, nnz, t_eval, num_t_eval, rtol, atol, &
   integer, intent(in) :: num_t_eval ! dimension of t_eval
   double precision, intent(in) :: rtol ! relative tolerance
   double precision, intent(in) :: atol ! absolute tolerance
-  logical, intent(in) :: use_fast_jacobian ! if True then use my jacobian (keep false!)
+  logical, intent(in) :: use_fast_jacobian ! if True then use my jacobian
+  character(len=1000), intent(out) :: err
+  character(len=10) :: message
 
   ! output
   double precision, dimension(num_t_eval,nnq,nnz),intent(out) :: solution
@@ -34,6 +36,7 @@ subroutine cvode(T0, usol_start, nnq, nnz, t_eval, num_t_eval, rtol, atol, &
   double precision U(neq), ROUT(10), RRPAR(1)
 
   cvode_stepper = 0
+  err = ''
 
   nneq = neq ! number of equations
   METH = 2 ! CVODE BDF method
@@ -44,7 +47,8 @@ subroutine cvode(T0, usol_start, nnq, nnz, t_eval, num_t_eval, rtol, atol, &
 
   ! begin stuff that needs to be inizialized
   call densty(nq, nz, usol_start, T, den, P, press) 
-  call rainout(.true.,Jtrop,usol_start,nq,nz, T,den, rain, raingc) 
+  call rainout(.true.,Jtrop,usol_start,nq,nz, T,den, rain, raingc,err)
+  if (len_trim(err) /= 0) return 
   ! end stuff that needs to be inizialized
 
   ! initial conditions
@@ -57,77 +61,89 @@ subroutine cvode(T0, usol_start, nnq, nnz, t_eval, num_t_eval, rtol, atol, &
 
   CALL FNVINITS(1, nneq, IER)
   if (ier .ne. 0) then
-    print*,'SUNDIALS_ERROR: FNVINITS'
-    stop
+    err = 'SUNDIALS_ERROR: FNVINITS'
+    return
   endif
 
   ! initialize banded matrix module
   call FSUNBANDMATINIT(1, nneq, mu, ml, mu+ml, ier)
   if (ier .ne. 0) then
-    print*,'SUNDIALS_ERROR: FSUNBANDMATINIT'
-    stop
+    err = 'SUNDIALS_ERROR: FSUNBANDMATINIT'
+    return
   endif
 
   ! initialize banded linear solver module
   call FSUNBANDLINSOLINIT(1, IER)
   if (ier .ne. 0) then
-    print*,'SUNDIALS_ERROR: FSUNBANDLINSOLINIT'
-    stop
+    err = 'SUNDIALS_ERROR: FSUNBANDLINSOLINIT'
+    return
   endif
 
   call FCVMALLOC(T0, U, METH, IATOL, RTOL, ATOL, &
                  IOUT, ROUT, IPAR, RRPAR, IER)
   if (ier .ne. 0) then
-   print*,'SUNDIALS_ERROR: FCVMALLOC'
-   stop
+   err = 'SUNDIALS_ERROR: FCVMALLOC'
+   return
   endif
 
   ! attach matrix and linear solver modules to CVLs interface
   CALL FCVLSINIT(IER)
   if (ier .ne. 0) then
-    print*,'SUNDIALS_ERROR: FCVLSINIT'
+    err = 'SUNDIALS_ERROR: FCVLSINIT'
     CALL FCVFREE
-    stop
+    return
   endif
 
   CALL FCVSETIIN('MAX_NSTEPS', 1000000, IER)
   if (ier .ne. 0) then
-    print*,'SUNDIALS_ERROR: FCVSETIIN'
+    err = 'SUNDIALS_ERROR: FCVSETIIN'
     CALL FCVFREE
-    stop
+    return
   endif
 
   CALL FCVSETIIN('MAX_ERRFAIL', 15, IER)
   if (ier .ne. 0) then
-    print*,'SUNDIALS_ERROR: FCVSETIIN'
+    err = 'SUNDIALS_ERROR: FCVSETIIN'
     CALL FCVFREE
-    stop
+    return
   endif
 
   ! start with tiny step
   call FCVSETRIN('INIT_STEP',1.d-6,ier)
   if (ier .ne. 0) then
-    print*,'SUNDIALS_ERROR: FCVSETRIN'
+    err = 'SUNDIALS_ERROR: FCVSETRIN'
     CALL FCVFREE
-    stop
+    return
   endif
 
   if (use_fast_jacobian) then
     CALL FCVBANDSETJAC(1, IER)
     if (ier .ne. 0) then
-      print*,'SUNDIALS_ERROR: FCVBANDSETJAC'
+      err = 'SUNDIALS_ERROR: FCVBANDSETJAC'
       CALL FCVFREE
-      stop
+      return
     endif
   endif
 
   do ii=1,num_t_eval
 
     CALL FCVODE(t_eval(ii), TT, U, ITASK, IER)
-    if (ier .ne. 0) then
-      print*,'SUNDIALS_ERROR: FCVODE ', ier
-      ! CALL FCVFREE
-      ! stop
+    if (ier < 0) then ! then there is a problem
+      if ((global_err == 'max steps') .and. (ier == -8)) then ! reached max steps
+        write(message,'(i10)')  max_cvode_steps 
+        print*,'CVODE stopped because it reached the maximum number of of specified steps: '//trim(message)
+        CALL FCVFREE
+        return
+      else if ((global_err /= 'max steps') .and. (ier == -8)) then ! err in my rhs
+        err = global_err
+        CALL FCVFREE
+        return
+      else
+        write(message,'(i4)') ier
+        err = 'SUNDIALS_ERROR: FCVODE '//trim(message)
+        CALL FCVFREE
+        return
+      endif
     endif
 
     ! save the solution
@@ -158,7 +174,7 @@ subroutine cvode(T0, usol_start, nnq, nnz, t_eval, num_t_eval, rtol, atol, &
           ' No. error test failures = ', I4)
   endif
 
-  if (ier == 0) then
+  if (ier >= 0) then
     success = .true.
   else
     success = .false.
@@ -168,10 +184,10 @@ subroutine cvode(T0, usol_start, nnq, nnz, t_eval, num_t_eval, rtol, atol, &
 end subroutine
 
 subroutine cvode_save(T0, usol_start, nnq, nnz, t_eval, num_t_eval, rtol, atol, &
-                      use_fast_jacobian, outfilename, success)
+                      use_fast_jacobian, outfilename, success, err)
   use photochem_data, only: neq, nq, nz, jtrop, ispec
-  use photochem_vars, only: verbose, lbound, fixedmr, T, den, P, Press
-  use photochem_wrk, only: cvode_stepper, rain, raingc
+  use photochem_vars, only: verbose, lbound, fixedmr, T, den, P, Press, max_cvode_steps 
+  use photochem_wrk, only: cvode_stepper, rain, raingc, global_err
   implicit none
 
   ! inputs
@@ -185,9 +201,12 @@ subroutine cvode_save(T0, usol_start, nnq, nnz, t_eval, num_t_eval, rtol, atol, 
   double precision, intent(in) :: atol ! absolute tolerance
   logical, intent(in) :: use_fast_jacobian ! if True then use my jacobian (keep false!)
   character(len=*), intent(in) :: outfilename ! were to save the solution
+  
 
   ! output
   logical, intent(out) :: success
+  character(len=1000), intent(out) :: err
+  character(len=10) :: message
 
   ! other
   double precision, dimension(nnq,nnz) :: solution_temp
@@ -202,6 +221,8 @@ subroutine cvode_save(T0, usol_start, nnq, nnz, t_eval, num_t_eval, rtol, atol, 
   integer*8 nneq, IOUT(25), IPAR(2), mu, ml
   double precision TT
   double precision U(neq), ROUT(10), RRPAR(1)
+  
+  err = ''
 
   cvode_stepper = 0
 
@@ -222,7 +243,8 @@ subroutine cvode_save(T0, usol_start, nnq, nnz, t_eval, num_t_eval, rtol, atol, 
 
   ! begin stuff that needs to be inizialized
   call densty(nq, nz, usol_start, T, den, P, press) 
-  call rainout(.true.,Jtrop,usol_start,nq,nz, T,den, rain, raingc) 
+  call rainout(.true.,Jtrop,usol_start,nq,nz, T,den, rain, raingc, err)
+  if (len_trim(err) /= 0) return
   ! end stuff that needs to be inizialized
 
   ! initial conditions
@@ -235,77 +257,89 @@ subroutine cvode_save(T0, usol_start, nnq, nnz, t_eval, num_t_eval, rtol, atol, 
 
   CALL FNVINITS(1, nneq, IER)
   if (ier .ne. 0) then
-    print*,'SUNDIALS_ERROR: FNVINITS'
-    stop
+    err = 'SUNDIALS_ERROR: FNVINITS'
+    return
   endif
 
   ! initialize banded matrix module
   call FSUNBANDMATINIT(1, nneq, mu, ml, mu+ml, ier)
   if (ier .ne. 0) then
-    print*,'SUNDIALS_ERROR: FSUNBANDMATINIT'
-    stop
+    err = 'SUNDIALS_ERROR: FSUNBANDMATINIT'
+    return
   endif
 
   ! initialize banded linear solver module
   call FSUNBANDLINSOLINIT(1, IER)
   if (ier .ne. 0) then
-    print*,'SUNDIALS_ERROR: FSUNBANDLINSOLINIT'
-    stop
+    err = 'SUNDIALS_ERROR: FSUNBANDLINSOLINIT'
+    return
   endif
 
   call FCVMALLOC(T0, U, METH, IATOL, RTOL, ATOL, &
                  IOUT, ROUT, IPAR, RRPAR, IER)
   if (ier .ne. 0) then
-   print*,'SUNDIALS_ERROR: FCVMALLOC'
-   stop
+   err = 'SUNDIALS_ERROR: FCVMALLOC'
+   return
   endif
 
   ! attach matrix and linear solver modules to CVLs interface
   CALL FCVLSINIT(IER)
   if (ier .ne. 0) then
-    print*,'SUNDIALS_ERROR: FCVLSINIT'
+    err = 'SUNDIALS_ERROR: FCVLSINIT'
     CALL FCVFREE
-    stop
+    return
   endif
 
   CALL FCVSETIIN('MAX_NSTEPS', 1000000, IER)
   if (ier .ne. 0) then
-    print*,'SUNDIALS_ERROR: FCVSETIIN'
+    err = 'SUNDIALS_ERROR: FCVSETIIN'
     CALL FCVFREE
-    stop
+    return
   endif
 
   CALL FCVSETIIN('MAX_ERRFAIL', 15, IER)
   if (ier .ne. 0) then
-    print*,'SUNDIALS_ERROR: FCVSETIIN'
+    err = 'SUNDIALS_ERROR: FCVSETIIN'
     CALL FCVFREE
-    stop
+    return
   endif
 
   ! start with tiny step
   call FCVSETRIN('INIT_STEP',1.d-6,ier)
   if (ier .ne. 0) then
-    print*,'SUNDIALS_ERROR: FCVSETRIN'
+    err = 'SUNDIALS_ERROR: FCVSETRIN'
     CALL FCVFREE
-    stop
+    return
   endif
 
   if (use_fast_jacobian) then
     CALL FCVBANDSETJAC(1, IER)
     if (ier .ne. 0) then
-      print*,'SUNDIALS_ERROR: FCVBANDSETJAC'
+      err = 'SUNDIALS_ERROR: FCVBANDSETJAC'
       CALL FCVFREE
-      stop
+      return
     endif
   endif
 
   do ii=1,num_t_eval
 
     CALL FCVODE(t_eval(ii), TT, U, ITASK, IER)
-    if (ier .ne. 0) then
-      print*,'SUNDIALS_ERROR: FCVODE ', ier
-      ! CALL FCVFREE
-      ! stop
+    if (ier < 0) then ! then there is a problem
+      if ((global_err == 'max steps') .and. (ier == -8)) then ! reached max steps
+        write(message,'(i10)')  max_cvode_steps 
+        print*,'CVODE stopped because it reached the maximum number of of specified steps: '//trim(message)
+        CALL FCVFREE
+        return
+      else if ((global_err /= 'max steps') .and. (ier == -8)) then ! err in my rhs
+        err = global_err
+        CALL FCVFREE
+        return
+      else
+        write(message,'(i4)') ier
+        err = 'SUNDIALS_ERROR: FCVODE '//trim(message)
+        CALL FCVFREE
+        return
+      endif
     endif
 
     ! save the solution
@@ -350,7 +384,7 @@ subroutine cvode_save(T0, usol_start, nnq, nnz, t_eval, num_t_eval, rtol, atol, 
           ' No. error test failures = ', I4)
   endif
 
-  if (ier == 0) then
+  if (ier >= 0) then
     success = .true.
   else
     success = .false.
@@ -360,7 +394,7 @@ subroutine cvode_save(T0, usol_start, nnq, nnz, t_eval, num_t_eval, rtol, atol, 
 end subroutine
 
 
-subroutine cvode_equilibrium(rtol, atol, use_fast_jacobian, success)
+subroutine cvode_equilibrium(rtol, atol, use_fast_jacobian, success, err)
   use photochem_data, only: nr, nq, np, nz1, nq1, isl, nz, jtrop, &
                             lh, lh2, lh2o, dz, nsp2, background_spec, jtrop
   use photochem_vars, only: verbose, usol_init, usol_out, &
@@ -375,6 +409,7 @@ subroutine cvode_equilibrium(rtol, atol, use_fast_jacobian, success)
 
   ! output
   logical, intent(out) :: success
+  character(len=1000), intent(out) :: err
 
   ! other
   double precision :: T0 = 0.d0 ! intial time
@@ -388,17 +423,19 @@ subroutine cvode_equilibrium(rtol, atol, use_fast_jacobian, success)
   double precision :: wnf
   real*8, dimension(nq,nz) :: Fval
   real*8, dimension(nsp2,nz) :: D
-
+  err = ''
   cvode_stepper = 0
   ! begin stuff that needs to be inizialized
   call densty(nq, nz, usol_init, T, den, P, press) 
-  call rainout(.true.,Jtrop,usol_init,nq,nz, T,den, rain, raingc) 
+  call rainout(.true.,Jtrop,usol_init,nq,nz, T,den, rain, raingc, err)
+  if (len_trim(err) /= 0) return
   ! end stuff that needs to be inizialized
 
   t_eval(1) = 1.d17
   call system_clock(count = c1, count_rate = cr, count_max = cm)
   call cvode(T0, usol_init, nq, nz, t_eval, num_t_eval, rtol, atol, &
-             use_fast_jacobian, solution, success)
+             use_fast_jacobian, solution, success, err)
+  if (len_trim(err) /= 0) return
   call system_clock(count = c2)
   usol = solution(1,:,:)
 

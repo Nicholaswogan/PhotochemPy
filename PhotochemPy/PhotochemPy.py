@@ -1,10 +1,13 @@
 import numpy as np
-from Photochem import photochem
+from Photochem import photochem, photochem_data, photochem_vars, photochem_wrk
 import sys
 import os
 
 rootdir = os.path.dirname(os.path.realpath(__file__))+'/'
-photochem.rootdir = "{:500}".format(rootdir)
+photochem_vars.rootdir = "{:500}".format(rootdir)
+
+class PhotochemError(Exception):
+    pass
 
 
 class PhotochemPy:
@@ -58,6 +61,10 @@ class PhotochemPy:
     def __init__(self,species_dat,reactions_rx,planet_dat,\
                       photochem_dat, atmosphere_txt, flux_txt):
         self.photo = photochem
+        self.data = photochem_data
+        self.vars = photochem_vars
+        self.wrk = photochem_wrk
+        
         if all(fil==None for fil in [species_dat,reactions_rx,planet_dat, \
                                     photochem_dat, atmosphere_txt, flux_txt]):
             pass
@@ -69,70 +76,34 @@ class PhotochemPy:
             self.atmosphere_txt = atmosphere_txt
             self.flux_txt = flux_txt
 
-            self.nz = 200 # number of vertical grid points
-            # read species.dat to find nq, np, isl
+            # get species names
             fil = open(species_dat,'r')
             lines = fil.readlines()
             fil.close()
-            self.nq = 0
-            self.isl = 0
-            self.np = 0
-            inert = 0
-            self.ispec = []
-            self.sl = []
+            self.ispec = [] 
             for line in lines:
                 if line[0]=='*':
                     pass
                 else:
                     if line.split()[1] == 'LL':
-                        if line.split()[0].find('AER') != -1:
-                            self.np+=1
-                        self.nq+=1
-                        # record the species
                         self.ispec.append(line.split()[0])
-                    if line.split()[1] == 'SL':
-                        self.sl.append(line.split()[0])
-                        self.isl+=1
                     if line.split()[1] == 'IN':
-                        inert += 1
+                        self.background_spec = line.split()[0]
 
-            self.nsp = self.nq + self.isl + inert
-
-            # Read reactions.rx to find nr, kj, and ks
-            fil = open(reactions_rx,'r')
-            lines = fil.readlines()
-            fil.close()
-            self.nr = len(lines)
-            # also find number of photolysis reactions and species (ks,kj)
-            self.ks = 0 # number photo species
-            self.kj = 0 # number photo reactions
-            temp_spec = []
-            for line in lines:
-                if line[48:53] =='PHOTO':
-                    self.kj+=1
-                    tmp = 0
-                    for i in range(len(temp_spec)):
-                        if line.split()[0]==temp_spec[i]:
-                            tmp = 1
-                    if tmp == 0:
-                        self.ks+=1
-                        temp_spec.append(line.split()[0])
-            self.photospecies = temp_spec
-
-            self.photo.allocate_memory(self.nz,self.nq,\
-                                       self.np,self.nsp,self.nr,\
-                                       self.ks,self.kj)
-            self.photo.setup(species_dat, \
-                             reactions_rx, \
-                             planet_dat, \
-                             photochem_dat, \
-                             atmosphere_txt, \
-                             flux_txt)
-
+            err = self.photo.setup(species_dat, \
+                                   reactions_rx, \
+                                   planet_dat, \
+                                   photochem_dat, \
+                                   atmosphere_txt, \
+                                   flux_txt)               
+            if len(err.strip()) > 0:
+                raise PhotochemError(err.decode("utf-8").strip())
+                
             self.code_run = False
+            self.redox_factor = np.nan
 
     def setup(self,species_dat,reactions_rx,planet_dat,\
-                      photochem_dat, atmosphere_txt, flux_txt):
+              photochem_dat, atmosphere_txt, flux_txt):
         '''
         In you initialize PhotochemPy with all `None` arguments, then you can run
         This to set up the atmospheres afterwords. This is necessary for some parallel
@@ -164,66 +135,29 @@ class PhotochemPy:
         self.atmosphere_txt = atmosphere_txt
         self.flux_txt = flux_txt
 
-        self.nz = 200 # number of vertical grid points
-        # read species.dat to find nq, np, isl
+        # get species names
         fil = open(species_dat,'r')
         lines = fil.readlines()
         fil.close()
-        self.nq = 0
-        self.isl = 0
-        self.np = 0
-        inert = 0
-        self.ispec = []
-        self.sl = []
+        self.ispec = [] 
         for line in lines:
             if line[0]=='*':
                 pass
             else:
                 if line.split()[1] == 'LL':
-                    if line.split()[0].find('AER') != -1:
-                        self.np+=1
-                    self.nq+=1
-                    # record the species
                     self.ispec.append(line.split()[0])
-                if line.split()[1] == 'SL':
-                    self.sl.append(line.split()[0])
-                    self.isl+=1
                 if line.split()[1] == 'IN':
-                    inert += 1
+                    self.background_spec = line.split()[0]
 
-        self.nsp = self.nq + self.isl + inert
-
-        # Read reactions.rx to find nr, kj, and ks
-        fil = open(reactions_rx,'r')
-        lines = fil.readlines()
-        fil.close()
-        self.nr = len(lines)
-        # also find number of photolysis reactions and species (ks,kj)
-        self.ks = 0 # number photo species
-        self.kj = 0 # number photo reactions
-        temp_spec = []
-        for line in lines:
-            if line[48:53] =='PHOTO':
-                self.kj+=1
-                tmp = 0
-                for i in range(len(temp_spec)):
-                    if line.split()[0]==temp_spec[i]:
-                        tmp = 1
-                if tmp == 0:
-                    self.ks+=1
-                    temp_spec.append(line.split()[0])
-        self.photospecies = temp_spec
-
-        self.photo.allocate_memory(self.nz,self.nq,\
-                                   self.np,self.nsp,self.nr,\
-                                   self.ks,self.kj)
-        self.photo.setup(species_dat, \
-                         reactions_rx, \
-                         planet_dat, \
-                         photochem_dat, \
-                         atmosphere_txt, \
-                         flux_txt)
-
+        err = self.photo.setup(species_dat, \
+                               reactions_rx, \
+                               planet_dat, \
+                               photochem_dat, \
+                               atmosphere_txt, \
+                               flux_txt)               
+        if len(err.strip()) > 0:
+            raise PhotochemError(err.decode("utf-8").strip())
+            
         self.code_run = False
         self.redox_factor = np.nan
 
@@ -245,13 +179,14 @@ class PhotochemPy:
             the code did not converge.
         '''
         if method == "CVODE_BDF":
-            if len(set(self.sl).intersection(set(self.photospecies))) > 0:
-                raise Exception("Short lived species can't photolyze when using CVODE. ", \
-                set(self.sl).intersection(set(self.photospecies)))
-            self.photo.max_cvode_steps = nsteps
-            converged = self.photo.cvode_equilibrium(rtol,atol,fast_and_loose)
+            self.vars.max_cvode_steps = nsteps
+            converged, err = self.photo.cvode_equilibrium(rtol,atol,fast_and_loose)
+            if len(err.strip()) > 0:
+                raise PhotochemError(err.decode("utf-8").strip())
         elif method == "Backward_Euler":
-            converged = self.photo.integrate(nsteps)
+            converged, err = self.photo.integrate(nsteps)
+            if len(err.strip()) > 0:
+                raise PhotochemError(err.decode("utf-8").strip())
 
         if not converged:
             self.code_run = False
@@ -259,13 +194,13 @@ class PhotochemPy:
             self.code_run = True
 
             # check redox conservation
-            self.redox_factor = self.photo.redox_factor
+            self.redox_factor = self.vars.redox_factor
             if np.abs(self.redox_factor) > 1e-3:
                 print('Warning, redox conservation is not very good.')
                 print('redox factor =','%.2e'%self.redox_factor)
                 
             # check for mixing ratios greater than 1
-            if np.max(self.photo.usol_out) > 1:
+            if np.max(self.vars.usol_out) > 1:
                 print('Warning, some mixing ratios are greater than 1.')
                 
         return self.code_run
@@ -299,31 +234,26 @@ class PhotochemPy:
             Array of dimension [len(t_eval),nq,nz] containing mixing ratios of the atmosphere at
             each time.
         """
-        # if type(t0) != float and type(t0) != int:
-        #     raise Exception('t0 must be a float or an int')
         if usol_start.shape != (self.nq, self.nz):
-            raise Exception('usol_start is the wrong shape')
-        # if type(t_eval[0]) != float and type(t_eval[0]) != int:
-        #     raise Exception('t_eval must be an array of floats or ints')
-        # check for SL species which photolyze
-        if len(set(self.sl).intersection(set(self.photospecies))) > 0:
-            raise Exception("Short lived species can't photolyze in time-dependent model.")
-
-        self.photo.max_cvode_steps = nsteps
+            raise PhotochemError('usol_start is the wrong shape')
+            
+        self.wrk.max_cvode_steps = nsteps
 
         # in this case num_sol = len(t_eval)
         if outfile == None:
             num_sol = len(t_eval)
-            solution, success = self.photo.cvode(t0,usol_start,t_eval,rtol,atol,fast_and_loose)
-            if not success:
-                raise Exception('CVODE returned an error.')
+            solution, success, err = self.photo.cvode(t0,usol_start,t_eval,rtol,atol,fast_and_loose)
+            if len(err.strip()) > 0:
+                raise PhotochemError(err.decode("utf-8").strip())
             return solution
         else:
             if os.path.isfile(outfile) and not overwrite:
-                raise Exception(outfile,' is already a file.')
-            success = self.photo.cvode_save(t0,usol_start,t_eval,rtol,atol,fast_and_loose,outfile)
+                raise PhotochemError(outfile,' is already a file.')
+            success, err = self.photo.cvode_save(t0,usol_start,t_eval,rtol,atol,fast_and_loose,outfile)
+            if len(err.strip()) > 0:
+                raise PhotochemError(err.decode("utf-8").strip())
             if not success:
-                raise Exception('CVODE returned an error.')
+                raise PhotochemError('CVODE returned an error.')
             return None
 
     def out_dict(self):
@@ -343,15 +273,15 @@ class PhotochemPy:
             When photochemical model has not been integrated to equilibrium.
         '''
         if not self.code_run:
-            sys.exit('Need to integrate before outputting a solution!')
+            raise PhotochemError('Need to integrate before outputting a solution!')
         elif self.code_run:
             out = {}
-            out['alt'] = self.photo.z/1e5
-            out['den'] = self.photo.den
-            out['press'] = self.photo.p
-            out['T'] = self.photo.t
-            for i in range(self.nq):
-                out[self.ispec[i]] = self.photo.usol_out[i,:]
+            out['alt'] = self.data.z/1e5
+            out['den'] = self.vars.den
+            out['press'] = self.vars.p
+            out['T'] = self.vars.t
+            for i in range(self.data.nq):
+                out[self.ispec[i]] = self.vars.usol_out[i,:]
             return out
 
     def in_dict(self):
@@ -368,12 +298,12 @@ class PhotochemPy:
             temperature structure, total pressure, and total number density.
         '''
         out = {}
-        out['alt'] = self.photo.z/1e5
-        out['den'] = self.photo.den
-        out['press'] = self.photo.p
-        out['T'] = self.photo.t
-        for i in range(self.nq):
-            out[self.ispec[i]] = self.photo.usol_init[i,:]
+        out['alt'] = self.data.z/1e5
+        out['den'] = self.vars.den
+        out['press'] = self.vars.p
+        out['T'] = self.vars.t
+        for i in range(self.data.nq):
+            out[self.ispec[i]] = self.vars.usol_init[i,:]
         return out
 
     def surf_flux(self):
@@ -393,23 +323,25 @@ class PhotochemPy:
             When photochemical model has not been integrated to equilibrium.
         '''
         if not self.code_run:
-            sys.exit('Need to integrate before outputing surface flux!')
+            raise PhotochemError('Need to integrate before outputing surface flux!')
         elif self.code_run:
             out = {}
-            for i in range(self.nq):
-                out[self.ispec[i]] = self.photo.flow[i]
+            for i in range(self.data.nq):
+                out[self.ispec[i]] = self.vars.flow[i]
             return out
 
     def reset(self):
         '''
         Resets the problem by reading in the original input files (e.g. species_dat, ...)
         '''
-        self.photo.setup(self.species_dat, \
-                         self.reactions_rx, \
-                         self.planet_dat, \
-                         self.photochem_dat, \
-                         self.atmosphere_txt, \
-                         self.flux_txt)
+        err = self.photo.setup(self.species_dat, \
+                             self.reactions_rx, \
+                             self.planet_dat, \
+                             self.photochem_dat, \
+                             self.atmosphere_txt, \
+                             self.flux_txt)          
+        if len(err.strip()) > 0:
+            raise PhotochemError(err.decode("utf-8").strip())
         self.code_run = False
 
     def out2in(self):
@@ -422,13 +354,13 @@ class PhotochemPy:
             When photochemical model has not been integrated to equilibrium.
         '''
         if not self.code_run:
-            sys.exit('Need to integrate before setting the output as input!')
+            raise PhotochemError('Need to integrate before setting the output as input!')
         else:
-            self.photo.usol_init = self.photo.usol_out
-            if self.np > 0:
-                self.photo.rpar_init = self.photo.rpar
-                self.photo.wfall_init = self.photo.wfall
-                self.photo.aersol_init = self.photo.aersol
+            self.vars.usol_init = self.vars.usol_out
+            if self.data.np > 0:
+                self.vars.rpar_init = self.wrk.rpar
+                self.vars.wfall_init = self.wrk.wfall
+                self.vars.aersol_init = self.wrk.aersol
 
     def set_surfflux(self,spec,flx):
         '''
@@ -450,11 +382,11 @@ class PhotochemPy:
         try:
             ind = self.ispec.index(spec)
         except:
-            sys.exit('species not in the model')
-        if self.photo.lbound[ind] == 2 or self.photo.lbound[ind] == 3:
-            self.photo.sgflux[ind] = flx
+            raise PhotochemError('species not in the model')
+        if self.vars.lbound[ind] == 2 or self.vars.lbound[ind] == 3:
+            self.vars.sgflux[ind] = flx
         else:
-            print('mbound set to',self.photo.lbound[ind],'so the flux will not change')
+            print('mbound set to',self.vars.lbound[ind],'so the flux will not change')
 
     def set_mr(self,spec,mix):
         '''
@@ -476,13 +408,11 @@ class PhotochemPy:
         try:
             ind = self.ispec.index(spec)
         except:
-            sys.exit('species not in the model')
-        if self.photo.lbound[ind] == 1:
-            self.photo.fixedmr[ind] = mix
-            if spec=='CO2':
-                self.photo.fco2=mix
+            raise PhotochemError('species not in the model')
+        if self.vars.lbound[ind] == 1:
+            self.vars.fixedmr[ind] = mix
         else:
-            print('lbound set to',self.photo.lbound[ind],'so the mixing ratio will not change')
+            print('lbound set to',self.vars.lbound[ind],'so the mixing ratio will not change')
 
     def set_vdep(self,spec,vdep):
         '''
@@ -504,12 +434,12 @@ class PhotochemPy:
         try:
             ind = self.ispec.index(spec)
         except:
-            sys.exit('species not in the model')
-        if self.photo.lbound[ind] == 0 or self.photo.lbound[ind] == 3:
-            self.photo.vdep[ind] = vdep
-            self.photo.vdep0[ind] = vdep
+            raise PhotochemError('species not in the model')
+        if self.vars.lbound[ind] == 0 or self.vars.lbound[ind] == 3:
+            self.vars.vdep[ind] = vdep
+            self.vars.vdep0[ind] = vdep
         else:
-            print('lbound set to',self.photo.lbound[ind],'so the vdep will not change')
+            print('lbound set to',self.vars.lbound[ind],'so the vdep will not change')
 
     def set_lbound(self,spec,lbound):
         '''
@@ -535,13 +465,13 @@ class PhotochemPy:
         SystemExit
             When species spec is not in the model or when all(lbound != [0,1,2,3])
         '''
-        if all(lbound!=np.array([0,1,2,3])):
-            sys.exit('lbound must be 0, 1, 2 or 3')
+        if all(lbound != np.array([0,1,2,3])):
+            raise PhotochemError('lbound must be 0, 1, 2 or 3')
         try:
             ind = self.ispec.index(spec)
-            self.photo.lbound[ind] = lbound
+            self.vars.lbound[ind] = lbound
         except:
-            sys.exit('species not in the model')
+            raise PhotochemError('species not in the model')
 
     def set_mbound(self,spec,mbound):
         '''
@@ -566,12 +496,12 @@ class PhotochemPy:
             When species spec is not in the model or when all(mbound != [0,1,2])
         '''
         if all(lbound!=np.array([0,1,2])):
-            sys.exit('lbound must be 0, 1, or 2')
+            raise PhotochemError('lbound must be 0, 1, or 2')
         try:
             ind = self.ispec.index(spec)
-            self.photo.mbound[ind] = mbound
+            self.vars.mbound[ind] = mbound
         except:
-            sys.exit('species not in the model')
+            raise PhotochemError('species not in the model')
 
     def right_hand_side(self,usol_flat):
         '''
@@ -589,7 +519,9 @@ class PhotochemPy:
         rhs : rank-1 array with bounds (self.photo.neq)
             The right hand side of the model equations (change in mixing ratio/second)
         '''
-        rhs = self.photo.right_hand_side(usol_flat)
+        rhs, err = self.photo.right_hand_side(usol_flat)
+        if len(err.strip()) > 0:
+            raise PhotochemError(err.decode("utf-8").strip())
         return rhs
 
     def jacobian(self,usol_flat):
@@ -608,8 +540,10 @@ class PhotochemPy:
         jac : rank-2 array with bounds (self.photo.neq, self.photo.lda)
             The right hand side of the model equations (change in mixing ratio/second)
         '''
-        ldaa = self.nq+self.nq+1
-        jac = self.photo.jacobian(usol_flat,ldaa)
+        ldaa = self.data.nq+self.data.nq+1
+        jac, err = self.photo.jacobian(usol_flat,ldaa)
+        if len(err.strip()) > 0:
+            raise PhotochemError(err.decode("utf-8").strip())
         return jac
 
     def out2atmosphere_txt(self,filename = 'atmosphere.txt', overwrite = False):
@@ -631,11 +565,11 @@ class PhotochemPy:
             when filename is invalid.
         '''
         if not self.code_run:
-            sys.exit('Need to integrate before writting a file!')
+            raise PhotochemError('Need to integrate before writting a file!')
         if os.path.isfile(filename) and not overwrite:
-            sys.exit(filename+' is already a file. Choose a different name, or set overwrite = True.')
+            raise PhotochemError(filename+' is already a file. Choose a different name, or set overwrite = True.')
         if os.path.isdir(filename):
-            sys.exit(filename+' is already a directory. Choose a different name.')
+            raise PhotochemError(filename+' is a directory. Choose a different name.')
 
         # make dict
         out = self.out_dict()
@@ -644,26 +578,23 @@ class PhotochemPy:
         f['press'] = out['press']
         f['temp'] = out['T']
         f['density'] = out['den']
-        f['eddy'] = self.photo.edd
+        f['eddy'] = self.vars.edd
 
         for spec in self.ispec:
             f[spec] = out[spec]
 
-        if self.photo.co2_inert==1:
-            f['CO2'] = np.ones(self.nz)*self.photo.fco2
-
         # particle stuff
-        if self.np>0:
+        if self.data.np > 0:
             particles  = ['SO4AER','S8AER','HCAER','HCAER2']
             params = ['AERSOL','WFALL','RPAR']
             for j in range(len(params)):
-                for i in range(self.np):
+                for i in range(self.data.np):
                     if params[j] == 'AERSOL':
-                        f[particles[i]+'_'+params[j]] =  self.photo.aersol[:,i]
+                        f[particles[i]+'_'+params[j]] =  self.wrk.aersol[:,i]
                     if params[j] == 'WFALL':
-                        f[particles[i]+'_'+params[j]] =  self.photo.wfall[:,i]
+                        f[particles[i]+'_'+params[j]] =  self.wrk.wfall[:,i]
                     if params[j] == 'RPAR':
-                        f[particles[i]+'_'+params[j]] =  self.photo.rpar[:,i]
+                        f[particles[i]+'_'+params[j]] =  self.wrk.rpar[:,i]
 
         # write the file
         fil = open(filename,'w')

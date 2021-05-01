@@ -10,6 +10,5 @@ pc = PhotochemPy('input/templates/'+template+'/species.dat', \
                  'input/templates/'+template+'/atmosphere.txt', \
                  'input/templates/'+template+'/'+sun)
 
-converged = pc.integrate()
-
-solution = pc.evolve(0.0,pc.photo.usol_init,[1e14])
+converged = pc.integrate(method='Backward_Euler')
+converged = pc.integrate(method='CVODE_BDF')

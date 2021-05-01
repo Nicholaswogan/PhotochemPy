@@ -53,6 +53,7 @@ module photochem_wrk
   ! cvode
   real*8 :: time_prev = -1.d0 ! for printing time
   integer :: cvode_stepper = 0
+  character(len=1000) :: global_err = ''
   
   
 end module

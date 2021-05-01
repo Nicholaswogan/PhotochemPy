@@ -53,7 +53,8 @@
     
     ! begin stuff that needs to be inizialized
     call densty(nq, nz, usol_init, T, den, P, press) 
-    call rainout(.true.,Jtrop,usol_init,nq,nz, T,den, rain, raingc) 
+    call rainout(.true.,Jtrop,usol_init,nq,nz, T,den, rain, raingc,err)
+    if (len_trim(err) /= 0) return 
     ! end stuff that needs to be inizialized
        
   end subroutine
