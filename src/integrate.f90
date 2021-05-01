@@ -149,18 +149,34 @@
         CO2(I) = absorbers(JCO2,I)
       enddo
 
-      call photo(zy, agl, io2, ino, usol, D, nsp2, nq, nz, kj, prates)
-      do j=1,kj
-        do i=1,nz
-          A(INT(photonums(j)),i)=prates(j,i)
-        enddo
-      enddo
-
       call rainout(.false.,Jtrop,Usol,nq,nz, T,den, rain, raingc)
-
 
       call aercon(usol,nq,nz)
 
+      if (NP.GT.0) then   !particles in main loop
+        CALL SEDMNT(frak,HCDENS,nz,np,conver, .true.)
+
+        do J=1,NZ
+          do JJ=1, NP
+            if (JJ.eq.1)  nparti = LSO4AER
+            if (JJ.eq.2)  nparti = LS8AER
+            if (JJ.eq.3)  nparti = LHCAER
+            if (JJ.eq.4)  nparti = LHCAER2
+            AERSOL(J,JJ) = USOL(nparti,J)*DEN(J)/(CONVER(J,JJ))
+          enddo
+        enddo
+        do J=1,NP
+          DPU(1,J) = WFALL(2,J)*DEN(2)/DEN(1)/(2.*DZ(1))
+          DPL(NZ,J) = WFALL(NZ1,J)*DEN(NZ1)/DEN(NZ)/(2.*DZ(NZ))
+          DO I=2,NZ1
+            DPU(I,J) = WFALL(I+1,J)*DEN(I+1)/DEN(I)/(2.*DZ(I))
+            DPL(I,J) = WFALL(I-1,J)*DEN(I-1)/DEN(I)/(2.*DZ(I))
+          enddo
+        enddo
+      ! else
+        ! print*,'Note: Since NP = 0, did not call SDMNT...'
+      endif
+      
       ! TIME-DEPENDENT BOUNDARY CONDITIONS
       if(NP.EQ.0) then
 !-mab Time-dependent boundary conditions for particles set to 0
@@ -190,7 +206,14 @@
           endif
         endif
       endif
-
+      
+      call photo(zy, agl, io2, ino, usol, D, nsp2, nq, nz, kj, prates)
+      do j=1,kj
+        do i=1,nz
+          A(INT(photonums(j)),i)=prates(j,i)
+        enddo
+      enddo
+      
 ! estimate CO2 photolysis above the top of the grid
 ! and return CO + O to the upper grid point
 ! this behavior is turned on and off by setting MBOUND=2 for CO2 in species.dat
@@ -198,30 +221,6 @@
       VCO2 = (prates(JCO2,NZ) + prates(JCO2_O1D,NZ) ) * HSCALE(NZ)
       SMFLUX(LO) = - VCO2*CO2(NZ)*DEN(NZ)
       SMFLUX(LCO) = SMFLUX(LO)
-
-      if (NP.GT.0) then   !particles in main loop
-        CALL SEDMNT(frak,HCDENS,nz,np,conver, .true.)
-
-        do J=1,NZ
-          do JJ=1, NP
-            if (JJ.eq.1)  nparti = LSO4AER
-            if (JJ.eq.2)  nparti = LS8AER
-            if (JJ.eq.3)  nparti = LHCAER
-            if (JJ.eq.4)  nparti = LHCAER2
-            AERSOL(J,JJ) = USOL(nparti,J)*DEN(J)/(CONVER(J,JJ))
-          enddo
-        enddo
-        do J=1,NP
-          DPU(1,J) = WFALL(2,J)*DEN(2)/DEN(1)/(2.*DZ(1))
-          DPL(NZ,J) = WFALL(NZ1,J)*DEN(NZ1)/DEN(NZ)/(2.*DZ(NZ))
-          DO I=2,NZ1
-            DPU(I,J) = WFALL(I+1,J)*DEN(I+1)/DEN(I)/(2.*DZ(I))
-            DPL(I,J) = WFALL(I-1,J)*DEN(I-1)/DEN(I)/(2.*DZ(I))
-          enddo
-        enddo
-      ! else
-        ! print*,'Note: Since NP = 0, did not call SDMNT...'
-      endif
 
 ! ***** SET UP THE JACOBIAN MATRIX AND RIGHT-HAND SIDE *****
       djac = 0.d0

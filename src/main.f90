@@ -23,7 +23,7 @@ program main
   endif
   
   ! call integrate(1,converged)
-  call cvode_equilibrium(1.d-3, 1.d-26, .true., success)
+  call cvode_equilibrium(1.d-3, 1.d-27, .true., success)
   ! call right_hand_side(usol_flat,rhs,neq)
   
 end program

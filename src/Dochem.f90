@@ -50,6 +50,7 @@ subroutine dochem(N, nr, nsp2, nq, nz, usol, A, nshort, jtrop, D, fval)
     d(nsp2-1,j) = 1.d0         ! HV has density of 1 for photorate calculations
     d(nsp2,j) = DEN(j)     ! M - background density for three body reactions
   enddo
+  IF ( N.GE.0 ) THEN
 ! short lived densities
   do i = nq + 1 , nq + Nshort
     CALL CHEMPL(A,d,xp,xl,i)
@@ -57,8 +58,6 @@ subroutine dochem(N, nr, nsp2, nq, nz, usol, A, nshort, jtrop, D, fval)
       d(i,j) = xp(j)/xl(j)
     enddo
   enddo
-  
-  IF ( N.GE.0 ) THEN
 
 ! ***** LONG-LIVED SPECIES CHEMISTRY *****
   do i = 1 , nq

@@ -101,12 +101,12 @@
         do i=1,nz
 
 !     this gets any SL/IN species that have photorates
-          ! if (photoreac(k).gt.nq) then
+          if (photoreac(k).gt.nq) then
           ! 
-          !   absorbers(k,i)=ABS(SL(INT(photoreac(k)),i))/DEN(I)
+            absorbers(k,i)=ABS(D(INT(photoreac(k)),i))/DEN(I)
 
 !     quasi-hardcoded S8 behavior WARNING
-          if (ISPEC(INT(photoreac(k))).eq.'S8      ') then
+          elseif (ISPEC(INT(photoreac(k))).eq.'S8      ') then
 
             absorbers(k,i)=ABS(usol(INT(photoreac(k)),i))
             if (lpolyscount .eq. 2) absorbers(k,i)=0.0
