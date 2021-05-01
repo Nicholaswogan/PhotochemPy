@@ -13,15 +13,15 @@ import sys
 
 version = '0.2.0'
 
-only = '''only: setup right_hand_side jacobian 
-        integrate cvode cvode_save cvode_equilibrium :'''
+only = 'only: setup right_hand_side jacobian'+ \
+        ' integrate cvode cvode_save cvode_equilibrium :'
         
-sources = '''src/photochem_data.f90
-    		 src/photochem_vars.f90
-    		 src/photochem_wrk.f90
-    		 src/photochem.f90
-    		 src/cvode_funcs.f90
-    		 src/lin_alg.f'''
+sources = ['src/photochem_data.f90', \
+           'src/photochem_vars.f90', \
+           'src/photochem_wrk.f90', \
+           'src/photochem.f90', \
+           'src/cvode_funcs.f90', \
+           'src/lin_alg.f']
 
 option = 1 # (Default) Parallel version (fast)
 # option = 2 # Serial version (slow)
@@ -29,7 +29,7 @@ option = 1 # (Default) Parallel version (fast)
 if option == 1: # installing with parallel computation
     extensions = [
     Extension(name="Photochem",
-              sources=sources.split(),
+              sources=sources,
               extra_f90_compile_args = ['-O3','-fopenmp', '-freal-4-real-8'],
               extra_f77_compile_args = ['-O3', '-freal-4-real-8'],
               libraries=['gomp','m','sundials_fcvode','sundials_cvode','sundials_fnvecserial','sundials_nvecserial'],
@@ -48,7 +48,7 @@ if option == 1: # installing with parallel computation
 if option == 2: # istalling with serial compuation
     extensions = [
     Extension(name="Photochem",
-              sources=sources.split(),
+              sources=sources,
               extra_f90_compile_args = ['-O3', '-freal-4-real-8'],
               extra_f77_compile_args = ['-O3', '-freal-4-real-8'],
               libraries=['m','sundials_fcvode','sundials_cvode','sundials_fnvecserial','sundials_nvecserial'],
