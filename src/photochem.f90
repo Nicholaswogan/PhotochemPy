@@ -276,9 +276,11 @@ contains
     allocate(QEXTT(kw,nz,np))
     allocate(W0T(kw,nz,np))
     allocate(GFT(kw,nz,np))
+    allocate(surf_radiance(nw))
     qextt = 0.0d0
     w0t = 0.0d0
     gft = 0.0d0
+    
     
     ! needed in rates.f90
     allocate(A(NR,NZ))

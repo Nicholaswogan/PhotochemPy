@@ -1,5 +1,5 @@
   subroutine integrate(nsteps,converged,err)
-    use photochem_data, only: nr, nz, nz1, nq, nq1, kj, np, lda, neq, isl, &
+    use photochem_data, only: nw, nr, nz, nz1, nq, nq1, kj, np, lda, neq, isl, &
                               agl, epsj, frak, hcdens, ino, io2, zy, &
                               lco, lh, lh2, lhcaer, lhcaer2, lh2o, lo, &
                               ls4, ls8aer, lso4aer, &
@@ -12,7 +12,8 @@
     use photochem_wrk, only: rpar, wfall, aersol, hscale, scale_h, h_atm, bHN2, bH2N2, &
                              A, yl, yp, rain, raingc, &
                              adl, add, adu, dl, dd, du, dk, &
-                             zapNO, zapO2, proNOP, zapCO, zapH2, zapO, tauedd
+                             zapNO, zapO2, zapCO, zapH2, zapO, tauedd, &
+                             H2SO4S, S8S, fsulf
     implicit none
     ! module variables
     ! all of them?
@@ -51,6 +52,7 @@
     integer cr, cm, c1, c2
     real*8,dimension(nq1) :: SR, FUP
     real*8, dimension(nsp2,nz) :: D
+    real(8) :: surf_radiance(nw)
 
     converged = .true.
     err = ''
@@ -111,7 +113,7 @@
       enddo
       if (lightning) then 
         call ltning(nq, nz, usol, &
-                    zapNO, zapO2, proNOP, zapCO, zapH2, zapO)
+                    zapNO, zapO2, zapCO, zapH2, zapO)
       endif
       call diffusion_coeffs(nq, nz, den, dz, DK, bhN2, bh2N2, scale_H, H_atm, &
                            DU, DL, DD, ADU, ADL, ADD)
@@ -157,7 +159,7 @@
       call rainout(.false.,Jtrop,Usol,nq,nz, T,den, rain, raingc, err)
       if (len_trim(err) /= 0) return
 
-      call aercon(usol,nq,nz)
+      call aercon(nq, nz, usol, P, T, H2SO4S, S8S, fsulf)
 
       if (NP.GT.0) then   !particles in main loop
         CALL SEDMNT(frak,HCDENS,nz,np,conver, .true.)
@@ -213,10 +215,10 @@
         endif
       endif
       
-      call photo(zy, agl, io2, ino, usol, D, nsp2, nq, nz, kj, prates)
+      call photo(zy, agl, io2, ino, usol, D, nsp2, nw, nq, nz, kj, prates, surf_radiance)
       do j=1,kj
         do i=1,nz
-          A(INT(photonums(j)),i)=prates(j,i)
+          A(photonums(j),i)=prates(j,i)
         enddo
       enddo
       

@@ -1,6 +1,6 @@
 
 subroutine ltning(nq, nz, usol, &
-                  zapNO, zapO2, proNOP, zapCO, zapH2, zapO)
+                  zapNO, zapO2, zapCO, zapH2, zapO)
   use photochem_data, only: lCH4, lco, lh2, lo2, lh2o, P0, prono, &
                             ln2, lco2, background_spec
   !  3-21-06   This subroutine does not work
@@ -11,13 +11,13 @@ subroutine ltning(nq, nz, usol, &
   integer, intent(in) :: nq,nz
   real*8, dimension(nq,nz), intent(in) :: usol
   
-  real(8), intent(out) :: zapNO, zapO2, proNOP, zapCO, zapH2, zapO
+  real(8), intent(out) :: zapNO, zapO2, zapCO, zapH2, zapO
 
   real*8 ak1,ak2,ak3,ak4
   real*8 pbar, xs, x, err, alpha, b, c, ct, fco
   real*8 fh2o, h2t, o2t, pch4, pco, pco2, ph2, ph2o
   real*8 pn2, pno, pnonow, po, prnox, x2, x_orig
-  real*8 po2, a, beta
+  real*8 po2, a, beta, proNOP
 
   real*8 fx, fpx
   real(8) :: fn2, fco2

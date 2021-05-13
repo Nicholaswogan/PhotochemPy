@@ -1,5 +1,5 @@
 
-      SUBROUTINE TWOSTR(Sigr,U0,Sq,Wav,Ll,nzp1,nz2,absorbers,S)
+      SUBROUTINE TWOSTR(Sigr,U0,Sq,Wav,Ll,nzp1,nz2,absorbers,S,surface_radiance)
         use photochem_data, only: nz, kj, alb, kw, np, dz
         use photochem_vars, only: Den
         use photochem_wrk, only: QEXTT, W0T, GFT, aersol, rpar
@@ -34,6 +34,7 @@
       integer, intent(in) :: nz2
       real*8, intent(in) :: absorbers(kj,nz)
       real*8, intent(out) :: S(nz)
+      real*8, intent(out) :: surface_radiance
 
       real*8 tau(NZ) , tauctstr(NZP1) , gt(NZ) , gam1(NZ) , gam2(NZ) &
               & , gam3(NZ) , gam4(NZ) , alam(NZ) , cgam(NZ) , e1(NZ) ,  &
@@ -430,6 +431,10 @@
          n = NZP1 - i
          S(i) = SQRT(amean(n)*amean(n+1))
       ENDDO
+      
+      ! surface radiance (Ranjan and Sasselov 2017). photons actually hitting the ground (i think)
+      i = nz
+      surface_radiance = (y1(i)*e3(i)+y2(i)*e4(i)+cmb(i))/u1 + dexp(-tauctstr(i+1)/u0)
 
 !  Print out the results at a few wavelengths
 

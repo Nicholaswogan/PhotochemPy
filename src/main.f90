@@ -11,14 +11,14 @@ program main
   err = ''
 
   rootdir = '../PhotochemPy/'
-  template = "Hadean+HCN"
+  template = "Archean2Proterozoic"
 
   call setup('../input/templates/'//template//'/species.dat', &
              '../input/templates/'//template//'/reactions.rx', &
              '../input/templates/'//template//'/planet.dat', &
              '../input/templates/'//template//'/input_photchem.dat', &
              '../input/templates/'//template//'/atmosphere.txt', &
-             '../input/templates/'//template//'/Sun_4.0Ga.txt', err)
+             '../input/templates/'//template//'/Sun_2.7Ga.txt', err)
   if (len_trim(err) /= 0) then
     print*,trim(err)
     print*,'error worked properly'

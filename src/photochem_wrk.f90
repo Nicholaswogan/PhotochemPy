@@ -22,6 +22,7 @@ module photochem_wrk
   
   ! needed in photo.f90
   real*8, allocatable, dimension(:,:,:) :: QEXTT, W0T, GFT
+  real(8), allocatable :: surf_radiance(:)
   
   ! needed in rates.f90
   real*8, allocatable, dimension(:,:) :: A ! reaction rate coefficients
@@ -34,7 +35,7 @@ module photochem_wrk
   
   
   ! needed in ltning.f90
-  real*8 :: ZAPNO,ZAPO2,PRONOP,ZAPCO,ZAPH2,ZAPO
+  real*8 :: ZAPNO,ZAPO2,ZAPCO,ZAPH2,ZAPO
   
   ! needed in Difco.f90
   real*8, allocatable, dimension(:) :: HSCALE

@@ -23,4 +23,6 @@ photo.run: $(OBJ)
 	$(FC) $(FCFLAGS) -o $@ $(OBJ) $(FFLAGS) $(LIBS)
 
 clean:
-	@rm -f *.mod *.o photo.run
+	@rm -f *.mod *.o photo.run 
+	@touch photo.run.dSYM
+	@rm -r photo.run.dSYM

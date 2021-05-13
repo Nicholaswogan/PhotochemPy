@@ -1,7 +1,8 @@
 
 
-      SUBROUTINE PHOTO(zy, agl, io2, ino, usol, D, nsp2, nq, nz, kj, prates)
-        use photochem_data, only: np, nsp, nw, fscale, g, &
+      SUBROUTINE PHOTO(zy, agl, io2, ino, usol, D, nsp2, nw, nq, nz, kj, prates,&
+                      surf_radiance)
+        use photochem_data, only: np, nsp, fscale, g, &
                                   photoreac, ispec, rstand, qexthc, ghc, W0HC, &
                                   wavl, wav, z, sq, flux, mass, &
                                   background_mu, lno, nz1, dz
@@ -12,11 +13,12 @@
       ! local variables
       real*8, intent(in) :: zy, agl
       integer, intent(in) :: io2, ino
-      integer, intent(in) :: nq, nz, kj, nsp2
+      integer, intent(in) :: nq, nz, kj, nsp2, nw
       real*8, dimension(nq,nz), intent(in) :: usol
       real*8, dimension(nsp2,nz), intent(out) :: D
       
       real*8, dimension(kj,nz), intent(out) :: prates
+      real(8), intent(out) :: surf_radiance(nw)
 
       real*8, dimension(kj,nz) :: partial_prates
 
@@ -42,6 +44,7 @@
       real*8 absorbers(kj,nz), columndepth(KJ,NZ), signo(nz,2), efac, ha
       integer :: m
       integer lpolyscount
+      real(8) :: surf_rad
       ! integer tmp1
       ! real*8 start, finish
       ! call cpu_time(start)
@@ -228,7 +231,7 @@
 
 ! ***** ***** ***** START WAVELENGTH LOOP   ***** ***** *****
       !$OMP PARALLEL PRIVATE(Lold,KN,ncomp,volmix,icomp,SIGR,ALP,S, &
-      !$OMP& tempcount,RN2,partial_prates,L,FLX,i,j,k,NOL)
+      !$OMP& tempcount,RN2,partial_prates,L,FLX,i,j,k,NOL, surf_rad)
       NOL = 0
       S = 0.d0
       ! zero out prates
@@ -363,8 +366,8 @@
           ! IKN=1
           ! IF (K.NE.KN) IKN=0   !output flag
 
-          CALL TWOSTR(SIGR,U0,sq,WAV(L),L,nzp1,nz2,absorbers,S)  !two stream radiative tranfer
-
+          CALL TWOSTR(SIGR,U0,sq,WAV(L),L,nzp1,nz2,absorbers,S,surf_rad)  !two stream radiative tranfer
+          surf_radiance(l) = surf_rad
 
   ! this returns the Source function S to this code
 
