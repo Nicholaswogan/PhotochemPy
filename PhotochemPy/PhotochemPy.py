@@ -234,7 +234,7 @@ class PhotochemPy:
             Array of dimension [len(t_eval),nq,nz] containing mixing ratios of the atmosphere at
             each time.
         """
-        if usol_start.shape != (self.nq, self.nz):
+        if usol_start.shape != (self.data.nq, self.data.nz):
             raise PhotochemError('usol_start is the wrong shape')
             
         self.wrk.max_cvode_steps = nsteps

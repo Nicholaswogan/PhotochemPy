@@ -65,6 +65,7 @@ module photochem_data
   ! needed in read_photochem.f90
   real*8 :: AGL, EPSJ, prono, hcdens, zy
   integer :: Lgrid, IO2, ino, frak, ihztype
+  logical :: lightning
   
   ! needed in subroutine photgrid (in photgrid.f90)
   real*8, allocatable, dimension(:) :: z ! altitude of middle of grid

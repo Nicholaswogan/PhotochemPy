@@ -3,8 +3,8 @@
                               agl, frak, hcdens, ino, io2, zy, &
                               lco, lhcaer, lhcaer2, lh2o, lo, &
                               ls8aer, lso4aer, background_spec, lh, lh2, &
-                              z, dz, jtrop, ispec, photoreac, photonums, planet, &
-                              lda, epsj
+                              z, dz, jtrop, ispec, photoreac, photonums, &
+                              lda, epsj, lightning
                               
     use photochem_vars, only: lbound, fixedmr, vdep, vdep0, veff, veff0, smflux, sgflux, &
                               distheight, distflux, mbound, T, den, edd, H2Osat, P, &
@@ -77,8 +77,10 @@
     DO J=1,JTROP
       USOL(LH2O,J) = H2O(J) 
     enddo
-    if (planet .eq. 'EARTH') call ltning(nq, nz, usol, &
-                                  zapNO, zapO2, proNOP, zapCO, zapH2, zapO)
+    if (lightning) then 
+      call ltning(nq, nz, usol, &
+                  zapNO, zapO2, proNOP, zapCO, zapH2, zapO)
+    endif
     call diffusion_coeffs(nq, nz, den, dz, DK, bhN2, bh2N2, scale_H, H_atm, &
                          DU, DL, DD, ADU, ADL, ADD)
                                   

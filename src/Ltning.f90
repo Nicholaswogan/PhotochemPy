@@ -16,8 +16,8 @@ subroutine ltning(nq, nz, usol, &
   real*8 ak1,ak2,ak3,ak4
   real*8 pbar, xs, x, err, alpha, b, c, ct, fco
   real*8 fh2o, h2t, o2t, pch4, pco, pco2, ph2, ph2o
-  real*8 pn2, pno, pnonow, po, prnox, x2, x_orig, zapco2
-  real*8 zaph2o, po2, a, beta
+  real*8 pn2, pno, pnonow, po, prnox, x2, x_orig
+  real*8 po2, a, beta
 
   real*8 fx, fpx
   real(8) :: fn2, fco2
@@ -39,17 +39,21 @@ subroutine ltning(nq, nz, usol, &
 
   fco = USOL(lco,1)
   ph2o = USOL(lh2o,1)*pbar
-  ph2 = USOL(lh2,1)*pbar     ! I am having problems here if PH2 gets too big
   pch4 = USOL(lch4,1)*pbar
-
   fh2o = ph2o/pbar
+  
+  if (background_spec == 'H2') then
+    ph2 = (1.d0 - sum(usol(:,1)))*pbar
+  else
+    ph2 = USOL(lh2,1)*pbar
+  endif
   if (background_spec == 'N2') then
-    fn2 = 1 - sum(usol(:,1))
+    fn2 = 1.d0 - sum(usol(:,1))
   else
     fn2 = usol(ln2,1)
   endif 
   if (background_spec == 'CO2') then
-    fco2 = 1 - sum(usol(:,1))
+    fco2 = 1.d0 - sum(usol(:,1))
   else
     fco2 = usol(lco2,1)
   endif
@@ -130,8 +134,9 @@ subroutine ltning(nq, nz, usol, &
   zaph2 = zapno*ph2/pno   ! added 3-20-06
 
   zapo = zapno*po/pno     ! added 4-28-06
-  zapco2 = zapno*pco2/pno
-  zaph2o = zapno*ph2o/pno
+  ! zapco2 = zapno*pco2/pno
+  ! zaph2o = zapno*ph2o/pno
+  
 
 
 

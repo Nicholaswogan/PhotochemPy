@@ -2,36 +2,40 @@
 
 program main
   use photochem, only: setup, integrate, allocate_memory, cvode_equilibrium
-  use photochem_vars, only: rootdir,  max_cvode_steps, usol_init
+  use photochem_vars, only: rootdir,  max_cvode_steps, redox_factor!, usol_init
   implicit none
   logical converged
   logical success
   character(len=1000) :: err
+  character(len=:), allocatable :: template
+  err = ''
 
   rootdir = '../PhotochemPy/'
+  template = "Hadean+HCN"
 
-  call setup('../input/templates/Archean2Proterozoic/species.dat', &
-             '../input/templates/Archean2Proterozoic/reactions.rx', &
-             '../input/templates/Archean2Proterozoic/planet.dat', &
-             '../input/templates/Archean2Proterozoic/input_photchem.dat', &
-             '../input/templates/Archean2Proterozoic/atmosphere.txt', &
-             '../input/templates/Archean2Proterozoic/Sun_2.7Ga.txt', err)
+  call setup('../input/templates/'//template//'/species.dat', &
+             '../input/templates/'//template//'/reactions.rx', &
+             '../input/templates/'//template//'/planet.dat', &
+             '../input/templates/'//template//'/input_photchem.dat', &
+             '../input/templates/'//template//'/atmosphere.txt', &
+             '../input/templates/'//template//'/Sun_4.0Ga.txt', err)
   if (len_trim(err) /= 0) then
     print*,trim(err)
     print*,'error worked properly'
     stop
   endif
   
-  ! call integrate(1,converged)
-  usol_init = 10.d0
-  call integrate(1000,converged,err)
-  ! call cvode_equilibrium(1.d-3, 1.d-27, .true., success, err)
+  ! call integrate(10000,converged,err)
+  ! max_cvode_steps = 100000
+  ! print*,max_cvode_steps
+  call cvode_equilibrium(1.d-3, 1.d-27, .true., success, err)
   
   if (len_trim(err) /= 0) then
     print*,trim(err)
     print*,'error worked properly'
     stop
   endif
-  ! call right_hand_side(usol_flat,rhs,neq)
+  
+  print*,redox_factor
   
 end program

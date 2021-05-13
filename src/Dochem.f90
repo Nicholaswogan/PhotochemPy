@@ -3,7 +3,7 @@ subroutine dochem(N, nr, nsp2, nq, nz, usol, A, nshort, jtrop, D, fval)
   use photochem_data, only: nsp, lco, &
                             lh2, lh2o, &
                             lh2so4, lno, lo, lo2, lso4aer, &
-                            planet
+                            planet, lightning
                             
   use photochem_vars, only: den, H2OSAT
   use photochem_wrk, only: zapco, zaph2, zapno, zapo, rain, raingc, &
@@ -82,54 +82,58 @@ subroutine dochem(N, nr, nsp2, nq, nz, usol, A, nshort, jtrop, D, fval)
   ! changel = 1     !mc temp var for testing lightning changes versus OLD JFK method
                  !changeL=1 uses new code, changeL=0 uses old code
   jt1 = Jtrop + 1     ! same as NH1
-  DO j = 1 , Jtrop
+  do j = 1 , Jtrop
     Fval(lh2o,j) = 0.
     YP(lh2o,j) = 0.
     YL(lh2o,j) = 0.
-    scale = RAIN(j)/RAIN(1)
-    zap = zapno*scale
-    Fval(lno,j) = Fval(lno,j) + zap/DEN(j)
-    YP(lno,j) = YP(lno,j) + zap
-    ! IF ( changel.EQ.1 ) THEN
-  !-mc 4/28/06      making NO requires subtracting 1/2 O2   (1/2 N2 + 1/2 O2 <-> NO)
-    Fval(lo2,j) = Fval(lo2,j) - 0.5*zap/DEN(j)
-    YP(lo2,j) = YP(lo2,j) - 0.5*zap
-    ! ELSE
-  !-mc   4/28/06 the following is no longer needed as the code computes how much of each reductant is produced
-  !-mc   i use these numbers to compute the amount of O2 produced. This is fine because CO2 and H2O reservoirs are effectivly infinte
-  !-mc  "un-commenting" these for test versus JFK's original code.  in the else statement
-    ! zap = zapo2*scale
-    ! Fval(lo2,j) = Fval(lo2,j) + zap/DEN(j)
-    ! YP(lo2,j) = YP(lo2,j) + zap
-    ! ENDIF
-    
-    ! IF ( changel.EQ.1 ) THEN
-  ! - mc adding lightning CO/H2 into chemistry for better redox conservation
-  !- kevin's addition of 3-20-06
-    zap = zaph2*scale
-    Fval(lh2,j) = Fval(lh2,j) + zap/DEN(j)
-    YP(lh2,j) = YP(lh2,j) + zap
-!-mc 4/28/06 adding H2 also requires adding 1/2 O2    (H2O <-> H2 + 1/2 O2)
-    Fval(lo2,j) = Fval(lo2,j) + 0.5*zap/DEN(j)
-    YP(lo2,j) = YP(lo2,j) + 0.5*zap
-!-mc
-    zap = zapco*scale
-    Fval(lco,j) = Fval(lco,j) + zap/DEN(j)
-    YP(lco,j) = YP(lco,j) + zap
-!-mc 4/28/06  adding CO also requires adding 1/2 O2
-    Fval(lo2,j) = Fval(lo2,j) + 0.5*zap/DEN(j)
-    YP(lo2,j) = YP(lo2,j) + 0.5*zap
-!-mc now figure out how much O is produced: add to O, subtract 1/2 O2  (1/2 O2 <-> O)
-    zap = zapo*scale
-    Fval(lo,j) = Fval(lo,j) + zap/DEN(j)
-    YP(lo,j) = YP(lo,j) + zap
-    Fval(lo2,j) = Fval(lo2,j) - 0.5*zap/DEN(j)
-    YP(lo2,j) = YP(lo2,j) - 0.5*zap
-    ! ENDIF
+  enddo
+  if (lightning) then
+    do j = 1,jtrop
+      scale = RAIN(j)/RAIN(1)
+      zap = zapno*scale
+      Fval(lno,j) = Fval(lno,j) + zap/DEN(j)
+      YP(lno,j) = YP(lno,j) + zap
+      ! IF ( changel.EQ.1 ) THEN
+    !-mc 4/28/06      making NO requires subtracting 1/2 O2   (1/2 N2 + 1/2 O2 <-> NO)
+      Fval(lo2,j) = Fval(lo2,j) - 0.5*zap/DEN(j)
+      YP(lo2,j) = YP(lo2,j) - 0.5*zap
+      ! ELSE
+    !-mc   4/28/06 the following is no longer needed as the code computes how much of each reductant is produced
+    !-mc   i use these numbers to compute the amount of O2 produced. This is fine because CO2 and H2O reservoirs are effectivly infinte
+    !-mc  "un-commenting" these for test versus JFK's original code.  in the else statement
+      ! zap = zapo2*scale
+      ! Fval(lo2,j) = Fval(lo2,j) + zap/DEN(j)
+      ! YP(lo2,j) = YP(lo2,j) + zap
+      ! ENDIF
+      
+      ! IF ( changel.EQ.1 ) THEN
+    ! - mc adding lightning CO/H2 into chemistry for better redox conservation
+    !- kevin's addition of 3-20-06
+      zap = zaph2*scale
+      Fval(lh2,j) = Fval(lh2,j) + zap/DEN(j)
+      YP(lh2,j) = YP(lh2,j) + zap
+  !-mc 4/28/06 adding H2 also requires adding 1/2 O2    (H2O <-> H2 + 1/2 O2)
+      Fval(lo2,j) = Fval(lo2,j) + 0.5*zap/DEN(j)
+      YP(lo2,j) = YP(lo2,j) + 0.5*zap
+  !-mc
+      zap = zapco*scale
+      Fval(lco,j) = Fval(lco,j) + zap/DEN(j)
+      YP(lco,j) = YP(lco,j) + zap
+  !-mc 4/28/06  adding CO also requires adding 1/2 O2
+      Fval(lo2,j) = Fval(lo2,j) + 0.5*zap/DEN(j)
+      YP(lo2,j) = YP(lo2,j) + 0.5*zap
+  !-mc now figure out how much O is produced: add to O, subtract 1/2 O2  (1/2 O2 <-> O)
+      zap = zapo*scale
+      Fval(lo,j) = Fval(lo,j) + zap/DEN(j)
+      YP(lo,j) = YP(lo,j) + zap
+      Fval(lo2,j) = Fval(lo2,j) - 0.5*zap/DEN(j)
+      YP(lo2,j) = YP(lo2,j) - 0.5*zap
+      ! ENDIF
 
-  !        stop
-  !-end 3-20-06 addition
-  ENDDO
+    !        stop
+    !-end 3-20-06 addition
+    ENDDO
+  endif
 ! ACK - this may be part of the reason the time-dependent code is having trouble
 !   H2O CONDENSATION IN THE STRATOSPHERE
 !   (RHCOLD IS THE ASSUMED RELATIVE HUMIDITY AT THE COLD TRAP)

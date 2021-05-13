@@ -8,3 +8,4 @@ Photo.run
 build
 *.a
 a.out
+*.dSYM
