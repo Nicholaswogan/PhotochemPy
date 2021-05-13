@@ -64,20 +64,19 @@ subroutine gridw(nw,wl,wc,wu,LGRID,err)
   ! none!
 
   ! local variables
-  integer, parameter :: kw = 1000
   integer, intent(in) :: LGRID ! input:
-  real*8, dimension(kw), intent(out) :: wl, wc, wu ! output
-  integer, intent(out) :: nw
+  real*8, intent(out) :: wl(nw+1), wc(nw), wu(nw) ! output
+  integer, intent(in) :: nw
   character(len=err_len), intent(out) :: err
-  integer iw, I, l, kin
+  integer I, l, kin
   logical ok
   err = ''
 
-  DO iw = 1, kw ! zero out
-    wl(iw) = 0.
-    wu(iw) = 0.
-    wc(iw) = 0.
-  ENDDO
+
+  wl = 0.
+  wu = 0.
+  wc = 0.
+
 
   !**** chose wavelengths
 
@@ -97,7 +96,7 @@ subroutine gridw(nw,wl,wc,wu,LGRID,err)
   !that wl(nw+1)=wu(nw)
   ! this is needed for the interpolations to work correctly
   if (LGRID.eq.0) then
-    nw = 118
+    ! nw = 118
     kin = 797
     OPEN(kin, file=trim(rootdir)//'DATA/GRIDS/wogan.grid',status='old')
 
@@ -121,7 +120,7 @@ subroutine gridw(nw,wl,wc,wu,LGRID,err)
   ! print *, 'NW = ',nw,'   WAVELENGTH GRID:',wl(1),' -',wu(nw), &
   !        ' Angstroms'
   !* check grid for assorted improprieties:
-  CALL gridck(kw,nw,wl,ok)
+  CALL gridck(nw+1,nw,wl,ok)
 
   IF (.NOT. ok) THEN
     print *,'STOP in GRIDW:  The w-grid does not make sense'
@@ -165,13 +164,13 @@ SUBROUTINE readflux(flux_txt,nw,wl,f,err)
 
   ! local variables
   real*8, PARAMETER :: deltax = 1.E-4, biggest=1.E+36, zero=0.0
-  integer, parameter :: kdata = 26500, kw=1000
+  integer, parameter :: kdata = 26500
   ! * input: (wavelength grid)
   INTEGER, intent(in) :: nw
-  REAL*8, intent(in) :: wl(kw)
+  REAL*8, intent(in) :: wl(nw+1)
   character(len=*), intent(in) :: flux_txt
   ! * output: (extra terrestrial solar flux)
-  REAL*8, intent(out) :: f(kw)
+  REAL*8, intent(out) :: f(nw)
   character(len=err_len), intent(out) :: err
   ! * work arrays for input data files:
   REAL*8 x1(kdata), x2(kdata), x3(kdata)
@@ -179,7 +178,7 @@ SUBROUTINE readflux(flux_txt,nw,wl,f,err)
   INTEGER nhead, n, i, ierr, kin, io, n3
   INTEGER iw
   ! * data gridded onto wl(kw) grid:
-  REAL*8 yg3(kw)
+  REAL*8 yg3(nw+1)
   REAL*8, parameter :: hc = 6.62E-34 * 2.998E8
   err = ''
 

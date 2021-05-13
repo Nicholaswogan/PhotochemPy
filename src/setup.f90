@@ -2,7 +2,7 @@
                  & photochem_dat, atmosphere_txt, flux_txt, err)
 
     use photochem_data, only: nq, nz, nw, &
-                              kw, frak, ihztype, jtrop, &
+                              frak, ihztype, jtrop, &
                               wavl, wav, wavu, dz, z, ztrop, &
                               lgrid, flux
     use photochem_vars, only: den, P, press, T, usol_init
@@ -26,7 +26,7 @@
                               photochem_dat, atmosphere_txt, flux_txt, &
                               nnq, nnsp, nnp, nnr, kks, kkj, nnw, nnz, err)
     if (len_trim(err) /= 0) return
-    call allocate_memory(nnz,nnq,nnp,nnsp,nnr,kks,kkj)
+    call allocate_memory(nnz,nnq,nnp,nnsp,nnr,kks,kkj,nnw)
     call read_species(species_dat,err)
     if (len_trim(err) /= 0) return
     call read_reactions(reactions_rx, err)
@@ -41,7 +41,7 @@
     if (len_trim(err) /= 0) return
     call readflux(flux_txt,nw,wavl,flux,err) ! reads flux (depnds on gridw)
     if (len_trim(err) /= 0) return
-    call initmie(nw,wavl,kw,frak,ihztype)
+    call initmie(nw,wavl,frak,ihztype)
     call photgrid(100.0D5, nz, z, dz) 
     ! end depends on nothing
     ! This stuff depends on T
@@ -52,11 +52,10 @@
     ! end Stuff that depends on T
     
     ! begin stuff that needs to be inizialized
-    call densty(nq, nz, usol_init, T, den, P, press) 
+    call densty(nq, nz, usol_init, T, den, P, press)
     call rainout(.true.,Jtrop,usol_init,nq,nz, T,den, rain, raingc,err)
     if (len_trim(err) /= 0) return 
     ! end stuff that needs to be inizialized
-       
   end subroutine
   
   

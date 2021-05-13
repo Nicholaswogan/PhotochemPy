@@ -4,7 +4,7 @@
                       surf_radiance)
         use photochem_data, only: np, nsp, fscale, g, &
                                   photoreac, ispec, rstand, qexthc, ghc, W0HC, &
-                                  wavl, wav, z, sq, flux, mass, &
+                                  wavl, wav, sq, flux, mass, &
                                   background_mu, lno, nz1, dz
         use photochem_vars, only: verbose, den, T
         use photochem_wrk, only: rpar, gft, w0T, QEXTT

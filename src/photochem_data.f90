@@ -20,7 +20,7 @@ module photochem_data
   integer, parameter :: nmax = 300 ! max number of reactions a species can be involved in
   integer :: ks ! number of photo species
   integer :: kj ! number of photo reactions
-  integer, parameter :: kw = 1000 ! max number of wavelength bins
+  ! integer, parameter :: kw = 1000 ! max number of wavelength bins
   integer :: nw
   integer, parameter :: naq = 10 !number of aqueous species
   integer, parameter :: nt = 50 !number of temperatures in sulfate/H2O vapor pressure file (DATA/aerosol.table)
@@ -73,18 +73,18 @@ module photochem_data
   integer JTROP
   
   ! needed in initphoto.f90.
-  real*8, dimension(kw) :: Flux ! Solar flux photons/(cm2 s)
-  real*8, dimension(kw) :: wavl, wav, wavu ! wavelength bins
-  real*8, dimension(17,4) :: alphap ! this stuff is for re-computing O2 cross sections in photo.dat
-  real*8, dimension(17,4) :: beta  ! this. Ultimately I'll get rid of it
-  integer, dimension(17) :: nk !this
-  real*8, dimension(kw) :: SO2HZ ! this
+  ! real*8, dimension(kw) :: Flux ! Solar flux photons/(cm2 s)
+  ! real*8, dimension(kw) :: wavl, wav, wavu ! wavelength bins
+  real*8, allocatable, dimension(:) :: Flux ! Solar flux photons/(cm2 s)
+  real*8, allocatable, dimension(:) :: wavl, wav, wavu ! wavelength bins
   real*8, allocatable, dimension(:,:,:) :: sq ! cross sections * qy
   
   ! needed in initmie.f90
   real*8, dimension(51) :: Rstand
-  real*8, dimension(kw,51) :: W0HC
-  real*8, dimension(kw,51) :: GHC, QEXTHC
+  ! real*8, dimension(kw,51) :: W0HC
+  ! real*8, dimension(kw,51) :: GHC, QEXTHC
+  real*8, allocatable, dimension(:,:) :: W0HC
+  real*8, allocatable, dimension(:,:) :: GHC, QEXTHC
   
   ! needed in Aertab.f90
   real*8, allocatable, dimension(:,:) :: VH2O
@@ -93,7 +93,7 @@ module photochem_data
   
   
   
-
+  
   
   
 end module

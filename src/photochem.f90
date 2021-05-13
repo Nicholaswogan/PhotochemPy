@@ -47,12 +47,12 @@ contains
   include "redox_conservation.f90"
 
   subroutine allocate_memory(nnz, nnq, nnp, nnsp,&
-     nnr, kks, kkj)
+     nnr, kks, kkj, nnw)
      use photochem_data
      use photochem_vars
      use photochem_wrk
     implicit none
-    integer, intent(in) ::  nnz, nnq, nnp, nnsp, nnr, kks, kkj
+    integer, intent(in) ::  nnz, nnq, nnp, nnsp, nnr, kks, kkj, nnw
 
     ! The dimensions.
     nz = nnz
@@ -67,6 +67,7 @@ contains
     nr = nnr
     LDA=3*NQ+1
     NEQ=NQ*NZ
+    nw = nnw
 
     ! if allocated, then deallocate
     if (allocated(ISPEC)) then
@@ -125,6 +126,7 @@ contains
       deallocate(QEXTT)
       deallocate(W0T)
       deallocate(GFT)
+      deallocate(surf_radiance)
       deallocate(A)
       deallocate(H)
       deallocate(RAINGC)
@@ -149,6 +151,14 @@ contains
       deallocate(fluxo)
       deallocate(yp)
       deallocate(yl)
+      ! getting rid of kw
+      deallocate(flux)
+      deallocate(wav)
+      deallocate(wavl)
+      deallocate(wavu)
+      deallocate(w0hc)
+      deallocate(ghc)
+      deallocate(qexthc)
 
     endif
 
@@ -255,7 +265,7 @@ contains
     dz = 0.d0
 
     ! needed in initphoto.f90.
-    allocate(sq(kj,nz,kw))
+    allocate(sq(kj,nz,nw))
     sq = 0.d0
 
     ! needed in Aertab.f90
@@ -273,13 +283,14 @@ contains
     s8s = 0.0d0
 
     ! needed in Photo.f90
-    allocate(QEXTT(kw,nz,np))
-    allocate(W0T(kw,nz,np))
-    allocate(GFT(kw,nz,np))
+    allocate(QEXTT(nw,nz,np))
+    allocate(W0T(nw,nz,np))
+    allocate(GFT(nw,nz,np))
     allocate(surf_radiance(nw))
     qextt = 0.0d0
     w0t = 0.0d0
     gft = 0.0d0
+    surf_radiance = 0.d0
     
     
     ! needed in rates.f90
@@ -342,7 +353,23 @@ contains
     fluxo = 0.0d0
     yp = 0.0d0
     yl = 0.0d0
-
+    
+    ! getting rid of kw
+    allocate(flux(nw))
+    allocate(wav(nw))
+    allocate(wavl(nw+1))
+    allocate(wavu(nw))
+    allocate(w0hc(nw,51))
+    allocate(ghc(nw,51))
+    allocate(qexthc(nw,51))
+    flux = 0.d0
+    wav = 0.d0
+    wavl = 0.d0
+    wavu = 0.d0
+    w0hc = 0.d0
+    ghc = 0.d0
+    qexthc = 0.d0 
+    
   end subroutine allocate_memory
 
   ! for julia wrapper

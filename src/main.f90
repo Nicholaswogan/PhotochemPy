@@ -2,12 +2,15 @@
 
 program main
   use photochem, only: setup, integrate, allocate_memory, cvode_equilibrium
+  ! use photochem_data, only: wavl, nw, flux
   use photochem_vars, only: rootdir,  max_cvode_steps, redox_factor!, usol_init
+  use photochem_wrk, only: surf_radiance
   implicit none
   logical converged
   logical success
   character(len=1000) :: err
   character(len=:), allocatable :: template
+  ! integer :: i
   err = ''
 
   rootdir = '../PhotochemPy/'
@@ -37,5 +40,11 @@ program main
   endif
   
   print*,redox_factor
+  
+  
+  
+  ! do i = 1,nw
+    ! print*,wavl(i)/10.d0,surf_radiance(i)
+  ! enddo
   
 end program

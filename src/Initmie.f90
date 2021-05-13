@@ -1,4 +1,4 @@
-      SUBROUTINE INITMIE(nw,wl,kw,frak,ihztype)
+      SUBROUTINE INITMIE(nw,wl,frak,ihztype)
         use photochem_data, only: W0HC, QEXTHC, GHC, rstand
         use photochem_vars, only: rootdir
       implicit none
@@ -11,10 +11,10 @@
 
       ! local variables
       integer, intent(in) :: nw
-      real*8, dimension(kw), intent(in) :: wl
+      real*8, dimension(nw+1), intent(in) :: wl
       integer, intent(in) :: frak
       integer, intent(in) :: ihztype
-      integer, intent(in) :: kw
+      integer, parameter :: kw = 1000
       !local variables for hydrocarbon optical properties
       real*8 :: WAVLS(108), WAVUS(108), QEXTSTAND(108,51)
       real*8 :: W0STAND(108,51), GSTAND(108,51)
@@ -31,7 +31,7 @@
       REAL*8 x1(kw), x2(kw), x3(kw)
       REAL*8 y1(kw), y2(kw), y3(kw)
       ! * local
-      REAL*8 yg1(nw),yg2(kw),yg3(kw)
+      REAL*8 yg1(nw+1),yg2(nw+1),yg3(nw+1)
       INTEGER i
       INTEGER ierr
       integer extend, j, k, npts

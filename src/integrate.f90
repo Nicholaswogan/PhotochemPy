@@ -13,7 +13,7 @@
                              A, yl, yp, rain, raingc, &
                              adl, add, adu, dl, dd, du, dk, &
                              zapNO, zapO2, zapCO, zapH2, zapO, tauedd, &
-                             H2SO4S, S8S, fsulf
+                             H2SO4S, S8S, fsulf, surf_radiance
     implicit none
     ! module variables
     ! all of them?
@@ -52,7 +52,6 @@
     integer cr, cm, c1, c2
     real*8,dimension(nq1) :: SR, FUP
     real*8, dimension(nsp2,nz) :: D
-    real(8) :: surf_radiance(nw)
 
     converged = .true.
     err = ''

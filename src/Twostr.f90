@@ -1,6 +1,6 @@
 
       SUBROUTINE TWOSTR(Sigr,U0,Sq,Wav,Ll,nzp1,nz2,absorbers,S,surface_radiance)
-        use photochem_data, only: nz, kj, alb, kw, np, dz
+        use photochem_data, only: nz, kj, alb, nw, np, dz
         use photochem_vars, only: Den
         use photochem_wrk, only: QEXTT, W0T, GFT, aersol, rpar
 
@@ -27,7 +27,7 @@
       ! local varaibles
       real*8, intent(in) :: sigr(nz)
       real*8, intent(in) :: U0
-      real*8, intent(in) :: sq(kj,nz,kw)
+      real*8, intent(in) :: sq(kj,nz,nw)
       real*8, intent(in) :: wav
       integer, intent(in) :: Ll
       integer, intent(in) :: nzp1
