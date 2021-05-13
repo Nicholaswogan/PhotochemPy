@@ -4,6 +4,7 @@ cmake \
 -DEXAMPLES_ENABLE_F77=ON \
 -DBUILD_FORTRAN77_INTERFACE=ON \
 -DBUILD_SHARED_LIBS=OFF \
+-DCMAKE_Fortran_COMPILER=gfortran \
 ../
 
 make install
