@@ -1,16 +1,18 @@
 
 
-subroutine determine_dimensions(species_dat,reactions_rx,planet_dat, &
-                                photochem_dat, atmosphere_txt, flux_txt, &
+subroutine determine_dimensions(species_dat,reactions_rx, set_file, &
+                                atmosphere_txt, flux_txt, &
                                 nq, nsp, np, nr, ks, kj, nw, nz, nzf, err)
+                                
+  use yaml, only : parse, error_length
+  use yaml_types, only : type_node, type_dictionary, type_error            
   use photochem_vars, only: rootdir
   implicit none
   integer, parameter :: str_length  = 1000
   ! input
   character(len=*),intent(in) :: species_dat
   character(len=*),intent(in) :: reactions_rx
-  character(len=*),intent(in) :: planet_dat
-  character(len=*),intent(in) :: photochem_dat
+  character(len=*),intent(in) :: set_file
   character(len=*),intent(in) :: atmosphere_txt
   character(len=*),intent(in) :: flux_txt
   ! output
@@ -22,6 +24,11 @@ subroutine determine_dimensions(species_dat,reactions_rx,planet_dat, &
   character(len=str_length), allocatable :: photosp(:) 
   integer :: i, j
   logical :: unique
+  character(error_length) :: error
+  class (type_node), pointer :: root
+  class (type_dictionary), pointer :: tmpdict
+  type (type_error), pointer :: io_err
+  
   
   nz = 200 ! for now we will hard-code number of layers
   
@@ -105,25 +112,24 @@ subroutine determine_dimensions(species_dat,reactions_rx,planet_dat, &
   enddo
   close(100)
   
-  ! find number of wavelengths
-  open(100, file=trim(photochem_dat),status='old',iostat=io)
-  if (io /= 0) then
-    err = 'The input file '//trim(photochem_dat)//'  does not exist'
+  ! parse yaml file
+  root => parse(set_file,unit=100,error=error)
+  if (error /= '') then
+    err = trim(error)
     return
-  endif
-  do while (io == 0)
-    read(100,'(A)',iostat=io) line
-    if (line(1:1) == '*' .or. line(1:1) == 'C') then
-      cycle
-    else
-      do i = 1,str_length
-        if (line(1:5) == "LGRID") then
-          read(line,'(a,i2)') sptype, j
-        endif
-      enddo
-    endif
-  enddo
-  close(100)
+  end if
+  select type (root)
+    class is (type_dictionary)
+      tmpdict => root%get_dictionary('settings',.true.,error = io_err)
+      if (associated(io_err)) then; err = trim(set_file)//trim(io_err%message); return; endif
+      j = tmpdict%get_integer('lgrid',error = io_err)
+      if (associated(io_err)) then; err = trim(set_file)//trim(io_err%message); return; endif
+      call root%finalize()
+      deallocate(root)
+    class default
+      err = "settings file must have dictionaries at root level"
+      return
+  end select
   if (j == 0) then
     open(100,file=trim(rootdir)//'DATA/GRIDS/wogan.grid',status = 'old',iostat = io)
     if (io /= 0) then
@@ -142,12 +148,6 @@ subroutine determine_dimensions(species_dat,reactions_rx,planet_dat, &
   close(100)
   
   ! check that the other files exist
-  open(100, file=trim(planet_dat),status='old',iostat=io)
-  if (io /= 0) then
-    err = 'The input file '//trim(planet_dat)//'  does not exist'
-    return
-  endif
-  close(100)
   open(100, file=trim(atmosphere_txt),status='old',iostat=io)
   if (io /= 0) then
     err = 'The input file '//trim(atmosphere_txt)//'  does not exist'

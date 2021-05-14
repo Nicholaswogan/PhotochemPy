@@ -13,7 +13,7 @@ settings:
   diurnal-averaging-factor: 0.5
   lgrid: 0
   io2: 2
-  ino: 1
+  ino: 0
   epsj: 1.0e-9
   prono: 1.0e9
   frak: 1

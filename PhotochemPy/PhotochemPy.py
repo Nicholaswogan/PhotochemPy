@@ -24,8 +24,7 @@ class PhotochemPy:
     :ivar kj: Number of photolysis reactions
     :ivar species_dat: Name of the input species file.
     :ivar reactions_rx: Name of the input reactions file.
-    :ivar planet_dat: Name of the input planet file.
-    :ivar photochem_dat: Name of the input photochem file.
+    :ivar set_file: Name of the input settings file.
     :ivar atmosphere_txt: Name of the input atmosphere file.
     :ivar flux_txt: Name of the input solar flux file.
     :ivar code_run: If True/False then code has converged/ has not converged to equilrium.
@@ -36,7 +35,7 @@ class PhotochemPy:
     .. code-block:: python
 
         from PhotochemPy import PhotochemPy
-        pc = PhotochemPy(species_dat, reactions_rx, planet_dat, photochem_dat, atmosphere_txt, flux_txt)
+        pc = PhotochemPy(species_dat, reactions_rx, set_file, atmosphere_txt, flux_txt)
 
     Parameters
     ----------
@@ -46,10 +45,8 @@ class PhotochemPy:
     reactions_rx : string
         Path to input file describing the reactions in the atmosphere and
         their rates.
-    planet_dat : string
-        Path to input file describing the planet (surface gravity, etc.)
-    photochem_dat : string
-        Path to input file setting a few options for the model.
+    set_file : string
+        Path to input file describing settings.
     atmosphere_txt : string
         Path to input file describing the initial atmospheric composition,
         temperature structure, eddy diffusion profile, and aersol parameters.
@@ -57,21 +54,20 @@ class PhotochemPy:
         Path to input file describing the stellar flux
 
     '''
-    def __init__(self,species_dat,reactions_rx,planet_dat,\
-                      photochem_dat, atmosphere_txt, flux_txt):
+    def __init__(self,species_dat,reactions_rx, set_file,\
+                      atmosphere_txt, flux_txt):
         self.photo = photochem
         self.data = photochem_data
         self.vars = photochem_vars
         self.wrk = photochem_wrk
         
-        if all(fil==None for fil in [species_dat,reactions_rx,planet_dat, \
-                                    photochem_dat, atmosphere_txt, flux_txt]):
+        if all(fil==None for fil in [species_dat,reactions_rx, \
+                                    set_file, atmosphere_txt, flux_txt]):
             pass
         else:
             self.species_dat = species_dat
             self.reactions_rx = reactions_rx
-            self.planet_dat = planet_dat
-            self.photochem_dat = photochem_dat
+            self.set_file = set_file
             self.atmosphere_txt = atmosphere_txt
             self.flux_txt = flux_txt
 
@@ -88,11 +84,9 @@ class PhotochemPy:
                         self.ispec.append(line.split()[0])
                     if line.split()[1] == 'IN':
                         self.background_spec = line.split()[0]
-
             err = self.photo.setup(species_dat, \
                                    reactions_rx, \
-                                   planet_dat, \
-                                   photochem_dat, \
+                                   set_file, \
                                    atmosphere_txt, \
                                    flux_txt)               
             if len(err.strip()) > 0:
@@ -101,8 +95,8 @@ class PhotochemPy:
             self.code_run = False
             self.redox_factor = np.nan
 
-    def setup(self,species_dat,reactions_rx,planet_dat,\
-              photochem_dat, atmosphere_txt, flux_txt):
+    def setup(self,species_dat,reactions_rx,set_file,\
+              atmosphere_txt, flux_txt):
         '''
         In you initialize PhotochemPy with all `None` arguments, then you can run
         This to set up the atmospheres afterwords. This is necessary for some parallel
@@ -116,10 +110,8 @@ class PhotochemPy:
         reactions_rx : string
             Path to input file describing the reactions in the atmosphere and
             their rates.
-        planet_dat : string
-            Path to input file describing the planet (surface gravity, etc.)
-        photochem_dat : string
-            Path to input file setting a few options for the model.
+        set_file : string
+            Path to input file describing the settings.
         atmosphere_txt : string
             Path to input file describing the initial atmospheric composition,
             temperature structure, eddy diffusion profile, and aersol parameters.
@@ -130,8 +122,7 @@ class PhotochemPy:
         self.species_dat = species_dat
         self.reactions_rx = reactions_rx
         self.planet_dat = planet_dat
-        self.photochem_dat = photochem_dat
-        self.atmosphere_txt = atmosphere_txt
+        self.set_file = set_file
         self.flux_txt = flux_txt
 
         # get species names
@@ -150,8 +141,7 @@ class PhotochemPy:
 
         err = self.photo.setup(species_dat, \
                                reactions_rx, \
-                               planet_dat, \
-                               photochem_dat, \
+                               set_file, \
                                atmosphere_txt, \
                                flux_txt)               
         if len(err.strip()) > 0:
@@ -335,8 +325,7 @@ class PhotochemPy:
         '''
         err = self.photo.setup(self.species_dat, \
                              self.reactions_rx, \
-                             self.planet_dat, \
-                             self.photochem_dat, \
+                             self.set_file, \
                              self.atmosphere_txt, \
                              self.flux_txt)          
         if len(err.strip()) > 0:

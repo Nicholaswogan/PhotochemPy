@@ -5,8 +5,7 @@ sun = 'Sun_2.7Ga.txt'
 
 pc = PhotochemPy('input/templates/'+template+'/species.dat', \
                  'input/templates/'+template+'/reactions.rx', \
-                 'input/templates/'+template+'/PLANET.dat', \
-                 'input/templates/'+template+'/input_photchem.dat', \
+                 'input/templates/'+template+'/settings.yaml', \
                  'input/templates/'+template+'/atmosphere.txt', \
                  'input/templates/'+template+'/'+sun)
 

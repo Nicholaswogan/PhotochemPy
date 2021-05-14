@@ -15,9 +15,8 @@ contains
   include "determine_dimensions.f90"
   include "read_species.f90" ! reads species.dat
   include "read_reactions.f90" ! reads reactions.rx
+  include "read_settings.f90"
   include "read_atmosphere.f90" ! reads atmosphere.txt
-  include "read_planet.f90" ! reads planet.dat
-  include "read_photochem.f90" ! reads input_photochem.dat
   include "photgrid.f90" ! step up grid for photolysis calculations
   include "Initphoto.f90"
   include "Initmie.f90"
@@ -45,8 +44,6 @@ contains
   include "cvode.f90"
 
   include "redox_conservation.f90"
-  
-  ! include "read_settings.f90"
 
   subroutine allocate_memory(nnq, nnp, nnsp,&
                              nnr, kks, kkj, nnw)

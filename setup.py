@@ -29,9 +29,9 @@ if option == 1: # installing with parallel computation
               sources=sources,
               extra_f90_compile_args = ['-O3','-fopenmp', '-freal-4-real-8'],
               extra_f77_compile_args = ['-O3', '-freal-4-real-8'],
-              libraries=['gomp','m','sundials_fcvode','sundials_cvode','sundials_fnvecserial','sundials_nvecserial'],
+              libraries=['gomp','m','sundials_fcvode','sundials_cvode','sundials_fnvecserial','sundials_nvecserial','yaml'],
               library_dirs =["src/dependencies/lib"],
-              include_dirs = ["src/dependencies/include"],
+              include_dirs = ["src/dependencies/include","src/dependencies/modules"],
               f2py_options=only.split())
               ]
 
@@ -48,9 +48,9 @@ if option == 2: # istalling with serial compuation
               sources=sources,
               extra_f90_compile_args = ['-O3', '-freal-4-real-8'],
               extra_f77_compile_args = ['-O3', '-freal-4-real-8'],
-              libraries=['m','sundials_fcvode','sundials_cvode','sundials_fnvecserial','sundials_nvecserial'],
+              libraries=['m','sundials_fcvode','sundials_cvode','sundials_fnvecserial','sundials_nvecserial','yaml'],
               library_dirs =["src/dependencies/lib"],
-              include_dirs = ["src/dependencies/include"],
+              include_dirs = ["src/dependencies/include","src/dependencies/modules"],
               f2py_options=only.split())
               ]
 

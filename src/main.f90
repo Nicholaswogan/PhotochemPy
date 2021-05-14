@@ -28,8 +28,7 @@ program main
 
   call setup('../input/templates/'//template//'/species.dat', &
              '../input/templates/'//template//'/reactions.rx', &
-             '../input/templates/'//template//'/planet.dat', &
-             '../input/templates/'//template//'/input_photchem.dat', &
+             '../input/templates/'//template//'/settings.yaml', &
              '../input/templates/'//template//'/atmosphere.txt', &
              '../input/templates/'//template//'/Sun_2.7Ga.txt', err)
   if (len_trim(err) /= 0) then

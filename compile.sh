@@ -10,10 +10,11 @@ python -m numpy.f2py -c src/photochem_data.f90 \
 --f90flags='-freal-4-real-8 -fopenmp' \
 --f77flags='-freal-4-real-8 -fopenmp' \
 -lgomp \
--Isrc/cvode-5.7.0/install/include \
--Lsrc/cvode-5.7.0/install/lib \
+-Isrc/dependencies/include \
+-Isrc/dependencies/modules \
+-Lsrc/dependencies/lib \
 -lm \
--lsundials_fcvode -lsundials_cvode -lsundials_fnvecserial -lsundials_nvecserial \
+-lsundials_fcvode -lsundials_cvode -lsundials_fnvecserial -lsundials_nvecserial -lyaml \
 only: setup right_hand_side jacobian \
 integrate cvode cvode_save cvode_equilibrium
 

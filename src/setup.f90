@@ -1,5 +1,5 @@
-  subroutine setup(species_dat,reactions_rx,planet_dat,&
-                 & photochem_dat, atmosphere_txt, flux_txt, err)
+  subroutine setup(species_dat,reactions_rx,set_file,&
+                 & atmosphere_txt, flux_txt, err)
 
     use photochem_data, only: nq, nz, nw, &
                               frak, ihztype, jtrop, &
@@ -12,8 +12,7 @@
     ! local variables
     character(len=*),intent(in) :: species_dat
     character(len=*),intent(in) :: reactions_rx
-    character(len=*),intent(in) :: planet_dat
-    character(len=*),intent(in) :: photochem_dat
+    character(len=*),intent(in) :: set_file
     character(len=*),intent(in) :: atmosphere_txt
     character(len=*),intent(in) :: flux_txt
     character(len=1000), intent(out) :: err
@@ -22,8 +21,8 @@
     ! this subroutine will load all the data into memory
     ! (e.g. cross sections, rate date, etc.)
     err = ''
-    call determine_dimensions(species_dat,reactions_rx,planet_dat, &
-                              photochem_dat, atmosphere_txt, flux_txt, &
+    call determine_dimensions(species_dat,reactions_rx, set_file, &
+                              atmosphere_txt, flux_txt, &
                               nnq, nnsp, nnp, nnr, kks, kkj, nnw, nnz, nnzf, err)
     if (len_trim(err) /= 0) return
     call allocate_memory(nnq,nnp,nnsp,nnr,kks,kkj,nnw)
@@ -31,9 +30,7 @@
     if (len_trim(err) /= 0) return
     call read_reactions(reactions_rx, err)
     if (len_trim(err) /= 0) return
-    call read_planet(planet_dat,err)
-    if (len_trim(err) /= 0) return
-    call read_photochem(photochem_dat,err) 
+    call read_settings(set_file,err)
     if (len_trim(err) /= 0) return
     call gridw(nw,wavl,wav,wavu,lgrid, err) ! makes grid (depends on nothing)
     if (len_trim(err) /= 0) return
