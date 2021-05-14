@@ -1,4 +1,6 @@
 
+# first clean
+./clean.sh
 
 cd ../cvode-5.7.0
 mkdir build_dir

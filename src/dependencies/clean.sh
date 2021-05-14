@@ -1,11 +1,21 @@
-# delete stuff in build dir
+# cvode
 cd ../cvode-5.7.0
-rm -r build_dir
+if [ -d "build_dir" ] 
+then
+  rm -r build_dir
+fi
 
-# yaml dir
+# yaml 
 cd ../fortran-yaml
-rm -r build_dir
+if [ -d "build_dir" ] 
+then
+  rm -r build_dir
+fi
 
+# clean
 cd ../dependencies
-find . -type f ! -name '*.sh' -delete
-rm -r -- ./*/
+if [ -d "lib" ] 
+then
+  find . -type f ! -name '*.sh' -delete
+  rm -r -- ./*/
+fi

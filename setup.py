@@ -7,6 +7,12 @@ def configuration(parent_package='',top_path=None):
 
 from numpy.distutils.core import setup, Extension
 import numpy as np
+# from subprocess import call
+# 
+# comile dependencies
+# err = call('sh dependencies.sh',shell=True)
+# if err:
+#     raise Exception('The dependencies failed to compile.')
 
 version = '0.2.0'
 
