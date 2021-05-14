@@ -1,25 +1,22 @@
 
-subroutine photgrid(top_atmosphere, nz, z, dz)
+subroutine photgrid(top_atmos, bottom_atmos, nz, z, dz)
   implicit none
 
   ! local variables
   integer, intent(in) :: nz
-  real(8), intent(in) :: top_atmosphere
+  real(8), intent(in) :: top_atmos, bottom_atmos 
   real(8), intent(out) :: z(nz), dz(nz)
   
   
   real*8 :: dzgrid
   integer :: i
 
-  dzgrid = top_atmosphere/nz
+  dzgrid = (top_atmos - bottom_atmos)/nz
+  dz = dzgrid
 
-  do I=1,NZ
-   Z(I) = (I - 0.5)*dzgrid
-  enddo
-
-  DZ(1)=Z(1)+0.5*dzgrid
-  do I=2,NZ
-    DZ(I)=Z(I)-Z(I-1)
+  z(1) = bottom_atmos + 0.5d0*dzgrid
+  do i=2,nz
+   z(i) = z(i-1) + dzgrid
   enddo
 
 end subroutine

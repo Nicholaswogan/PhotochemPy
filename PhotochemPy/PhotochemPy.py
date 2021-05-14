@@ -9,7 +9,6 @@ photochem_vars.rootdir = "{:500}".format(rootdir)
 class PhotochemError(Exception):
     pass
 
-
 class PhotochemPy:
     '''
     The PhotochemPy class.
@@ -545,6 +544,24 @@ class PhotochemPy:
         if len(err.strip()) > 0:
             raise PhotochemError(err.decode("utf-8").strip())
         return jac
+        
+    def stm2photochem(self, stm, sol_stm, smallest = 1e-30):
+        
+        sol_dry = stm.dry_end_atmos(sol_stm)
+        self.data.p0 = sol_dry['Psurf']
+
+        stm_names = set(stm.gas.species_names)
+        pc_names = set(self.ispec[0:self.data.nq])
+        inter = list(pc_names.intersection(stm_names))
+        diff = list(pc_names.difference(stm_names))
+
+        nz = self.data.nz
+        for sp in inter:
+            ind = self.ispec.index(sp)
+            self.vars.usol_init[ind] = np.clip(sol_dry[sp],smallest,np.inf)*np.ones(nz)
+        for sp in diff:
+            ind = self.ispec.index(sp)
+            self.vars.usol_init[ind] = np.ones(nz)*smallest
 
     def out2atmosphere_txt(self,filename = 'atmosphere.txt', overwrite = False):
         '''

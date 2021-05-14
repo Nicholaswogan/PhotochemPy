@@ -10,9 +10,9 @@ before_install:
   - sudo apt-get install gcc
 
 install:
-  - cd src/cvode-5.7.0/build_dir/
+  - cd src/dependencies
   - ./compile.sh
-  - cd ../../../
+  - cd ../../
   - pip install .
 
 script:

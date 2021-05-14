@@ -45,30 +45,29 @@ contains
   include "cvode.f90"
 
   include "redox_conservation.f90"
+  
+  ! include "read_settings.f90"
 
-  subroutine allocate_memory(nnz, nnq, nnp, nnsp,&
-     nnr, kks, kkj, nnw)
+  subroutine allocate_memory(nnq, nnp, nnsp,&
+                             nnr, kks, kkj, nnw)
      use photochem_data
      use photochem_vars
      use photochem_wrk
     implicit none
-    integer, intent(in) ::  nnz, nnq, nnp, nnsp, nnr, kks, kkj, nnw
+    integer, intent(in) ::  nnq, nnp, nnsp, nnr, kks, kkj, nnw
 
     ! The dimensions.
-    nz = nnz
-    nz1 = nz-1
     nq  = nnq
     nq1 = nq
+    lda=3*nq+1
     np = nnp
     nsp = nnsp
     nsp2 = nnsp+2
     ks = kks
     kj = kkj
     nr = nnr
-    LDA=3*NQ+1
-    NEQ=NQ*NZ
     nw = nnw
-
+    
     ! if allocated, then deallocate
     if (allocated(ISPEC)) then
 
@@ -101,57 +100,8 @@ contains
       deallocate(photoreac)
       deallocate(photospec)
       deallocate(photonums)
-      deallocate(usol_init)
-      deallocate(den)
-      deallocate(T)
-      deallocate(EDD)
-      deallocate(aersol)
-      deallocate(wfall)
-      deallocate(rpar)
-      deallocate(aersol_init)
-      deallocate(wfall_init)
-      deallocate(rpar_init)
       deallocate(numl)
       deallocate(nump)
-      deallocate(Press)
-      deallocate(P)
-      deallocate(z)
-      deallocate(dz)
-      deallocate(sq)
-      deallocate(VH2O)
-      deallocate(VH2SO4)
-      deallocate(FSULF)
-      deallocate(H2SO4S)
-      deallocate(S8S)
-      deallocate(QEXTT)
-      deallocate(W0T)
-      deallocate(GFT)
-      deallocate(surf_radiance)
-      deallocate(A)
-      deallocate(H)
-      deallocate(RAINGC)
-      deallocate(RAIN)
-      deallocate(XSAVE)
-      deallocate(tauedd)
-      deallocate(hscale)
-      deallocate(H_ATM)
-      deallocate(DK)
-      deallocate(SCALE_H)
-      deallocate(BHN2)
-      deallocate(BH2N2)
-      deallocate(h2osat)
-      deallocate(DD)
-      deallocate(DL)
-      deallocate(DU)
-      deallocate(ADL)
-      deallocate(ADU)
-      deallocate(ADD)
-      deallocate(usol_out)
-      deallocate(flow)
-      deallocate(fluxo)
-      deallocate(yp)
-      deallocate(yl)
-      ! getting rid of kw
       deallocate(flux)
       deallocate(wav)
       deallocate(wavl)
@@ -159,6 +109,7 @@ contains
       deallocate(w0hc)
       deallocate(ghc)
       deallocate(qexthc)
+      deallocate(surf_radiance)
 
     endif
 
@@ -217,6 +168,8 @@ contains
     allocate(photoreac(kj))
     allocate(photospec(ks))
     allocate(photonums(kj))
+    allocate(numl(nsp))
+    allocate(nump(nsp))
     jchem = 0
     rateparams = 0.d0
     iloss = 0
@@ -224,6 +177,107 @@ contains
     photoreac = 0
     photospec = 0
     photonums = 0
+    numl = 0
+    nump = 0
+    
+    ! getting rid of kw
+    allocate(flux(nw))
+    allocate(wav(nw))
+    allocate(wavl(nw+1))
+    allocate(wavu(nw))
+    allocate(w0hc(nw,51))
+    allocate(ghc(nw,51))
+    allocate(qexthc(nw,51))
+    allocate(surf_radiance(nw))
+    flux = 0.d0
+    wav = 0.d0
+    wavl = 0.d0
+    wavu = 0.d0
+    w0hc = 0.d0
+    ghc = 0.d0
+    qexthc = 0.d0 
+    surf_radiance = 0.d0
+
+  end subroutine allocate_memory
+  
+  subroutine allocate_memory_z(nnz, err)
+    use photochem_data
+    use photochem_vars
+    use photochem_wrk
+    integer, intent(in) ::  nnz
+    character(len=err_len), intent(out) :: err
+    err = ''
+    
+    if (.not.allocated(ISPEC)) then
+      err = 'Can not allocate altitude grid before first allocating nq, nsp, etc.'
+      return
+    endif
+
+    nz = nnz
+    nz1 = nz-1
+    neq = nq*nz
+
+    if (allocated(QEXTT)) then
+      deallocate(QEXTT)
+      deallocate(W0T)
+      deallocate(GFT)
+      deallocate(sq)
+      deallocate(usol_init)
+      deallocate(den)
+      deallocate(T)
+      deallocate(EDD)
+      deallocate(aersol)
+      deallocate(wfall)
+      deallocate(rpar)
+      deallocate(aersol_init)
+      deallocate(wfall_init)
+      deallocate(rpar_init)
+      deallocate(Press)
+      deallocate(P)
+      deallocate(z)
+      deallocate(dz)
+      deallocate(VH2O)
+      deallocate(VH2SO4)
+      deallocate(FSULF)
+      deallocate(H2SO4S)
+      deallocate(S8S)
+      deallocate(A)
+      deallocate(H)
+      deallocate(RAINGC)
+      deallocate(RAIN)
+      deallocate(XSAVE)
+      deallocate(tauedd)
+      deallocate(hscale)
+      deallocate(H_ATM)
+      deallocate(DK)
+      deallocate(SCALE_H)
+      deallocate(BHN2)
+      deallocate(BH2N2)
+      deallocate(h2osat)
+      deallocate(DD)
+      deallocate(DL)
+      deallocate(DU)
+      deallocate(ADL)
+      deallocate(ADU)
+      deallocate(ADD)
+      deallocate(usol_out)
+      deallocate(flow)
+      deallocate(fluxo)
+      deallocate(yp)
+      deallocate(yl)
+    endif
+    
+    ! needed in Photo.f90
+    allocate(QEXTT(nw,nz,np))
+    allocate(W0T(nw,nz,np))
+    allocate(GFT(nw,nz,np))
+    qextt = 0.0d0
+    w0t = 0.0d0
+    gft = 0.0d0
+    
+    ! needed in initphoto.f90.
+    allocate(sq(kj,nz,nw))
+    sq = 0.d0
 
     ! needed in atmosphere.txt
     allocate(usol_init(nq,nz))
@@ -236,8 +290,6 @@ contains
     allocate(aersol_init(nz,np))
     allocate(wfall_init(nz,np))
     allocate(rpar_init(nz,np))
-    allocate(numl(nsp))
-    allocate(nump(nsp))
     usol_init = 0.d0
     den = 0.d0
     t = 0.d0
@@ -248,8 +300,6 @@ contains
     aersol_init = 0.d0
     wfall_init = 0.d0
     rpar_init = 0.d0
-    numl = 0
-    nump = 0
 
 
     ! needed in Densty.f90
@@ -264,10 +314,6 @@ contains
     z = 0.d0
     dz = 0.d0
 
-    ! needed in initphoto.f90.
-    allocate(sq(kj,nz,nw))
-    sq = 0.d0
-
     ! needed in Aertab.f90
     allocate(VH2O(Nf,nz))
     allocate(VH2SO4(Nf,nz))
@@ -281,18 +327,7 @@ contains
     fsulf = 0.0d0
     h2so4s = 0.0d0
     s8s = 0.0d0
-
-    ! needed in Photo.f90
-    allocate(QEXTT(nw,nz,np))
-    allocate(W0T(nw,nz,np))
-    allocate(GFT(nw,nz,np))
-    allocate(surf_radiance(nw))
-    qextt = 0.0d0
-    w0t = 0.0d0
-    gft = 0.0d0
-    surf_radiance = 0.d0
-    
-    
+  
     ! needed in rates.f90
     allocate(A(NR,NZ))
     ! zero out
@@ -353,24 +388,10 @@ contains
     fluxo = 0.0d0
     yp = 0.0d0
     yl = 0.0d0
-    
-    ! getting rid of kw
-    allocate(flux(nw))
-    allocate(wav(nw))
-    allocate(wavl(nw+1))
-    allocate(wavu(nw))
-    allocate(w0hc(nw,51))
-    allocate(ghc(nw,51))
-    allocate(qexthc(nw,51))
-    flux = 0.d0
-    wav = 0.d0
-    wavl = 0.d0
-    wavu = 0.d0
-    w0hc = 0.d0
-    ghc = 0.d0
-    qexthc = 0.d0 
-    
-  end subroutine allocate_memory
+  
+  end subroutine
+  
+  
 
   ! for julia wrapper
   subroutine get_usol_init(usol)

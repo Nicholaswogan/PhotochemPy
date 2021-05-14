@@ -2,7 +2,7 @@
 
 subroutine determine_dimensions(species_dat,reactions_rx,planet_dat, &
                                 photochem_dat, atmosphere_txt, flux_txt, &
-                                nq, nsp, np, nr, ks, kj, nw, nz, err)
+                                nq, nsp, np, nr, ks, kj, nw, nz, nzf, err)
   use photochem_vars, only: rootdir
   implicit none
   integer, parameter :: str_length  = 1000
@@ -14,7 +14,7 @@ subroutine determine_dimensions(species_dat,reactions_rx,planet_dat, &
   character(len=*),intent(in) :: atmosphere_txt
   character(len=*),intent(in) :: flux_txt
   ! output
-  integer, intent(out) :: nq, nsp, np, nr, ks, kj, nw, nz
+  integer, intent(out) :: nq, nsp, np, nr, ks, kj, nw, nz, nzf
   character(len=err_len), intent(out) :: err
   ! local
   integer :: io
@@ -153,6 +153,12 @@ subroutine determine_dimensions(species_dat,reactions_rx,planet_dat, &
     err = 'The input file '//trim(atmosphere_txt)//'  does not exist'
     return
   endif
+  nzf = -2
+  do while(io == 0)
+    read(100,*,iostat=io)
+    nzf = nzf + 1
+  enddo
+
   close(100)
   open(100, file=trim(flux_txt),status='old',iostat=io)
   if (io /= 0) then

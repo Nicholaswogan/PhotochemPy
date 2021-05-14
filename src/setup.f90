@@ -17,16 +17,16 @@
     character(len=*),intent(in) :: atmosphere_txt
     character(len=*),intent(in) :: flux_txt
     character(len=1000), intent(out) :: err
-    integer :: nnq, nnsp, nnp, nnr, kks, kkj, nnw, nnz
+    integer :: nnq, nnsp, nnp, nnr, kks, kkj, nnw, nnz, nnzf
 
     ! this subroutine will load all the data into memory
     ! (e.g. cross sections, rate date, etc.)
     err = ''
     call determine_dimensions(species_dat,reactions_rx,planet_dat, &
                               photochem_dat, atmosphere_txt, flux_txt, &
-                              nnq, nnsp, nnp, nnr, kks, kkj, nnw, nnz, err)
+                              nnq, nnsp, nnp, nnr, kks, kkj, nnw, nnz, nnzf, err)
     if (len_trim(err) /= 0) return
-    call allocate_memory(nnz,nnq,nnp,nnsp,nnr,kks,kkj,nnw)
+    call allocate_memory(nnq,nnp,nnsp,nnr,kks,kkj,nnw)
     call read_species(species_dat,err)
     if (len_trim(err) /= 0) return
     call read_reactions(reactions_rx, err)
@@ -35,16 +35,21 @@
     if (len_trim(err) /= 0) return
     call read_photochem(photochem_dat,err) 
     if (len_trim(err) /= 0) return
-    call read_atmosphere(atmosphere_txt, err)
-    if (len_trim(err) /= 0) return
     call gridw(nw,wavl,wav,wavu,lgrid, err) ! makes grid (depends on nothing)
     if (len_trim(err) /= 0) return
     call readflux(flux_txt,nw,wavl,flux,err) ! reads flux (depnds on gridw)
     if (len_trim(err) /= 0) return
     call initmie(nw,wavl,frak,ihztype)
-    call photgrid(100.0D5, nz, z, dz) 
     ! end depends on nothing
-    ! This stuff depends on T
+    
+    ! this stuff depends on z
+    call allocate_memory_z(nnz,err)
+    if (len_trim(err) /= 0) return
+    call read_atmosphere(atmosphere_txt, err)
+    if (len_trim(err) /= 0) return
+    call photgrid(100.0D5, 0.d0, nz, z, dz) 
+    ! end stuff dthat depends on just z
+    ! This stuff depends on T an z
     JTROP=minloc(Z,1, Z .ge. ztrop)-1 ! depends on ztrop (sorta like T)
     call initphoto(err) ! depends on T
     if (len_trim(err) /= 0) return

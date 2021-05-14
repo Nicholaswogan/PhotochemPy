@@ -7,36 +7,38 @@ subroutine read_atmosphere(atmosphere_txt, err)
                            
   implicit none
 
-  ! module variables
-  ! character(len=8), allocatable, dimension(:) :: ISPEC
-  ! integer :: nsp2
-  ! integer :: nz ! number of vertical grid points
-  ! real*8, allocatable, dimension(:,:) :: usol_init
-  ! integer :: np ! number of particles
-
   ! local variables
   character(len=*), intent(in) :: atmosphere_txt
   character(len=err_len), intent(out) :: err
   character(len=10000) :: line
   character(len=8), dimension(1000) :: arr1
   character(len=24), dimension(1000) :: arr11
-  character(len=24),allocatable, dimension(:) :: arr2
+  character(len=24),allocatable, dimension(:) :: labels
   integer :: ind(1)
-  real*8,allocatable, dimension(:) :: temp
+  real*8, allocatable :: temp(:), file_mix(:), file_z(:)
   integer :: i, n, nn, io, j, k, ii, iii
+  integer :: nzf
+  
+  
   err = ''
+  
   open(4, file=trim(atmosphere_txt),status='old',iostat=io)
-  read(4,'(A)') line
-  n = -1
-  io = 0
-  do while (io == 0)
-    n = n + 1
-    read(4,*,iostat=io)
-  enddo
-  if (n /= nz) then
-    err = 'The file '//trim(atmosphere_txt)//' must have nz + 1 rows.'
+  if (io /= 0) then
+    err = 'Can not open file '//trim(atmosphere_txt)
     return
   endif
+  read(4,'(A)') line
+  
+  nzf = -1
+  io = 0
+  do while (io == 0)
+    nzf = nzf + 1
+    read(4,*,iostat=io)
+  enddo
+  ! allocate this guy
+  allocate(file_mix(nzf), &
+           file_z(nzf))
+
   rewind(4)
   read(4,'(A)') line
   n = 0
@@ -56,19 +58,20 @@ subroutine read_atmosphere(atmosphere_txt, err)
     err = 'There is a missing column label in the file '//trim(atmosphere_txt)
     return
   endif
-  allocate(arr2(n))
+  
+  allocate(labels(n))
   allocate(temp(n))
   rewind(4)
   read(4,'(A)') line
-  read(line,*) (arr2(i),i=1,n)
+  read(line,*) (labels(i),i=1,n)
 
   ! reads in mixing ratios
   iii = 0
   do i=1,nq
     do j=1,n
-      if (arr2(j).eq.ispec(i)) then
-        iii= iii+1
-        do k=1,nz
+      if (labels(j).eq.ispec(i)) then
+        iii = iii+1
+        do k = 1,nzf
           read(4,*,iostat=io) (temp(ii),ii=1,n)
           if (io /= 0) then
             err = 'Problem reading in initial atmosphere in '//trim(atmosphere_txt)
@@ -91,7 +94,7 @@ subroutine read_atmosphere(atmosphere_txt, err)
   rewind(4)
   read(4,*)
   ! reads in temperature
-  ind = findloc(arr2,'temp')
+  ind = findloc(labels,'temp')
   if (ind(1) /= 0) then
     do k=1,nz
       read(4,*,iostat = io) (temp(ii),ii=1,n)
@@ -110,7 +113,7 @@ subroutine read_atmosphere(atmosphere_txt, err)
   ! rewind(4)
   ! read(4,*)
   ! reads in density
-  ! ind = findloc(arr2,'density')
+  ! ind = findloc(labels,'density')
   ! if (ind(1) /= 0) then
     ! do k=1,nz
       ! read(4,*,iostat=io) (temp(ii),ii=1,n)
@@ -122,7 +125,7 @@ subroutine read_atmosphere(atmosphere_txt, err)
   rewind(4)
   read(4,*)
   ! reads in eddy diffusion?
-  ind = findloc(arr2,'eddy')
+  ind = findloc(labels,'eddy')
   if (ind(1) /= 0) then
     do k=1,nz
       read(4,*,iostat = io) (temp(ii),ii=1,n)
@@ -144,7 +147,7 @@ subroutine read_atmosphere(atmosphere_txt, err)
   if (np.gt.0) then
   do j=1,n
     do i=1,np
-      if (trim(arr2(j)).eq.trim(ISPEC(size(ISPEC)-(nsp2-nq)-np+i))//'_AERSOL') then
+      if (trim(labels(j)).eq.trim(ISPEC(size(ISPEC)-(nsp2-nq)-np+i))//'_AERSOL') then
         iii = iii + 1
         do k=1,nz
           read(4,*,iostat = io) (temp(ii),ii=1,n)
@@ -158,7 +161,7 @@ subroutine read_atmosphere(atmosphere_txt, err)
         rewind(4)
         read(4,*)
         exit
-      else if (trim(arr2(j)).eq.trim(ISPEC(size(ISPEC)-(nsp2-nq)-np+i))//'_WFALL') then
+      else if (trim(labels(j)).eq.trim(ISPEC(size(ISPEC)-(nsp2-nq)-np+i))//'_WFALL') then
         iii = iii + 1
         do k=1,nz
           read(4,*,iostat = io) (temp(ii),ii=1,n)
@@ -172,7 +175,7 @@ subroutine read_atmosphere(atmosphere_txt, err)
         rewind(4)
         read(4,*)
         exit
-      else if (trim(arr2(j)).eq.trim(ISPEC(size(ISPEC)-(nsp2-nq)-np+i))//'_RPAR') then
+      else if (trim(labels(j)).eq.trim(ISPEC(size(ISPEC)-(nsp2-nq)-np+i))//'_RPAR') then
         iii = iii + 1
         do k=1,nz
           read(4,*,iostat = io) (temp(ii),ii=1,n)

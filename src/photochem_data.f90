@@ -91,9 +91,10 @@ module photochem_data
   real*8, allocatable, dimension(:,:) :: VH2SO4
   real*8, dimension(nf) :: ftab
   
-  
-  
-  
-  
-  
+  ! atmosphere_txt contents
+  real(8), allocatable :: usol_file(:,:), rpar_file(:,:), &
+                          wfall_file(:,:), aersol_file(:,:)
+  real(8), allocatable :: T_file(:), edd_file(:)
+  integer :: nzf
+
 end module

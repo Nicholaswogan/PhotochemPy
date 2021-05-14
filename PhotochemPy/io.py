@@ -2,8 +2,6 @@ import pickle
 import numpy as np
 import os
 
-
-
 def save2pickle(filename,outname,delete = False):
     fil = open(filename,'r')
     lines = fil.readlines()
@@ -41,3 +39,55 @@ def save2pickle(filename,outname,delete = False):
 
     if delete == True:
         os.remove(filename)
+        
+def stm2atmosphere_txt(pc, stm, sol_stm, filename = 'impact_atmosphere.txt', overwrite=False, smallest = 1e-30):
+    
+    if os.path.isfile(filename) and not overwrite:
+        raise Exception(filename+' is already a file. Choose a different name, or set overwrite = True.')
+    if os.path.isdir(filename):
+        raise Exception(filename+' is a directory. Choose a different name.')
+    
+    sol_dry = stm.dry_end_atmos(sol_stm)
+    
+    stm_names = set(stm.gas.species_names)
+    pc_names = set(pc.ispec[0:pc.data.nq])
+    inter = list(pc_names.intersection(stm_names))
+    diff = list(pc_names.difference(stm_names))
+
+    nz = pc.data.nz
+    f = {}
+    out = pc.in_dict()
+    f['alt'] = out['alt']
+    f['temp'] = out['T']
+    f['eddy'] = pc.vars.edd
+
+    for sp in inter:
+        f[sp] = np.clip(sol_dry[sp],smallest,np.inf)*np.ones(nz)
+    for sp in diff:
+        f[sp] = np.ones(nz)*smallest
+
+    # particle stuff
+    if pc.data.np > 0:
+        particles  = ['SO4AER','S8AER','HCAER','HCAER2']
+        params = ['AERSOL','WFALL','RPAR']
+        for j in range(len(params)):
+            for i in range(pc.data.np):
+                if params[j] == 'AERSOL':
+                    f[particles[i]+'_'+params[j]] =  pc.wrk.aersol[:,i]
+                if params[j] == 'WFALL':
+                    f[particles[i]+'_'+params[j]] =  pc.wrk.wfall[:,i]
+                if params[j] == 'RPAR':
+                    f[particles[i]+'_'+params[j]] =  pc.wrk.rpar[:,i]
+
+    # write the file
+    fil = open(filename,'w')
+    for key in f.keys():
+        fil.write('{:25}'.format(key))
+    fil.write('\n')
+    for i in range(len(f['alt'])):
+        for key in f.keys():
+            fil.write('{:25}'.format('%.16e'%f[key][i]))
+        fil.write('\n')
+    fil.close()
+    
+    print('Surface Pressure (bars) =', '%.4f'%sol_dry['Psurf'])
