@@ -6,7 +6,7 @@ subroutine read_settings(set_file, err)
   use photochem_data, only: g, fscale, alb, ztrop, r0, p0, planet, &
                             AGL, EPSJ, prono, hcdens, zy, Lgrid, &
                             IO2, ino, frak, ihztype, lightning, &
-                            np
+                            np, top_atmos, bottom_atmos, nz
   implicit none
   
   character(len=*), intent(in) :: set_file
@@ -68,6 +68,12 @@ subroutine read_settings(set_file, err)
       if (associated(io_err)) then; err = trim(set_file)//trim(io_err%message); return; endif
       lightning = set_dict%get_logical('lightning',error = io_err)
       if (associated(io_err)) then; err = trim(set_file)//trim(io_err%message); return; endif
+      nz = set_dict%get_integer('number-layers',error = io_err)
+      if (associated(io_err)) then; err = trim(set_file)//trim(io_err%message); return; endif
+      bottom_atmos = set_dict%get_real('bottom-atmosphere',error = io_err)
+      if (associated(io_err)) then; err = trim(set_file)//trim(io_err%message); return; endif
+      top_atmos = set_dict%get_real('top-atmosphere',error = io_err)
+      if (associated(io_err)) then; err = trim(set_file)//trim(io_err%message); return; endif
   
       call root%finalize()
       deallocate(root)
@@ -93,7 +99,21 @@ subroutine read_settings(set_file, err)
     err = "Planet must be set to EARTH or MARS. See "//trim(set_file)
     return
   endif
-
+  
+  if (nz < 50) then
+    err = "nz can not be less than 50. See "//trim(set_file)
+    return
+  endif
+  
+  if (bottom_atmos < 0.d0) then
+    err = "bottom of the atmosphere can not be less than 0. See "//trim(set_file)
+    return
+  endif
+  
+  if (bottom_atmos > top_atmos) then
+    err = "bottom of the atmosphere must be lower than the top. See "//trim(set_file)
+    return
+  endif
 
 end subroutine
 

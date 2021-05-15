@@ -183,7 +183,7 @@
 !-AP ******************************************************
 
 
-
+        if (change_radius) then
 !   ESTIMATE COAGULATION AND SEDIMENTATION LIFETIMES (TOON AND FARLOW, 1981
          DO i = 1 , nz
 ! this commented one was from Toon and Farlow 1981; giada-new methodology from Pavlov 2001
@@ -208,7 +208,7 @@
 !   FIND MINIMUM OF DIFFUSION AND SEDIMENTATION LIFETIMES, THEN SCALE PRTICLE SIZES
          e_minus_5 = 1.D-5
          e_hc = 1.3D-7
-         if (change_radius) then
+         
            DO i = 1 , nz
               tautrn(i) = MIN(TAUSED(i,k),TAUEDD(i))            !find the minimum of the three destruction timescales
               tautrn(i) = MIN(tautrn(i),tauran(i,k))            !lifetime against eddy diffusion is H*H/K

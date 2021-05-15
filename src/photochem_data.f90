@@ -70,6 +70,7 @@ module photochem_data
   ! needed in subroutine photgrid (in photgrid.f90)
   real*8, allocatable, dimension(:) :: z ! altitude of middle of grid
   real*8, allocatable, dimension(:) :: dz ! Delta_z of each altitude grid
+  real(8) :: top_atmos, bottom_atmos
   integer JTROP
   
   ! needed in initphoto.f90.
@@ -94,7 +95,7 @@ module photochem_data
   ! atmosphere_txt contents
   real(8), allocatable :: usol_file(:,:), rpar_file(:,:), &
                           wfall_file(:,:), aersol_file(:,:)
-  real(8), allocatable :: T_file(:), edd_file(:)
+  real(8), allocatable :: T_file(:), edd_file(:), z_file(:)
   integer :: nzf
 
 end module

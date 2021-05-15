@@ -1,11 +1,14 @@
   subroutine setup(species_dat,reactions_rx,set_file,&
                  & atmosphere_txt, flux_txt, err)
 
-    use photochem_data, only: nq, nz, nw, &
+    use photochem_data, only: np, nq, nz, nw, &
                               frak, ihztype, jtrop, &
                               wavl, wav, wavu, dz, z, ztrop, &
-                              lgrid, flux
-    use photochem_vars, only: den, P, press, T, usol_init
+                              lgrid, flux, &
+                              top_atmos, bottom_atmos
+                              
+    use photochem_vars, only: den, P, press, T, edd, usol_init, rpar_init, &
+                              wfall_init, aersol_init
     use photochem_wrk, only: rain, raingc
     implicit none
 
@@ -16,14 +19,14 @@
     character(len=*),intent(in) :: atmosphere_txt
     character(len=*),intent(in) :: flux_txt
     character(len=1000), intent(out) :: err
-    integer :: nnq, nnsp, nnp, nnr, kks, kkj, nnw, nnz, nnzf
-
+    integer :: nnq, nnsp, nnp, nnr, kks, kkj, nnw
+    
     ! this subroutine will load all the data into memory
     ! (e.g. cross sections, rate date, etc.)
     err = ''
     call determine_dimensions(species_dat,reactions_rx, set_file, &
                               atmosphere_txt, flux_txt, &
-                              nnq, nnsp, nnp, nnr, kks, kkj, nnw, nnz, nnzf, err)
+                              nnq, nnsp, nnp, nnr, kks, kkj, nnw, err)
     if (len_trim(err) /= 0) return
     call allocate_memory(nnq,nnp,nnsp,nnr,kks,kkj,nnw)
     call read_species(species_dat,err)
@@ -31,6 +34,8 @@
     call read_reactions(reactions_rx, err)
     if (len_trim(err) /= 0) return
     call read_settings(set_file,err)
+    if (len_trim(err) /= 0) return
+    call read_atmosphere_file(atmosphere_txt, err)
     if (len_trim(err) /= 0) return
     call gridw(nw,wavl,wav,wavu,lgrid, err) ! makes grid (depends on nothing)
     if (len_trim(err) /= 0) return
@@ -40,12 +45,15 @@
     ! end depends on nothing
     
     ! this stuff depends on z
-    call allocate_memory_z(nnz,err)
+    call allocate_memory_z(nz,err)
     if (len_trim(err) /= 0) return
-    call read_atmosphere(atmosphere_txt, err)
+    call photgrid(top_atmos, bottom_atmos, nz, z, dz) 
+    call interp2atmosfile(nz, nq, np, z, T, edd, &
+                          usol_init, rpar_init, wfall_init, &
+                          aersol_init, err)
     if (len_trim(err) /= 0) return
-    call photgrid(100.0D5, 0.d0, nz, z, dz) 
     ! end stuff dthat depends on just z
+    
     ! This stuff depends on T an z
     JTROP=minloc(Z,1, Z .ge. ztrop)-1 ! depends on ztrop (sorta like T)
     call initphoto(err) ! depends on T
@@ -54,13 +62,15 @@
     ! end Stuff that depends on T
     
     ! begin stuff that needs to be inizialized
+    rpar = rpar_init
+    wfall = wfall_init
+    aersol = aersol_init
     call densty(nq, nz, usol_init, T, den, P, press)
     call rainout(.true.,Jtrop,usol_init,nq,nz, T,den, rain, raingc,err)
     if (len_trim(err) /= 0) return 
     ! end stuff that needs to be inizialized
   end subroutine
-  
-  
+
   
   subroutine diffusion_coeffs(nq, nz, den, dz, DK, bhN2, bh2N2, scale_H, H_atm, &
                               DU, DL, DD, ADU, ADL, ADD)

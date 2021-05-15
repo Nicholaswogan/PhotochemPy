@@ -2,7 +2,7 @@
 
 subroutine determine_dimensions(species_dat,reactions_rx, set_file, &
                                 atmosphere_txt, flux_txt, &
-                                nq, nsp, np, nr, ks, kj, nw, nz, nzf, err)
+                                nq, nsp, np, nr, ks, kj, nw, err)
                                 
   use yaml, only : parse, error_length
   use yaml_types, only : type_node, type_dictionary, type_error            
@@ -16,7 +16,7 @@ subroutine determine_dimensions(species_dat,reactions_rx, set_file, &
   character(len=*),intent(in) :: atmosphere_txt
   character(len=*),intent(in) :: flux_txt
   ! output
-  integer, intent(out) :: nq, nsp, np, nr, ks, kj, nw, nz, nzf
+  integer, intent(out) :: nq, nsp, np, nr, ks, kj, nw
   character(len=err_len), intent(out) :: err
   ! local
   integer :: io
@@ -28,9 +28,6 @@ subroutine determine_dimensions(species_dat,reactions_rx, set_file, &
   class (type_node), pointer :: root
   class (type_dictionary), pointer :: tmpdict
   type (type_error), pointer :: io_err
-  
-  
-  nz = 200 ! for now we will hard-code number of layers
   
   nq = 0
   nsp = 0
@@ -153,12 +150,6 @@ subroutine determine_dimensions(species_dat,reactions_rx, set_file, &
     err = 'The input file '//trim(atmosphere_txt)//'  does not exist'
     return
   endif
-  nzf = -2
-  do while(io == 0)
-    read(100,*,iostat=io)
-    nzf = nzf + 1
-  enddo
-
   close(100)
   open(100, file=trim(flux_txt),status='old',iostat=io)
   if (io /= 0) then

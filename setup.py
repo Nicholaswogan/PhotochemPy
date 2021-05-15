@@ -10,7 +10,7 @@ import numpy as np
 # from subprocess import call
 # 
 # comile dependencies
-# err = call('sh dependencies.sh',shell=True)
+# err = call('sh dependencies.sh'.split())
 # if err:
 #     raise Exception('The dependencies failed to compile.')
 

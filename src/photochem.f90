@@ -16,7 +16,8 @@ contains
   include "read_species.f90" ! reads species.dat
   include "read_reactions.f90" ! reads reactions.rx
   include "read_settings.f90"
-  include "read_atmosphere.f90" ! reads atmosphere.txt
+  include "read_atmosphere_file.f90"
+  ! include "read_atmosphere.f90" ! reads atmosphere.txt
   include "photgrid.f90" ! step up grid for photolysis calculations
   include "Initphoto.f90"
   include "Initmie.f90"

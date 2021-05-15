@@ -1,6 +1,6 @@
 
 subroutine read_atmosphere(atmosphere_txt, err)
-  use photochem_data, only: np, nq, nsp2, nz, ispec
+  use photochem_data, only: np, nq, nz, ispec
   use photochem_vars, only: T, edd, usol_init, &
                             rpar_init, wfall_init, aersol_init
   use photochem_wrk, only: rpar, wfall, aersol
@@ -15,7 +15,7 @@ subroutine read_atmosphere(atmosphere_txt, err)
   character(len=24), dimension(1000) :: arr11
   character(len=24),allocatable, dimension(:) :: labels
   integer :: ind(1)
-  real*8, allocatable :: temp(:), file_mix(:), file_z(:)
+  real*8, allocatable :: temp(:)
   integer :: i, n, nn, io, j, k, ii, iii
   integer :: nzf
   
@@ -35,10 +35,7 @@ subroutine read_atmosphere(atmosphere_txt, err)
     nzf = nzf + 1
     read(4,*,iostat=io)
   enddo
-  ! allocate this guy
-  allocate(file_mix(nzf), &
-           file_z(nzf))
-
+  
   rewind(4)
   read(4,'(A)') line
   n = 0
@@ -109,19 +106,6 @@ subroutine read_atmosphere(atmosphere_txt, err)
     return
   endif
 
-  ! do not read in den. It is established later
-  ! rewind(4)
-  ! read(4,*)
-  ! reads in density
-  ! ind = findloc(labels,'density')
-  ! if (ind(1) /= 0) then
-    ! do k=1,nz
-      ! read(4,*,iostat=io) (temp(ii),ii=1,n)
-      ! DEN(k) = temp(ind(1))
-    ! enddo
-  ! endif
-
-
   rewind(4)
   read(4,*)
   ! reads in eddy diffusion?
@@ -147,7 +131,7 @@ subroutine read_atmosphere(atmosphere_txt, err)
   if (np.gt.0) then
   do j=1,n
     do i=1,np
-      if (trim(labels(j)).eq.trim(ISPEC(size(ISPEC)-(nsp2-nq)-np+i))//'_AERSOL') then
+      if (trim(labels(j)).eq.trim(ISPEC(nq-np+i))//'_AERSOL') then
         iii = iii + 1
         do k=1,nz
           read(4,*,iostat = io) (temp(ii),ii=1,n)
@@ -161,7 +145,7 @@ subroutine read_atmosphere(atmosphere_txt, err)
         rewind(4)
         read(4,*)
         exit
-      else if (trim(labels(j)).eq.trim(ISPEC(size(ISPEC)-(nsp2-nq)-np+i))//'_WFALL') then
+      else if (trim(labels(j)).eq.trim(ISPEC(nq-np+i))//'_WFALL') then
         iii = iii + 1
         do k=1,nz
           read(4,*,iostat = io) (temp(ii),ii=1,n)
@@ -175,7 +159,7 @@ subroutine read_atmosphere(atmosphere_txt, err)
         rewind(4)
         read(4,*)
         exit
-      else if (trim(labels(j)).eq.trim(ISPEC(size(ISPEC)-(nsp2-nq)-np+i))//'_RPAR') then
+      else if (trim(labels(j)).eq.trim(ISPEC(nq-np+i))//'_RPAR') then
         iii = iii + 1
         do k=1,nz
           read(4,*,iostat = io) (temp(ii),ii=1,n)
@@ -194,7 +178,7 @@ subroutine read_atmosphere(atmosphere_txt, err)
   enddo
   endif
   close(4)
-  
+
   if(iii /= np*3) then
     err = 'Missing aersol parameters in '//trim(atmosphere_txt)
     return
