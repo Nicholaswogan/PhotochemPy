@@ -43,6 +43,13 @@ subroutine read_atmosphere_file(atmosphere_txt, err)
   allocate(z_file(nzf), T_file(nzf))
   allocate(edd_file(nzf), usol_file(nq,nzf))
   allocate(rpar_file(nzf,np), wfall_file(nzf,np), aersol_file(nzf,np))
+  z_file = 0.d0
+  T_file = 0.d0
+  edd_file = 0.d0
+  usol_file = 0.d0
+  rpar_file = 0.d0
+  wfall_file = 0.d0
+  aersol_file = 0.d0
   
   rewind(4)
   read(4,'(A)') line
