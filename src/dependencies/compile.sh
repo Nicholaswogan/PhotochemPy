@@ -26,6 +26,12 @@ make install
 
 cp -r modules ../../dependencies
 
+cd ../../minpack
+gfortran -c *.f -O3
+ar rcs libminpack.a *.o
+rm *.o
+mv libminpack.a ../dependencies/lib
+
 
 
 

@@ -534,23 +534,37 @@ class PhotochemPy:
             raise PhotochemError(err.decode("utf-8").strip())
         return jac
         
-    def stm2photochem(self, stm, sol_stm, smallest = 1e-30):
+    def stm2photochem(self, stm, sol_stm, nz = 200, P_top = 2.1427e-08, \
+                      rpar_layer = None, smallest = 1e-30, zero_out = []):
         
         sol_dry = stm.dry_end_atmos(sol_stm)
-        self.data.p0 = sol_dry['Psurf']
 
         stm_names = set(stm.gas.species_names)
         pc_names = set(self.ispec[0:self.data.nq])
         inter = list(pc_names.intersection(stm_names))
         diff = list(pc_names.difference(stm_names))
-
-        nz = self.data.nz
+        
+        usol_layer = np.ones(self.data.nq)*smallest
         for sp in inter:
             ind = self.ispec.index(sp)
-            self.vars.usol_init[ind] = np.clip(sol_dry[sp],smallest,np.inf)*np.ones(nz)
-        for sp in diff:
+            usol_layer[ind] = np.clip(sol_dry[sp],smallest,np.inf)
+            
+        for sp in zero_out:
             ind = self.ispec.index(sp)
-            self.vars.usol_init[ind] = np.ones(nz)*smallest
+            usol_layer[ind] = smallest
+            
+        rpar_default = [1.e-5, 1.e-5, 1.e-7, 1.e-7]
+        if rpar_layer == None:
+            rpar_layer = np.array([rpar_default[i] for i in range(self.data.np)])
+        else:
+            if len(rpar_layer) != self.data.np:
+                raise PhotochemError("Input rpar_layer must have the sane length as self.data.np")
+        
+        P_surf = sol_dry['Psurf']
+        
+        err = self.photo.steam2photochem(nz,P_surf,P_top,usol_layer,rpar_layer)
+        if len(err.strip()) > 0:
+            raise PhotochemError(err.decode("utf-8").strip())
 
     def out2atmosphere_txt(self,filename = 'atmosphere.txt', overwrite = False):
         '''
