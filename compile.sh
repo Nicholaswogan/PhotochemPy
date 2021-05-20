@@ -1,12 +1,12 @@
-gfortran -c src/photochem_clima.f90 -O3 -lminpack
+# gfortran -c src/photochem_clima.f90 -O3 -lminpack
 
 python -m numpy.f2py -c src/photochem_data.f90 \
                     		src/photochem_vars.f90 \
                     		src/photochem_wrk.f90 \
-                    		src/photochem.f90 \
+                    		src/photochem_clima.f90 \
+                        src/photochem.f90 \
                     		src/cvode_funcs.f90	\
                     		src/lin_alg.f \
-                        photochem_clima.o \
 -m Photochem \
 --opt="-O3" \
 --f90flags='-freal-4-real-8 -fopenmp' \
@@ -21,7 +21,7 @@ only: setup right_hand_side jacobian \
 integrate cvode cvode_save cvode_equilibrium \
 steam2photochem
 
-rm photochem_clima.mod photochem_clima.o
+# rm photochem_clima.mod photochem_clima.o
 # python -m numpy.f2py -c src/modules/Rainout_vars.f90 src/modules/reading_vars.f90 src/Photochem.f90 src/lin_alg.f src/cvode_funcs.f90 \
 # -m Photochem \
 # --opt="-O3" \

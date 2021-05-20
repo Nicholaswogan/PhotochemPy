@@ -1,18 +1,20 @@
 module photochem_clima
   implicit none
-  private
   
-  public :: eta_clima, pahlevan_H2_clima, zahnle_eddy
+  ! public :: eta_clima, pahlevan_H2_clima, zahnle_eddy
+  
+  private :: fcn_pahlevan, P_above_trop, &
+             alt_above_trop, alt_trop
   
   integer, parameter :: real_kind = kind(1.d0)
   ! globals
-  real(real_kind) :: mubar_g, grav_g, z_g, P_surf_g
-  real(real_kind), parameter :: k_boltz = 1.3807d-16 ! boltzmann constant (cgs units)
-  real(real_kind), parameter :: n_avo = 6.022d23 ! avo's number
+  real(real_kind), private :: mubar_g, grav_g, z_g, P_surf_g
+  real(real_kind), private, parameter :: k_boltz = 1.3807d-16 ! boltzmann constant (cgs units)
+  real(real_kind), private, parameter :: n_avo = 6.022d23 ! avo's number
   ! 3rd order polynomial fit to T(log10P) in the troposphere
-  ! from Pahlevan et al. 2019
-  real(real_kind), parameter :: poly(4) = [295.74510905, 76.02965729, &
-                                           -3.60269118, 9.88900334] 
+  ! from Pahlevan et al. 2019 (235 K tropopause)
+  real(real_kind), private, parameter :: poly(4) = [295.74510905d0, 76.02965729d0, &
+                                                    -3.60269118d0, 9.88900334d0]
                                    
 contains
 

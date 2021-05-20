@@ -17,11 +17,12 @@ import numpy as np
 version = '0.2.0'
 
 only = 'only: setup right_hand_side jacobian'+ \
-        ' integrate cvode cvode_save cvode_equilibrium :'
+        ' integrate cvode cvode_save cvode_equilibrium steam2photochem :'
         
 sources = ['src/photochem_data.f90', \
            'src/photochem_vars.f90', \
            'src/photochem_wrk.f90', \
+           'src/photochem_clima.f90', \
            'src/photochem.f90', \
            'src/cvode_funcs.f90', \
            'src/lin_alg.f']
