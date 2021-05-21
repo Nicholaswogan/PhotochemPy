@@ -33,7 +33,7 @@ program main
     stop
   endif
   
-  nz_in = 400
+  nz_in = 200
   P_surf = 3.d0
   P_top = 2.1427d-08
   allocate(usol_layer(nq))
@@ -54,7 +54,7 @@ program main
   ! call integrate(10000,converged,err)
   ! max_cvode_steps = 100000
   ! print*,max_cvode_steps
-  call cvode_equilibrium(1.d-3, 1.d-23, .true., success, err)
+  call cvode_equilibrium(1.d-3, 1.d-28, .true., success, err)
   if (len_trim(err) /= 0) then
     print*,trim(err)
     print*,'error worked properly'

@@ -221,7 +221,6 @@ subroutine cvode_save(T0, usol_start, nnq, nnz, t_eval, num_t_eval, rtol, atol, 
 
   ! other
   double precision, dimension(nnq,nnz) :: solution_temp
-  character(len=25) :: tmp0, tmp1 ! for io
   integer*4 LNST, LNFE, LNSETUP, LNNI, LNCF, LNETF, LNJE ! for printing stats
   data LNST/3/, LNFE/4/, LNETF/5/,  LNCF/6/, LNNI/7/, LNSETUP/8/, &
       LNJE/17/
@@ -460,11 +459,11 @@ end subroutine
 
 subroutine cvode_equilibrium(rtol, atol, use_fast_jacobian, success, err)
   use photochem_data, only: nr, nq, np, nz1, nq1, isl, nz, jtrop, &
-                            lh, lh2, lh2o, dz, nsp2, background_spec, jtrop
+                            lh2o, dz, nsp2, jtrop
   use photochem_vars, only: verbose, usol_init, usol_out, &
                             den, fluxo, flow, T, P, den, press, rpar_init
   use photochem_wrk, only: cvode_stepper, wfall, dk, scale_h, h_atm, yp, yl, &
-                           bh2n2, bhn2, raingc, A, rain, rpar
+                           bx1x2, raingc, A, rain, rpar
   implicit none
   ! input
   double precision, intent(in) :: rtol ! relative tolerance
@@ -539,19 +538,15 @@ subroutine cvode_equilibrium(rtol, atol, use_fast_jacobian, success, err)
         enddo
       enddo
     endif
-
-    if (background_spec /= 'H2') then
-      do i=1,NZ-1
-        fluxo(LH,i) = fluxo(LH,i) &
-          - bHN2(i)*(usol(LH,i+1) - usol(LH,i))/dz(i) &
-          + bHN2(i)*0.5*(usol(LH,i) + usol(LH,i+1)) &
-          *(1./H_atm(i) - 1./scale_H(LH,i))
-        fluxo(LH2,i) =fluxo(LH2,i) &
-          - bH2N2(i)*(usol(LH2,i+1) - usol(LH2,i))/dz(i) &
-          + bH2N2(i)*0.5*(usol(LH2,i) + usol(LH2,i+1)) &
-          *(1./H_atm(i) - 1./scale_H(LH2,i))
+    
+    do i=1,NZ-1
+      do j=1,(NQ-NP)
+        fluxo(j,i) = fluxo(j,i) &
+                    - bX1X2(j,i)*(usol(j,i+1) - usol(j,i))/dz(i) &
+                    + bX1X2(j,i)*0.5*(usol(j,i) + usol(j,i+1)) &
+                    *(1./H_atm(i) - 1./scale_H(j,i))
       enddo
-    endif
+    enddo
 
     DO K=1,NQ
       FLOW(K) = FLUXO(K,1) - (YP(K,1) - YL(K,1)*D(K,1))*DZ(1)

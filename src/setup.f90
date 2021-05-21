@@ -72,19 +72,19 @@
   end subroutine
 
   
-  subroutine diffusion_coeffs(nq, nz, den, dz, DK, bhN2, bh2N2, scale_H, H_atm, &
+  subroutine diffusion_coeffs(nq, nz, den, dz, DK, bx1x2, scale_H, H_atm, &
                               DU, DL, DD, ADU, ADL, ADD)
-    use photochem_data, only: lh2, lh, nq1, nz1, background_spec
+    use photochem_data, only: nq1, nz1, np
     implicit none
     
     integer, intent(in) :: nq, nz
-    real(8), intent(in) :: den(nz), dz(nz), dk(nz), bhn2(nz), bh2n2(nz)
+    real(8), intent(in) :: den(nz), dz(nz), dk(nz), bx1x2(nq,nz)
     real(8), intent(in) :: scale_H(nq,nz), H_atm(nz)
     
     real(8), intent(out) :: DU(nq,nz), DL(nq,nz), DD(nq,nz)
     real(8), intent(out) :: ADU(nq,nz), ADL(nq,nz), ADD(nq,nz)
     
-    integer :: i, j
+    integer :: i, j, k
   
     ! eddy diffusion stuff
     do i=1,nq1
@@ -105,49 +105,31 @@
         ADD(i,j) = 0.0D0
       enddo
     enddo
-
-    if (background_spec /= 'H2') then ! there is H2 molecular diffusion
-      ! diff limited flux implemented as effusion velocity
-      DU(LH,1) = DU(LH,1) + bHN2(1)/Den(1)/DZ(1)**2
-      ADU(LH,1) = bHN2(1)/Den(1)/DZ(1)/2.* &
-          (1./scale_H(LH,1)-1./H_atm(1))
-      DU(LH2,1) = DU(LH2,1) + bH2N2(1)/Den(1)/DZ(1)**2
-      ADU(LH2,1) = bH2N2(1)/Den(1)/DZ(1)/2.* &
-          (1./scale_H(LH2,1)-1./H_atm(1))
+    
+    do k=1,(NQ-NP)
+      !       if(mbound(k).eq.0) then
+      DU(k,1) = DU(k,1) + bX1X2(k,1)/Den(1)/DZ(1)**2
+      ADU(k,1) = bX1X2(k,1)/Den(1)/DZ(1)/2.* &
+         (1./scale_H(k,1)-1./H_atm(1))
       ! upper boundary condition
-      DL(LH,NZ) = DL(LH,NZ) + bHN2(nz1)/Den(nz)/DZ(NZ)**2
-      ADL(LH,NZ) = -bHN2(nz1)/Den(nz)/DZ(nz)/2.* &
-          (1./scale_H(LH,nz1)-1./H_atm(nz1))
-      DL(LH2,NZ) = DL(LH2,NZ) + bH2N2(nz1)/Den(nz)/DZ(NZ)**2
-      ADL(LH2,NZ) = -bH2N2(nz1)/Den(nz)/DZ(NZ)/2.* &
-          (1./scale_H(LH2,nz1)-1./H_atm(nz1))
-      !  unused....
-      DD(LH,1) = DU(LH,1)
-      ADD(LH,1) = -ADU(LH,1)
-      DD(LH2,1) = DU(LH2,1)
-      ADD(LH2,1) = -ADU(LH2,1)
+      DL(k,NZ) = DL(k,NZ) + bX1X2(k,nz1)/Den(nz)/DZ(NZ)**2
+      ADL(k,NZ) = -bX1X2(k,nz1)/Den(nz)/DZ(nz)/2.* &
+        (1./scale_H(k,nz1)-1./H_atm(nz1))
+      !  unused...
+      DD(k,1) = DU(k,1)
+      ADD(k,1) = -ADU(k,1)
 
-      ! interior grid points   fixed 8-13-05
+      ! interior grid points   ?fixed 8-13-05
       do j=2,nz1
-        DU(LH,j) = DU(LH,j) + bHN2(j)/Den(j)/DZ(j)**2
-        ADU(LH,j) = bHN2(j)/Den(j)/DZ(j)/2.* &
-                (1./scale_H(LH,j)-1./H_atm(j))
-        DL(LH,j) = DL(LH,j) + bHN2(j-1)/Den(j)/DZ(j)**2
-        ADL(LH,j) = -bHN2(j-1)/Den(j)/DZ(j)/2.* &
-                (1./scale_H(LH,j-1)-1./H_atm(j-1))
-        DU(LH2,j) = DU(LH2,j) + bH2N2(j)/Den(j)/DZ(j)**2
-        ADU(LH2,j) = bH2N2(j)/Den(j)/DZ(j)/2.* &
-                 (1./scale_H(LH2,j)-1./H_atm(j))
-        DL(LH2,j) = DL(LH2,j) + bH2N2(j-1)/Den(j)/DZ(j)**2
-        ADL(LH2,j) = -bH2N2(j-1)/Den(j)/DZ(j)/2.* &
-                 (1./scale_H(LH2,j-1)-1./H_atm(j-1))
-        DD(LH,j) = DU(LH,j) + DL(LH,j)
-        ADD(LH,j) = -ADU(LH,j) - ADL(LH,j)
-        DD(LH2,j) = DU(LH2,j) + DL(LH2,j)
-        ADD(LH2,j) = -ADU(LH2,j) - ADL(LH2,j)
-       enddo
-    endif  !end molecular diffusion for H and H2 loop
-  
-  
-  
+         DU(k,j) = DU(k,j) + bX1X2(k,j)/Den(j)/DZ(j)**2
+         ADU(k,j) = bX1X2(k,j)/Den(j)/DZ(j)/2.* &
+               (1./scale_H(k,j)-1./H_atm(j))
+         DL(k,j) = DL(k,j) + bX1X2(k,j-1)/Den(j)/DZ(j)**2
+         ADL(k,j) = -bX1X2(k,j-1)/Den(j)/DZ(j)/2.* &
+               (1./scale_H(k,j-1)-1./H_atm(j-1))
+         DD(k,j) = DU(k,j) + DL(k,j)
+         ADD(k,j) = -ADU(k,j) - ADL(k,j)
+      enddo
+    enddo
+
   end subroutine

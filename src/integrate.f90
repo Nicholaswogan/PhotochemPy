@@ -9,7 +9,7 @@
                               lbound, fixedmr, vdep, vdep0, veff, veff0, smflux, sgflux, &
                               distheight, distflux, mbound, T, den, edd, fluxo, flow, H2Osat, P, &
                               press
-    use photochem_wrk, only: rpar, wfall, aersol, hscale, scale_h, h_atm, bHN2, bH2N2, &
+    use photochem_wrk, only: rpar, wfall, aersol, hscale, scale_h, h_atm, bx1x2, &
                              A, yl, yp, rain, raingc, &
                              adl, add, adu, dl, dd, du, dk, &
                              zapNO, zapO2, zapCO, zapH2, zapO, tauedd, &
@@ -105,7 +105,7 @@
       
       call densty(nq, nz, usol, T, den, P, press) 
       call difco(nq,nz,usol, T, den, edd, &
-                hscale, tauedd, DK, H_atm, bhn2, bh2n2, scale_H)
+                hscale, tauedd, DK, H_atm, bx1x2, scale_H)
       call photsatrat(nz, T, P, den, Jtrop, H2Osat, H2O) ! H2o mixing ratio
       DO J=1,JTROP
         USOL(LH2O,J) = H2O(J) 
@@ -114,20 +114,20 @@
         call ltning(nq, nz, usol, &
                     zapNO, zapO2, zapCO, zapH2, zapO)
       endif
-      call diffusion_coeffs(nq, nz, den, dz, DK, bhN2, bh2N2, scale_H, H_atm, &
+      call diffusion_coeffs(nq, nz, den, dz, DK, bx1x2, scale_H, H_atm, &
                            DU, DL, DD, ADU, ADL, ADD)
                                     
       ! below is H escape
       if (background_spec /= 'H2') then ! then we can consider its upper and lower boundary
-        if (mbound(LH2) == 0) then
-    !      !use effusion velocity formulation of diffusion limited flux
-          Veff(LH) = 1.0*bhN2(nz)/DEN(NZ)*(1./Hscale(nz) &
-           - 1./scale_H(LH,nz))
-    !      !diff lim flux
-          Veff(LH2) = 1.0*bH2N2(nz)/DEN(NZ)*(1./Hscale(nz) &
-          - 1./scale_H(LH2,nz))
-        endif
-      endif    
+       if (mbound(LH2) == 0) then
+         Veff(LH2) = 1.0*bx1x2(lh2,nz)/DEN(NZ)*(1./Hscale(nz) &
+         - 1./scale_H(LH2,nz))
+       endif
+      endif  
+      if (mbound(lH) == 0) then
+       Veff(LH) = 1.0*bx1x2(LH,nz)/DEN(NZ)*(1./Hscale(nz) &
+        - 1./scale_H(LH,nz))
+      endif
       
       call rates(nz, nr, T, den, A)
       call dochem(-1, nr, nsp2, nq, nz, usol, A, isl, jtrop, D, fval)
@@ -648,20 +648,15 @@
       enddo
     endif
 
-    if (background_spec /= 'H2') then
-      do i=1,NZ-1
-        fluxo(LH,i) = fluxo(LH,i) &
-          - bHN2(i)*(usol(LH,i+1) - usol(LH,i))/dz(i) &
-          + bHN2(i)*0.5*(usol(LH,i) + usol(LH,i+1)) &
-          *(1./H_atm(i) - 1./scale_H(LH,i))
-        fluxo(LH2,i) =fluxo(LH2,i) &
-          - bH2N2(i)*(usol(LH2,i+1) - usol(LH2,i))/dz(i) &
-          + bH2N2(i)*0.5*(usol(LH2,i) + usol(LH2,i+1)) &
-          *(1./H_atm(i) - 1./scale_H(LH2,i))
+    do i=1,NZ-1
+      do j=1,(NQ-NP)
+        fluxo(j,i) = fluxo(j,i) &
+                    - bX1X2(j,i)*(usol(j,i+1) - usol(j,i))/dz(i) &
+                    + bX1X2(j,i)*0.5*(usol(j,i) + usol(j,i+1)) &
+                    *(1./H_atm(i) - 1./scale_H(j,i))
       enddo
-    endif
-
-
+    enddo
+    
     DO K=1,NQ
       FLOW(K) = FLUXO(K,1) - (YP(K,1) - YL(K,1)*D(K,1))*DZ(1)
       FUP(K) = FLUXO(K,NZ1) + (YP(K,NZ) - YL(K,NZ)*D(K,NZ))*DZ(NZ)

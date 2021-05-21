@@ -3285,13 +3285,13 @@
       real*8 PLOG(NZ),SIGL(NZ),BIGX(NZ),KA(17),SIG0(NZ,17),CL(NZ),KB(17)
       real*8 A(17,9), B(17,5),SRO2(NZ,17),TO2L(NZ)
       real*8 columndepth(KJ,NZ)
-      real*8 BK,C,SD,AM,e_19,zy,PI,ZYR,U0
+      real*8 BK,C,SD,AM,e_19
       integer KMAX,L,K
       BK = 1.38E-16 !Boltzmann constant - in erg/K
-      PI = 3.14159
-      ZYR = ZY*PI/180. ! note ZY is passed in subroutine call ! - solar angle in radians
-      U0 = COS(ZYR)
-      AM = 1./U0
+      ! PI = 3.14159
+      ! ZYR = ZY*PI/180. ! note ZY is passed in subroutine call ! - solar angle in radians
+      ! U0 = COS(ZYR)
+      ! AM = 1./U0
       !1 don't know why kevin had this in here. something about double precision
       e_19=2e-19
       ierr =0

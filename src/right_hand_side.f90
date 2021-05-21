@@ -10,7 +10,7 @@
                               distheight, distflux, mbound, T, den, edd, H2Osat, P, &
                               press
                               
-    use photochem_wrk, only: wfall, aersol, hscale, scale_h, h_atm, bHN2, bH2N2, &
+    use photochem_wrk, only: wfall, aersol, hscale, scale_h, h_atm, bx1x2, &
                              A, rain, raingc, &
                              adl, add, adu, dl, dd, du, dk, &
                              zapNO, zapO2, zapCO, zapH2, zapO, tauedd, &
@@ -71,7 +71,7 @@
     
     call densty(nq, nz, usol, T, den, P, press) 
     call difco(nq,nz,usol, T, den, edd, &
-              hscale, tauedd, DK, H_atm, bhn2, bh2n2, scale_H)
+              hscale, tauedd, DK, H_atm, bx1x2, scale_H)
     call photsatrat(nz, T, P, den, Jtrop, H2Osat, H2O) ! H2o mixing ratio
     DO J=1,JTROP
       USOL(LH2O,J) = H2O(J) 
@@ -80,20 +80,20 @@
       call ltning(nq, nz, usol, &
                   zapNO, zapO2, zapCO, zapH2, zapO)
     endif
-    call diffusion_coeffs(nq, nz, den, dz, DK, bhN2, bh2N2, scale_H, H_atm, &
+    call diffusion_coeffs(nq, nz, den, dz, DK, bx1x2, scale_H, H_atm, &
                          DU, DL, DD, ADU, ADL, ADD)
                                   
     ! below is H escape
     if (background_spec /= 'H2') then ! then we can consider its upper and lower boundary
       if (mbound(LH2) == 0) then
-  !      !use effusion velocity formulation of diffusion limited flux
-        Veff(LH) = 1.0*bhN2(nz)/DEN(NZ)*(1./Hscale(nz) &
-         - 1./scale_H(LH,nz))
-  !      !diff lim flux
-        Veff(LH2) = 1.0*bH2N2(nz)/DEN(NZ)*(1./Hscale(nz) &
+        Veff(LH2) = 1.0*bx1x2(lh2,nz)/DEN(NZ)*(1./Hscale(nz) &
         - 1./scale_H(LH2,nz))
       endif
     endif  
+    if (mbound(lH) == 0) then
+      Veff(LH) = 1.0*bx1x2(LH,nz)/DEN(NZ)*(1./Hscale(nz) &
+       - 1./scale_H(LH,nz))
+    endif
 
     call rates(nz, nr, T, den, A)
     call dochem(-1, nr, nsp2, nq, nz, usol, A, isl, jtrop, D, fval)

@@ -248,8 +248,7 @@ contains
       deallocate(H_ATM)
       deallocate(DK)
       deallocate(SCALE_H)
-      deallocate(BHN2)
-      deallocate(BH2N2)
+      deallocate(bx1x2)
       deallocate(h2osat)
       deallocate(DD)
       deallocate(DL)
@@ -346,15 +345,13 @@ contains
     allocate(H_ATM(nz))
     allocate(DK(nz))
     allocate(SCALE_H(nq,nz))
-    allocate(BHN2(nz))
-    allocate(BH2N2(nz))
+    allocate(bx1x2(nq,nz))
     tauedd = 0.0d0
     hscale = 0.0d0
     h_atm = 0.0d0
     dk = 0.0d0
     scale_h = 0.0d0
-    bhn2 = 0.0d0
-    bh2n2 = 0.0d0
+    bx1x2 = 0.d0
 
     ! needed in PhotSatrat.f90
     allocate(h2osat(nz))

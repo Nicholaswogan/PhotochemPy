@@ -1,7 +1,7 @@
 
-SUBROUTINE DIFCO(nq,nz,usol, T, den, edd, &
-                 hscale, tauedd, DK, H_atm, bhn2, bh2n2, scale_H)
-  use photochem_data, only: g, planet, mass, &
+subroutine DIFCO(nq,nz,usol, T, den, edd, &
+                 hscale, tauedd, DK, H_atm, bx1x2, scale_H)
+  use photochem_data, only: g, mass, &
                             background_mu
   implicit none
   
@@ -9,7 +9,8 @@ SUBROUTINE DIFCO(nq,nz,usol, T, den, edd, &
   real(8), intent(in) :: usol(nq,nz), T(nz), den(nz), edd(nz)
   
   real(8), intent(out) :: hscale(nz), tauedd(nz), DK(nz)
-  real(8), intent(out) :: H_atm(nz), bhn2(nz), bh2n2(nz)
+  real(8), intent(out) :: H_atm(nz)
+  real(8), intent(out) :: bx1x2(nq,nz)
   real(8), intent(out) :: scale_H(nq,nz)
   
   
@@ -47,62 +48,19 @@ SUBROUTINE DIFCO(nq,nz,usol, T, den, edd, &
     DO j = 1 , nq
       SCALE_H(j,i) = bkmg*tav*wt/MASS(j)
     ENDDO
-
-    !          IF ( fh2.GE.0.50 ) THEN
-    ! !-mab: Proceed with this loop for giant planets instead...
-    ! !-mab: transferring the "b" portion of the "DI" expression from Ravi's version since DI = b/n
-    ! !-mab: where b is the binary molecular diffusion parameter and DI is the diffusion coefficient
-    ! !-mab: got relation from Jim's new book Chapter 5.
-    ! ! (b has a constant*T^(some power) form for terrestrial gases in Chapter 5. Not established for giant planets?_?)
-    !             DO j = 1 , nq
-    !                BX1X2(j,i) = 1.52E18*(1./MASS(j)+1./wt)**0.5*(tav**0.5)
-    !             ENDDO
-    !-mab: One of the below options to be used for terrestrial planets.
-    IF ( planet.EQ.'EARTH' ) THEN
-      BHN2(i) = 2.7E19*(tav/200.)**0.75
-                                       ! correct for N2
-      BH2N2(i) = 1.4E19*(tav/200.)**0.75
-                                       ! correct for N2
-      !        bXN2(i) = 4.0D18*(TAV/200.)**0.75
-    ELSEIF ( planet.EQ.'MARS' ) THEN
-      BHN2(i) = 0.8*1.8*1.4E19*(tav/200.)**0.75
-                                              ! correct for CO2
-      BH2N2(i) = 0.8*1.4E19*(tav/200.)**0.75
-                                           ! correct for CO2
-      !        bXN2(i) = 4.0D18*(TAV/200.)**0.75
-    ELSEIF ( planet.EQ.'DRY' ) THEN ! assume O2-dominated - this is the same as N2 for now
-      BHN2(i) = 2.7E19*(tav/200.)**0.75
-                                       ! correct for N2
-      BH2N2(i) = 1.4E19*(tav/200.)**0.75
-                                       ! correct for N2
-      ! Note: there will be a separate expression in output.f for this scenario as well
-    ENDIF
-    !        bXN2(i) = 4.0D18*(TAV/200.)**0.75
-    !-mab: Should we put an error check for cases that don't fall above or below?
-    !-mab: What are we doing for Titan?
+    do j = 1,nq
+      bx1x2(j,i) = 1.52d18*(1.d0/mass(j)+1.d0/wt)**0.5d0*(tav**0.5)
+    enddo
+    
   ENDDO
-
+  
+  ! top layer of atmosphere
   H_ATM(nz) = bkmg*tav
   DO j = 1 , nq
      SCALE_H(j,nz) = bkmg*T(nz)*wt/MASS(j)
   ENDDO
-
-  ! IF ( fh2.GE.0.50 ) THEN
-  !    DO j = 1 , nq
-  !       BX1X2(j,nz) = 1.52E18*(1./MASS(j)+1./wt)**0.5*(T(nz)**0.5)
-  !    ENDDO
-  !-mab: One of the below options to be used for terrestrial planets.
-  IF ( planet.EQ.'EARTH' ) THEN
-    BHN2(nz) = 2.7E19*(T(nz)/200.)**0.75   ! correct for N2
-    BH2N2(nz) = 1.4E19*(T(nz)/200.)**0.75  ! correct for N2
-  !        bXN2(nz) = 4.0D18*(T(nz)/200.)**0.75
-  ELSEIF ( planet.EQ.'MARS' ) THEN
-    BHN2(nz) = 0.8*1.8*1.4E19*(T(nz)/200.)**0.75  ! correct for CO2
-    BH2N2(nz) = 0.8*1.4E19*(T(nz)/200.)**0.75     ! correct for CO2
-    !        bXN2(nz) = 4.0D18*(T(nz)/200.)**0.75
-  ELSEIF ( planet.EQ.'DRY' ) THEN    ! assume O2-dominated - this is the same as N2 for now
-    BHN2(i) = 2.7E19*(tav/200.)**0.75   ! correct for N2
-    BH2N2(i) = 1.4E19*(tav/200.)**0.75  ! correct for N2
-  ENDIF     !output.f impacted
+  do j = 1,nq
+    bx1x2(j,NZ) = 1.52d18*(1.d0/mass(j)+1.d0/wt)**0.5d0*(T(nz)**0.5d0)
+  enddo
 
 end subroutine

@@ -41,7 +41,8 @@ module photochem_wrk
   real*8, allocatable, dimension(:) :: HSCALE
   real*8, allocatable, dimension(:) :: tauedd
   real*8, allocatable, dimension(:) :: DK
-  real*8, allocatable, dimension(:) :: H_ATM, BHN2, BH2N2
+  real*8, allocatable, dimension(:) :: H_ATM
+  real*8, allocatable, dimension(:,:) :: bx1x2
   real*8, allocatable, dimension(:,:) :: SCALE_H
   
   ! needed in setup.f90
