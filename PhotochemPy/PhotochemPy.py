@@ -94,6 +94,7 @@ class PhotochemPy:
                 
             self.code_run = False
             self.redox_factor = np.nan
+            self.test_for_reproducibility()
 
     def setup(self,species_dat,reactions_rx,set_file,\
               atmosphere_txt, flux_txt):
@@ -149,6 +150,18 @@ class PhotochemPy:
             
         self.code_run = False
         self.redox_factor = np.nan
+        self.test_for_reproducibility()
+        
+    def test_for_reproducibility(self):
+        u0 = self.vars.usol_init.flatten(order='F').copy()
+        u1 = self.vars.usol_init.flatten(order='F').copy()*2.0
+        self.right_hand_side(u0)
+        rhs1 = self.right_hand_side(u1)
+        rhs2 = self.right_hand_side(u1)
+        should_be_true = np.all(np.isclose(rhs1,rhs2,rtol=1.0e-8,atol=1.0e-30))
+        if not should_be_true:
+            raise PhotochemError("There is a problem with the right-hand-side. "+\
+                                 "Two calls with the same inputs gave different results.")        
 
     def integrate(self,nsteps=1000,method='Backward_Euler',rtol = 1e-3, atol = 1e-27, fast_and_loose = True):
         '''
@@ -194,7 +207,8 @@ class PhotochemPy:
                 
         return self.code_run
 
-    def evolve(self,t0,usol_start,t_eval,rtol = 1.0e-3, atol= 1e-27, nsteps = 1000000, fast_and_loose = True, outfile = None, overwrite = False):
+    def evolve(self,t0,usol_start,t_eval,rtol = 1.0e-3, atol= 1e-27, nsteps = 1000000, \
+               fast_and_loose = True, outfile = None, overwrite = False, amount2save = 1):
         """Evolves the atmosphere with the CVODE BDF integrator from Sundials.
 
         Parameters
@@ -226,7 +240,7 @@ class PhotochemPy:
         if usol_start.shape != (self.data.nq, self.data.nz):
             raise PhotochemError('usol_start is the wrong shape')
             
-        self.wrk.max_cvode_steps = nsteps
+        self.vars.max_cvode_steps = nsteps
 
         # in this case num_sol = len(t_eval)
         if outfile == None:
@@ -238,7 +252,7 @@ class PhotochemPy:
         else:
             if os.path.isfile(outfile) and not overwrite:
                 raise PhotochemError(outfile,' is already a file.')
-            success, err = self.photo.cvode_save(t0,usol_start,t_eval,rtol,atol,fast_and_loose,outfile)
+            success, err = self.photo.cvode_save(t0,usol_start,t_eval,rtol,atol,fast_and_loose,outfile,amount2save)
             if len(err.strip()) > 0:
                 raise PhotochemError(err.decode("utf-8").strip())
             if not success:

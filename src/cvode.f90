@@ -190,11 +190,14 @@ subroutine cvode(T0, usol_start, nnq, nnz, t_eval, num_t_eval, rtol, atol, &
 end subroutine
 
 subroutine cvode_save(T0, usol_start, nnq, nnz, t_eval, num_t_eval, rtol, atol, &
-                      use_fast_jacobian, outfilename, success, err)
-  use photochem_data, only: neq, nq, nz, jtrop, ispec, np
+                      use_fast_jacobian, outfilename, amount2save, success, err)
+  use photochem_data, only: neq, nq, nz, jtrop, ispec, np, nr, background_spec, &
+                            nw, wavl, z, jchem, kj, ks, photoreac, photonums, photospec, &
+                            jchem, nmax, iprod, iloss,nump,numl, nsp
   use photochem_vars, only: verbose, lbound, fixedmr, T, den, P, Press, max_cvode_steps, &
-                            rpar_init
-  use photochem_wrk, only: cvode_stepper, rain, raingc, global_err, rpar
+                            rpar_init, edd
+  use photochem_wrk, only: cvode_stepper, rain, raingc, global_err, rpar, surf_radiance, A, yp, yl
+  
   implicit none
 
   ! inputs
@@ -208,6 +211,7 @@ subroutine cvode_save(T0, usol_start, nnq, nnz, t_eval, num_t_eval, rtol, atol, 
   double precision, intent(in) :: atol ! absolute tolerance
   logical, intent(in) :: use_fast_jacobian ! if True then use my jacobian (keep false!)
   character(len=*), intent(in) :: outfilename ! were to save the solution
+  integer, intent(in) :: amount2save
   
 
   ! output
@@ -228,6 +232,13 @@ subroutine cvode_save(T0, usol_start, nnq, nnz, t_eval, num_t_eval, rtol, atol, 
   integer*8 nneq, IOUT(25), IPAR(2), mu, ml
   double precision TT
   double precision U(neq), ROUT(10), RRPAR(1)
+  real(8), allocatable :: UDOT(:), loss(:,:)
+  real(8), allocatable :: photorates(:,:)
+  integer :: ind(1)
+  
+  allocate(UDOT(neq))
+  allocate(loss(nq,nz))
+  allocate(photorates(ks,nz))
   
   err = ''
 
@@ -239,15 +250,7 @@ subroutine cvode_save(T0, usol_start, nnq, nnz, t_eval, num_t_eval, rtol, atol, 
   mu = nq ! upper diagonal
   ml = nq ! lower diagonal
   ITASK = 1 ! for output
-
-  ! file prep
-  open(1,file=outfilename,status='replace')
-  write(1,'(a11)',advance='no') ispec(1)
-  do i=2,nq
-    write(1,'(a25)',advance='no') ispec(i)
-  enddo
-  close(1)
-
+  
   ! begin stuff that needs to be inizialized
   if (np.gt.0) then
     rpar = rpar_init
@@ -264,6 +267,42 @@ subroutine cvode_save(T0, usol_start, nnq, nnz, t_eval, num_t_eval, rtol, atol, 
       U(K) = usol_start(i,j)
     enddo
   enddo
+  call right_hand_side(U,UDOT,neq,err)
+  
+  
+  ! file prep
+  open(2,file=outfilename,status='replace',form="unformatted")
+  write(2) nq 
+  write(2) np
+  write(2) nw
+  write(2) kj
+  write(2) ks
+  write(2) nz
+  write(2) background_spec ! len=8
+  write(2) ispec
+  write(2) photospec
+  
+  ! new
+  write(2) nsp
+  write(2) nr
+  write(2) nmax
+  write(2) jchem
+  write(2) iprod
+  write(2) iloss
+  write(2) nump
+  write(2) numl
+  write(2) A
+  ! new
+  
+  write(2) z
+  write(2) T
+  write(2) edd
+  write(2) rpar_init
+  write(2) wavl
+  
+  write(2) num_t_eval
+  write(2) amount2save
+  close(2)
 
   CALL FNVINITS(1, nneq, IER)
   if (ier .ne. 0) then
@@ -366,20 +405,32 @@ subroutine cvode_save(T0, usol_start, nnq, nnz, t_eval, num_t_eval, rtol, atol, 
         solution_temp(i,1) = fixedmr(i)
       endif
     enddo
-
-    ! save to file
-    open(1,file=outfilename,status='old',position="append")
-    write(1,*)
-    write(tmp0,"(es25.15)") t_eval(ii)
-    write(tmp1,"(i25)") ii
-    write(1,"(a, 25a, a, 25a)") 't = ',adjustl(tmp0), 'n = ', adjustl(tmp1)
-    do i = 1,nz
-      do j = 1,nq ! write each line
-        write(1,'(es25.15e3)',advance='no') solution_temp(j,i)
-      enddo
-      write(1,*) ! new line
+    
+    call right_hand_side(U,UDOT,neq,err)
+    photorates = 0.d0
+    do j=1,kj
+      i = photoreac(j)   
+      ind = findloc(photospec,i)
+      photorates(ind(1),:) = photorates(ind(1),:) + A(photonums(j),:)*solution_temp(i,:)*den
     enddo
-    close(1)
+    do j = 1,nq
+      loss(j,:) = yl(j,:)*solution_temp(j,:)*den
+    enddo
+    
+    
+    open(2,file=outfilename,status='old',form="unformatted", position="append")
+    write(2) 999
+    write(2) t_eval(ii)
+    write(2) solution_temp
+    if (amount2save == 1) then
+      write(2) den
+      write(2) P
+      write(2) surf_radiance
+      write(2) photorates
+      write(2) yp
+      write(2) loss
+    endif
+    close(2)
 
   enddo
 
@@ -400,6 +451,9 @@ subroutine cvode_save(T0, usol_start, nnq, nnz, t_eval, num_t_eval, rtol, atol, 
     success = .false.
   endif
   call fcvfree
+  deallocate(UDOT)
+  deallocate(loss)
+  deallocate(photorates)
 
 end subroutine
 

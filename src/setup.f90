@@ -9,7 +9,7 @@
                               
     use photochem_vars, only: den, P, press, T, edd, usol_init, rpar_init, &
                               wfall_init, aersol_init
-    use photochem_wrk, only: rain, raingc
+    use photochem_wrk, only: rain, raingc, rpar, wfall, aersol
     implicit none
 
     ! local variables
@@ -62,6 +62,9 @@
     ! end Stuff that depends on T
     
     ! begin stuff that needs to be inizialized
+    rpar = rpar_init
+    wfall = wfall_init
+    aersol = aersol_init
     call densty(nq, nz, usol_init, T, den, P, press)
     call rainout(.true.,Jtrop,usol_init,nq,nz, T,den, rain, raingc,err)
     if (len_trim(err) /= 0) return 
