@@ -1,6 +1,6 @@
 
 subroutine densty(nz, mubar_z, T, den, P, press)
-  use photochem_data, only: g, p0, r0, &
+  use photochem_data, only: grav_z, p0, &
                             dz, z, mass, background_mu
   implicit none
   
@@ -9,13 +9,13 @@ subroutine densty(nz, mubar_z, T, den, P, press)
   real(8), intent(out) :: den(nz), P(nz), press(nz)
   
   ! local varaibles
-  real*8 g0, rgas, bk
+  real*8 rgas, bk
   real*8 roverm
-  real*8 t0, p1, ha, r, tav, gz
+  real*8 t0, p1, ha, tav
   integer i
 !   THIS SUBROUTINE CALCULATES ATMOSPHERIC NUMBER DENSITIES, ASSUM-
 !   ING HYDROSTATIC EQUILIBRIUM
-  g0 = g
+  ! g0 = g
   rgas = 8.3143E7
   bk = 1.38054E-16
 
@@ -23,17 +23,17 @@ subroutine densty(nz, mubar_z, T, den, P, press)
   roverm = rgas/mubar_z(1)
 
   t0 = T(1) + (T(1)-T(2))/2.
-  ha = roverm*0.5*(t0+T(1))/g0
+  ha = roverm*0.5*(t0+T(1))/grav_z(1)
   p1 = p0*1E6*EXP(-0.5*DZ(1)/ha)
   DEN(1) = p1/(bk*T(1))
 !
 ! ***** FIND DENSITY FROM HYDROSTATIC EQUILIBRIUM *****
   DO i = 2 , nz
     roverm = rgas/mubar_z(i)
-    r = r0 + Z(i)
-    gz = g0*(r0/r)*(r0/r)
+    ! r = r0 + Z(i)
+    ! gz = g0*(r0/r)*(r0/r)
     tav = 0.5*(T(i)+T(i-1))
-    ha = roverm*tav/gz
+    ha = roverm*tav/grav_z(i)
     DEN(i) = DEN(i-1)*EXP(-DZ(i)/ha)*T(i-1)/T(i)
   ENDDO
 ! ***** FIND PRESSURE FROM THIS DENSITY *********

@@ -5,7 +5,8 @@
                               frak, ihztype, jtrop, &
                               wavl, wav, wavu, dz, z, ztrop, &
                               lgrid, flux, &
-                              top_atmos, bottom_atmos, background_mu, mass
+                              top_atmos, bottom_atmos, background_mu, mass, &
+                              r0, grav_surf, grav_z
                               
     use photochem_vars, only: den, P, press, T, edd, usol_init, rpar_init, &
                               wfall_init, aersol_init
@@ -50,11 +51,12 @@
     call allocate_memory_z(nz,err)
     if (len_trim(err) /= 0) return
     call photgrid(top_atmos, bottom_atmos, nz, z, dz) 
+    call compute_gravity(nz, z, r0, grav_surf, grav_z)
     call interp2atmosfile(nz, nq, np, z, T, edd, &
                           usol_init, rpar_init, wfall_init, &
                           aersol_init, err)
     if (len_trim(err) /= 0) return
-    ! end stuff dthat depends on just z
+    ! end stuff that depends on just z
     
     ! This stuff depends on T an z
     JTROP=minloc(Z,1, Z .ge. ztrop)-1 ! depends on ztrop (sorta like T)
@@ -76,6 +78,20 @@
     if (len_trim(err) /= 0) return 
     ! end stuff that needs to be inizialized
   end subroutine
+  
+  subroutine compute_gravity(nz,z,r0,grav_surf,grav_z)
+    implicit none
+    integer, intent(in) :: nz
+    real(8), intent(in) :: z(nz), r0, grav_surf
+    real(8), intent(out) :: grav_z(nz)
+    integer :: i
+    
+    do i = 1,nz
+      grav_z(i) = grav_surf*r0**2.d0/(r0 + z(i))**2.d0
+    enddo
+    
+  end subroutine
+
 
   
   subroutine diffusion_coeffs(nq, nz, den, dz, DK, bx1x2, scale_H, H_atm, &

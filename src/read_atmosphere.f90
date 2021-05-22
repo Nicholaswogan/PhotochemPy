@@ -273,7 +273,7 @@ end subroutine
 
 subroutine steam2photochem(nq, np, nz_in, P_surf, P_top, usol_layer, rpar_layer, err)
   use photochem_clima, only: pahlevan_H2_clima
-  use photochem_data, only: g, background_mu, background_spec, mass, nz
+  use photochem_data, only: grav_surf, background_mu, background_spec, mass, nz
   use photochem_vars, only: P, edd
   
   implicit none
@@ -310,7 +310,7 @@ subroutine steam2photochem(nq, np, nz_in, P_surf, P_top, usol_layer, rpar_layer,
   call mean_molecular_weight(nq, usol_layer, mass, background_mu, mubar)
   ! Use simple climate model to compute T(z)
   ! z_in, T_in, ztrop_in
-  call pahlevan_H2_clima(P_surf, mubar, g, P_top, nz_in, &
+  call pahlevan_H2_clima(P_surf, mubar, grav_surf, P_top, nz_in, &
                          z_in, P_in, T_in, ztrop_in, err)
   if (len_trim(err) /= 0) return
   
@@ -343,7 +343,7 @@ end subroutine
 
 
 subroutine new_z_grid(nq, np, nz_in, ztrop_in, P_surf_in, z_in, T_in, edd_in, usol_layer, rpar_layer, err)
-  use photochem_data, only: nz, z, dz, jtrop, ztrop, P0, LH2O, mass, background_mu
+  use photochem_data, only: nz, z, dz, jtrop, ztrop, P0, LH2O, mass, background_mu, r0, grav_surf, grav_z
   use photochem_vars, only: T, edd, usol_init, rpar_init, &
                             wfall_init, aersol_init
   implicit none
@@ -363,6 +363,7 @@ subroutine new_z_grid(nq, np, nz_in, ztrop_in, P_surf_in, z_in, T_in, edd_in, us
   call allocate_memory_z(nz,err)
   if (len_trim(err) /= 0) return
   z = z_in
+  call compute_gravity(nz, z, r0, grav_surf, grav_z)
   dz = z_in(2)-z_in(1)
   T = T_in
   edd = edd_in

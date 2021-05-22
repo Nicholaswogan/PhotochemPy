@@ -1,6 +1,6 @@
 
       SUBROUTINE SEDMNT(Frak,Hcdens,nz,np, conver,change_radius)
-        use photochem_data, only: nq, g, lhcaer, lhcaer2, ls8aer, lso4aer
+        use photochem_data, only: nq, grav_z, lhcaer, lhcaer2, ls8aer, lso4aer
         use photochem_vars, only: T, den
         use photochem_wrk, only: rpar, wfall, aersol, raingc, hscale, tauedd, &
                                  fsulf
@@ -290,7 +290,7 @@
 !-EW  HYDROCARBONS: USE FRACTAL MICROPHYSICS
                r = RPAR(j,k)
                rf = RFRAC(j,k)
-               f1 = 2./9.*rhop(j)*r*r*r*g/eta(j)/rf
+               f1 = 2./9.*rhop(j)*r*r*r*grav_z(j)/eta(j)/rf
                                               !from stokes law F1 - settling velocity
        !giada -  it's computing terminal velocity  when frictional and buoyant forces
        !are equal to gravitational force
@@ -304,7 +304,7 @@
                r = RPAR(j,k)
 !-AP      ETA = 1.77E-4 * SQRT(T(J)/288.)
 !-AP  From Prupacher & Klett
-               f1 = 2./9.*rhop(j)*r*r*g/eta(j)
+               f1 = 2./9.*rhop(j)*r*r*grav_z(j)/eta(j)
                alph = a + b*EXP(-c*r/alam(j))
                WFALL(j,k) = f1*(1.+alam(j)*alph/r)
             ENDIF

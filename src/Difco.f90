@@ -1,7 +1,7 @@
 
 subroutine DIFCO(nq, nz, mubar_z, T, den, edd, &
                  hscale, tauedd, DK, H_atm, bx1x2, scale_H)
-  use photochem_data, only: g, mass, &
+  use photochem_data, only: grav_z, mass, &
                             background_mu
   implicit none
   
@@ -30,14 +30,14 @@ subroutine DIFCO(nq, nz, mubar_z, T, den, edd, &
   !
   !   COMPUTE DIFFUSION LIFETIME AT EACH HEIGHT (H*H/K)
   DO i = 1 , nz
-    bkmg = 1.38E-16/(1.67E-24*mubar_z(i)*g)  
+    bkmg = 1.38E-16/(1.67E-24*mubar_z(i)*grav_z(i))  
     h = bkmg*T(i)
     HSCALE(i) = h
     TAUEDD(i) = h*h/EDD(i)
   ENDDO
 
   DO i = 1 , nz - 1 
-    bkmg = 1.38E-16/(1.67E-24*mubar_z(i)*g)  
+    bkmg = 1.38E-16/(1.67E-24*mubar_z(i)*grav_z(i))  
     tav = SQRT(T(i)*T(i+1)) !average temperature at grid center
     H_ATM(i) = bkmg*tav
     !  compute scale heights of all the species in the atmosphere at all
@@ -52,7 +52,7 @@ subroutine DIFCO(nq, nz, mubar_z, T, den, edd, &
   ENDDO
   
   ! top layer of atmosphere
-  bkmg = 1.38E-16/(1.67E-24*mubar_z(nz)*g)  
+  bkmg = 1.38E-16/(1.67E-24*mubar_z(nz)*grav_z(i))  
   H_ATM(nz) = bkmg*tav
   DO j = 1 , nq
      SCALE_H(j,nz) = bkmg*T(nz)*mubar_z(nz)/MASS(j)

@@ -3,7 +3,7 @@
 subroutine read_settings(set_file, err)
   use yaml, only : parse, error_length
   use yaml_types, only : type_node, type_dictionary, type_error
-  use photochem_data, only: g, fscale, alb, ztrop, r0, p0, planet, &
+  use photochem_data, only: grav_surf, fscale, alb, ztrop, r0, p0, planet, &
                             AGL, EPSJ, prono, hcdens, zy, Lgrid, &
                             IO2, ino, frak, ihztype, lightning, &
                             np, top_atmos, bottom_atmos, nz
@@ -29,7 +29,7 @@ subroutine read_settings(set_file, err)
       planet_dict => root%get_dictionary('planet',.true.,error = io_err)
       if (associated(io_err)) then; err = trim(set_file)//trim(io_err%message); return; endif
       
-      g = planet_dict%get_real('surface-gravity',error = io_err)
+      grav_surf = planet_dict%get_real('surface-gravity',error = io_err)
       if (associated(io_err)) then; err = trim(set_file)//trim(io_err%message); return; endif
       fscale = planet_dict%get_real('fscale',error = io_err)
       if (associated(io_err)) then; err = trim(set_file)//trim(io_err%message); return; endif

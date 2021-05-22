@@ -261,7 +261,11 @@ contains
       deallocate(fluxo)
       deallocate(yp)
       deallocate(yl)
+      deallocate(grav_z)
     endif
+    
+    allocate(grav_z(nz))
+    grav_z = 0.d0
     
     ! needed in Photo.f90
     allocate(QEXTT(nw,nz,np))

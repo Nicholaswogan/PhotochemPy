@@ -2,7 +2,7 @@
 
       SUBROUTINE PHOTO(zy, agl, io2, ino, usol, mubar_z, D, nsp2, nw, nq, nz, kj, prates,&
                       surf_radiance)
-        use photochem_data, only: np, nsp, fscale, g, &
+        use photochem_data, only: np, nsp, fscale, grav_z, &
                                   photoreac, ispec, rstand, qexthc, ghc, W0HC, &
                                   wavl, wav, sq, flux, mass, &
                                   background_mu, lno, nz1, dz
@@ -134,7 +134,7 @@
         do k=1,kj
           DO  M=1,NZ1
             I = NZ - M      !run through heights from the top down.
-            RMG = RGAS/(mubar_z(m)*G)           !gm cm^2/s^2/mol/K  / g *s^2/cm ->  cm/mol/K
+            RMG = RGAS/(mubar_z(m)*grav_z(m))           !gm cm^2/s^2/mol/K  / g *s^2/cm ->  cm/mol/K
             HA = RMG*0.5*(T(I) + T(I+1))  !scale height RT/MG
   !
   ! ! c-mc        DZ = Z(I+1) - Z(I)  !ACK - this is good, but should already exist as a vector

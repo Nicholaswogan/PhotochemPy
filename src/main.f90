@@ -34,13 +34,13 @@ program main
   endif
   
   ! nz_in = 200
-  ! P_surf = 3.d0
+  ! P_surf = 7.d0
   ! P_top = 2.1427d-08
   ! allocate(usol_layer(nq))
   ! allocate(rpar_layer(np))
   ! usol_layer = 1.d-30
-  ! usol_layer(65) = 0.1d0
-  ! usol_layer(66) = 0.1d0
+  ! usol_layer(65) = 0.05d0
+  ! usol_layer(66) = 0.05d0
   ! rpar_layer = [1.d-5, 1.d-5, 1.d-7, 1.d-7]
   ! call steam2photochem(nq, np, nz_in, P_surf, P_top, usol_layer, rpar_layer, err)
   ! if (len_trim(err) /= 0) then
@@ -51,10 +51,10 @@ program main
   ! 
   ! print*,P0
   
-  call integrate(10000,converged,err)
+  ! call integrate(10000,converged,err)
   ! max_cvode_steps = 100000
   ! print*,max_cvode_steps
-  ! call cvode_equilibrium(1.d-3, 1.d-27, .true., success, err)
+  call cvode_equilibrium(1.d-3, 1.d-27, .true., success, err)
   if (len_trim(err) /= 0) then
     print*,trim(err)
     print*,'error worked properly'

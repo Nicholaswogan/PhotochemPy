@@ -59,8 +59,9 @@ module photochem_data
   integer, allocatable, dimension(:) :: NUML, NUMP
   
   ! needed in read_planet.f90
-  real*8 :: G, Fscale, Alb, ztrop,far,R0,P0
+  real*8 :: grav_surf, Fscale, Alb, ztrop,far,R0,P0
   character(len=8) :: planet
+  real(8), allocatable :: grav_z(:)
   
   ! needed in read_photochem.f90
   real*8 :: AGL, EPSJ, prono, hcdens, zy
