@@ -1,6 +1,6 @@
 
 FC=gfortran
-FCFLAGS=-g -freal-4-real-8 -Wunused-variable# -fbounds-check # I think fbounds-check is finding a false-positive
+FCFLAGS=-g -freal-4-real-8 -g -fopenmp -O3#-Wunused-variable# -fbounds-check # I think fbounds-check is finding a false-positive
 SRC=photochem_data.f90 \
 		photochem_vars.f90 \
 		photochem_wrk.f90 \

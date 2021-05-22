@@ -4,7 +4,7 @@
                               lco, lh, lh2, lhcaer, lhcaer2, lh2o, lo, &
                               ls4, ls8aer, lso4aer, &
                               z, dz, jtrop, ispec, photoreac, photonums, nsp2, &
-                              background_spec, lightning
+                              background_spec, lightning, mass, background_mu
     use photochem_vars, only: verbose, usol_init, usol_out, rpar_init, wfall_init, aersol_init, &
                               lbound, fixedmr, vdep, vdep0, veff, veff0, smflux, sgflux, &
                               distheight, distflux, mbound, T, den, edd, fluxo, flow, H2Osat, P, &
@@ -52,6 +52,7 @@
     integer cr, cm, c1, c2
     real*8,dimension(nq1) :: SR, FUP
     real*8, dimension(nsp2,nz) :: D
+    real(8) :: mubar_z(nz)
 
     converged = .true.
     err = ''
@@ -66,7 +67,10 @@
       aersol = aersol_init
     endif
     ! begin stuff that needs to be inizialized
-    call densty(nq, nz, usol_init, T, den, P, press) 
+    do i = 1,nz
+      call mean_molecular_weight(nq, usol_init(:,i), mass, background_mu, mubar_z(i))
+    enddo
+    call densty(nz, mubar_z, T, den, P, press) 
     call rainout(.true.,Jtrop,usol_init,nq,nz, T,den, rain, raingc, err) 
     if (len_trim(err) /= 0) return
     ! end stuff that needs to be inizialized
@@ -103,8 +107,11 @@
       TIME = TIME + DT
       nn = nn+1
       
-      call densty(nq, nz, usol, T, den, P, press) 
-      call difco(nq,nz,usol, T, den, edd, &
+      do i = 1,nz
+        call mean_molecular_weight(nq, usol(:,i), mass, background_mu, mubar_z(i))
+      enddo
+      call densty(nz, mubar_z, T, den, P, press) 
+      call difco(nq, nz, mubar_z, T, den, edd, &
                 hscale, tauedd, DK, H_atm, bx1x2, scale_H)
       call photsatrat(nz, T, P, den, Jtrop, H2Osat, H2O) ! H2o mixing ratio
       DO J=1,JTROP
@@ -214,7 +221,8 @@
         endif
       endif
       
-      call photo(zy, agl, io2, ino, usol, D, nsp2, nw, nq, nz, kj, prates, surf_radiance)
+      call photo(zy, agl, io2, ino, usol, mubar_z, D, nsp2, nw, &
+                 nq, nz, kj, prates, surf_radiance)
       do j=1,kj
         do i=1,nz
           A(photonums(j),i)=prates(j,i)

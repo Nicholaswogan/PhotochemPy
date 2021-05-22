@@ -343,7 +343,7 @@ end subroutine
 
 
 subroutine new_z_grid(nq, np, nz_in, ztrop_in, P_surf_in, z_in, T_in, edd_in, usol_layer, rpar_layer, err)
-  use photochem_data, only: nz, z, dz, jtrop, ztrop, P0, LH2O
+  use photochem_data, only: nz, z, dz, jtrop, ztrop, P0, LH2O, mass, background_mu
   use photochem_vars, only: T, edd, usol_init, rpar_init, &
                             wfall_init, aersol_init
   implicit none
@@ -354,7 +354,7 @@ subroutine new_z_grid(nq, np, nz_in, ztrop_in, P_surf_in, z_in, T_in, edd_in, us
   character(len=err_len), intent(out) :: err
   
   real(8) :: den_tmp(nz_in), P_tmp(nz_in), press_tmp(nz_in), H2O_tmp(nz_in), h2osat_tmp(nz_in)
-  
+  real(8), allocatable :: mubar_z(:)
   integer :: i
   
   P0 = P_surf_in
@@ -372,7 +372,11 @@ subroutine new_z_grid(nq, np, nz_in, ztrop_in, P_surf_in, z_in, T_in, edd_in, us
   ztrop = ztrop_in
   jtrop=minloc(z,1, z .ge. ztrop)-1 ! depends on ztrop (sorta like T)
   ! treat water vapor special
-  call densty(nq, nz, usol_init, T, den_tmp, P_tmp, press_tmp) 
+  allocate(mubar_z(nz))
+  do i = 1,nz
+    call mean_molecular_weight(nq, usol_init(:,i), mass, background_mu, mubar_z(i))
+  enddo
+  call densty(nz, mubar_z, T, den_tmp, P_tmp, press_tmp) 
   call photsatrat(nz, T, P_tmp, den_tmp, Jtrop, H2Osat_tmp, H2O_tmp)
   do i=1,jtrop
     usol_init(LH2O,i) = H2O_tmp(i) 

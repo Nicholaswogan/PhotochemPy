@@ -104,6 +104,10 @@ subroutine read_settings(set_file, err)
     err = "nz can not be less than 50. See "//trim(set_file)
     return
   endif
+  if (nz > 800) then
+    err = "nz can not be >800 See "//trim(set_file)
+    return
+  endif
   
   if (bottom_atmos < 0.d0) then
     err = "bottom of the atmosphere can not be less than 0. See "//trim(set_file)

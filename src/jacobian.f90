@@ -4,7 +4,7 @@
                               lco, lhcaer, lhcaer2, lh2o, lo, &
                               ls8aer, lso4aer, background_spec, lh, lh2, &
                               z, dz, jtrop, ispec, photoreac, photonums, &
-                              lda, epsj, lightning
+                              lda, epsj, lightning, mass, background_mu
                               
     use photochem_vars, only: lbound, fixedmr, vdep, vdep0, veff, veff0, smflux, sgflux, &
                               distheight, distflux, mbound, T, den, edd, H2Osat, P, &
@@ -49,6 +49,7 @@
     real*8 ZTOP, ZTOP1, DTINV
     real*8 DPU(NZ,NP),DPL(NZ,NP)
     real*8, dimension(nsp2,nz) :: D
+    real(8) :: mubar_z(nz)
     ! real*8, dimension(nq,nz) :: fv
     ! integer cr, cm, c1, c2
     err = ''
@@ -71,8 +72,13 @@
 
     ! DTINV = 1.d0/1.D-6
     DTINV = 0.d0
-    call densty(nq, nz, usol, T, den, P, press) 
-    call difco(nq,nz,usol, T, den, edd, &
+    
+    do i = 1,nz
+      call mean_molecular_weight(nq, usol(:,i), mass, background_mu, mubar_z(i))
+    enddo
+    
+    call densty(nz, mubar_z, T, den, P, press) 
+    call difco(nq,nz,mubar_z, T, den, edd, &
               hscale, tauedd, DK, H_atm, bx1x2, scale_H)
     call photsatrat(nz, T, P, den, Jtrop, H2Osat, H2O) ! H2o mixing ratio
     DO J=1,JTROP
@@ -185,7 +191,8 @@
       endif
     endif
     
-    call photo(zy, agl, io2, ino, usol, D, nsp2, nw, nq, nz, kj, prates, surf_radiance)
+    call photo(zy, agl, io2, ino, usol, mubar_z, D, nsp2, nw, &
+               nq, nz, kj, prates, surf_radiance)
     do j=1,kj
       do i=1,nz
         A(photonums(j),i)=prates(j,i)

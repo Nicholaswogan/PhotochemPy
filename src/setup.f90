@@ -5,7 +5,7 @@
                               frak, ihztype, jtrop, &
                               wavl, wav, wavu, dz, z, ztrop, &
                               lgrid, flux, &
-                              top_atmos, bottom_atmos
+                              top_atmos, bottom_atmos, background_mu, mass
                               
     use photochem_vars, only: den, P, press, T, edd, usol_init, rpar_init, &
                               wfall_init, aersol_init
@@ -20,6 +20,8 @@
     character(len=*),intent(in) :: flux_txt
     character(len=1000), intent(out) :: err
     integer :: nnq, nnsp, nnp, nnr, kks, kkj, nnw
+    real(8), allocatable :: mubar_z(:)
+    integer :: i
     
     ! this subroutine will load all the data into memory
     ! (e.g. cross sections, rate date, etc.)
@@ -65,7 +67,11 @@
     rpar = rpar_init
     wfall = wfall_init
     aersol = aersol_init
-    call densty(nq, nz, usol_init, T, den, P, press)
+    allocate(mubar_z(nz))
+    do i = 1,nz
+      call mean_molecular_weight(nq, usol_init(:,i), mass, background_mu, mubar_z(i))
+    enddo
+    call densty(nz, mubar_z, T, den, P, press)
     call rainout(.true.,Jtrop,usol_init,nq,nz, T,den, rain, raingc,err)
     if (len_trim(err) /= 0) return 
     ! end stuff that needs to be inizialized

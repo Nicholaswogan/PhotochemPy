@@ -1,6 +1,6 @@
 
 
-      SUBROUTINE PHOTO(zy, agl, io2, ino, usol, D, nsp2, nw, nq, nz, kj, prates,&
+      SUBROUTINE PHOTO(zy, agl, io2, ino, usol, mubar_z, D, nsp2, nw, nq, nz, kj, prates,&
                       surf_radiance)
         use photochem_data, only: np, nsp, fscale, g, &
                                   photoreac, ispec, rstand, qexthc, ghc, W0HC, &
@@ -15,6 +15,7 @@
       integer, intent(in) :: io2, ino
       integer, intent(in) :: nq, nz, kj, nsp2, nw
       real*8, dimension(nq,nz), intent(in) :: usol
+      real(8), intent(in) :: mubar_z(nz)
       real*8, dimension(nsp2,nz), intent(out) :: D
       
       real*8, dimension(kj,nz), intent(out) :: prates
@@ -32,7 +33,7 @@
       integer LLNO(35)
       integer icomp(10,nz)
       ! real*8 PRATESNO(NZ)  !used in High resolution model
-      real*8 PM, BK, RGAS, wt, hc, pi
+      real*8 PM, BK, RGAS, hc, pi
       integer JNO, jso2, js8l, js8r, js8
       ! integer JO2
       integer l3, tempcount
@@ -60,10 +61,6 @@
       BK = 1.38D-16               !Boltzmann constant - in erg/K
       RGAS = 8.3143D7             !erg/mol/K
 
-      ! NEED molecular wt of atmosphere
-      call mean_molecular_weight(nq, usol(:,1), mass, background_mu, wt)
-
-      RMG = RGAS/(WT*G)           !gm cm^2/s^2/mol/K  / g *s^2/cm ->  cm/mol/K
       PI = 3.14159
       ZYR = ZY*PI/180.            ! note ZY is passed in subroutine call - solar angle in radians
       U0 = COS(ZYR)
@@ -137,6 +134,7 @@
         do k=1,kj
           DO  M=1,NZ1
             I = NZ - M      !run through heights from the top down.
+            RMG = RGAS/(mubar_z(m)*G)           !gm cm^2/s^2/mol/K  / g *s^2/cm ->  cm/mol/K
             HA = RMG*0.5*(T(I) + T(I+1))  !scale height RT/MG
   !
   ! ! c-mc        DZ = Z(I+1) - Z(I)  !ACK - this is good, but should already exist as a vector
@@ -490,7 +488,7 @@
         ANC = 1.
         QCOL = 3.D-15
         DO I=1,NZ
-          VMEAN = SQRT(8.*BK*T(I)/(WT*PM*PI))
+          VMEAN = SQRT(8.*BK*T(I)/(mubar_z(i)*PM*PI))
           SCOL = DEN(I)*QCOL*VMEAN
           prates(JS8,I) = prates(JS8R,I) * prates(JS8L,I)/ &
                     (prates(JS8L,I) + SCOL/ANC)

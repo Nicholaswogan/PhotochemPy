@@ -1,16 +1,16 @@
 
-subroutine densty(nq, nz, usol, T, den, P, press)
+subroutine densty(nz, mubar_z, T, den, P, press)
   use photochem_data, only: g, p0, r0, &
                             dz, z, mass, background_mu
   implicit none
   
-  integer, intent(in) :: nq, nz
-  real(8), intent(in) :: usol(nq,nz), T(nz)
+  integer, intent(in) :: nz
+  real(8), intent(in) :: mubar_z(nz), T(nz)
   real(8), intent(out) :: den(nz), P(nz), press(nz)
   
   ! local varaibles
   real*8 g0, rgas, bk
-  real*8 wt, roverm
+  real*8 roverm
   real*8 t0, p1, ha, r, tav, gz
   integer i
 !   THIS SUBROUTINE CALCULATES ATMOSPHERIC NUMBER DENSITIES, ASSUM-
@@ -19,8 +19,8 @@ subroutine densty(nq, nz, usol, T, den, P, press)
   rgas = 8.3143E7
   bk = 1.38054E-16
 
-  call mean_molecular_weight(nq, usol(:,1), mass, background_mu, wt)
-  roverm = rgas/wt
+  
+  roverm = rgas/mubar_z(1)
 
   t0 = T(1) + (T(1)-T(2))/2.
   ha = roverm*0.5*(t0+T(1))/g0
@@ -29,6 +29,7 @@ subroutine densty(nq, nz, usol, T, den, P, press)
 !
 ! ***** FIND DENSITY FROM HYDROSTATIC EQUILIBRIUM *****
   DO i = 2 , nz
+    roverm = rgas/mubar_z(i)
     r = r0 + Z(i)
     gz = g0*(r0/r)*(r0/r)
     tav = 0.5*(T(i)+T(i-1))

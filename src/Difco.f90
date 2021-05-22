@@ -1,12 +1,12 @@
 
-subroutine DIFCO(nq,nz,usol, T, den, edd, &
+subroutine DIFCO(nq, nz, mubar_z, T, den, edd, &
                  hscale, tauedd, DK, H_atm, bx1x2, scale_H)
   use photochem_data, only: g, mass, &
                             background_mu
   implicit none
   
   integer, intent(in) :: nq, nz
-  real(8), intent(in) :: usol(nq,nz), T(nz), den(nz), edd(nz)
+  real(8), intent(in) :: mubar_z(nz), T(nz), den(nz), edd(nz)
   
   real(8), intent(out) :: hscale(nz), tauedd(nz), DK(nz)
   real(8), intent(out) :: H_atm(nz)
@@ -15,14 +15,9 @@ subroutine DIFCO(nq,nz,usol, T, den, edd, &
   
   
   ! local variables
-  real*8 wt
   real*8 bkmg, eddav, denav
   real*8 h, tav
   integer i,j
-
-  call mean_molecular_weight(nq, usol(:,1), mass, background_mu, wt)
-  bkmg = 1.38E-16/(1.67E-24*wt*g)    
-  tav = 0.d0
 
   ! ***** DK(I) = K*N AT GRID STEP I+1/2 *****
   DO i = 1 , nz - 1
@@ -35,32 +30,35 @@ subroutine DIFCO(nq,nz,usol, T, den, edd, &
   !
   !   COMPUTE DIFFUSION LIFETIME AT EACH HEIGHT (H*H/K)
   DO i = 1 , nz
+    bkmg = 1.38E-16/(1.67E-24*mubar_z(i)*g)  
     h = bkmg*T(i)
     HSCALE(i) = h
     TAUEDD(i) = h*h/EDD(i)
   ENDDO
 
   DO i = 1 , nz - 1 
+    bkmg = 1.38E-16/(1.67E-24*mubar_z(i)*g)  
     tav = SQRT(T(i)*T(i+1)) !average temperature at grid center
     H_ATM(i) = bkmg*tav
     !  compute scale heights of all the species in the atmosphere at all
     !   heights
     DO j = 1 , nq
-      SCALE_H(j,i) = bkmg*tav*wt/MASS(j)
+      SCALE_H(j,i) = bkmg*tav*mubar_z(i)/MASS(j)
     ENDDO
     do j = 1,nq
-      bx1x2(j,i) = 1.52d18*(1.d0/mass(j)+1.d0/wt)**0.5d0*(tav**0.5)
+      bx1x2(j,i) = 1.52d18*(1.d0/mass(j)+1.d0/mubar_z(i))**0.5d0*(tav**0.5)
     enddo
     
   ENDDO
   
   ! top layer of atmosphere
+  bkmg = 1.38E-16/(1.67E-24*mubar_z(nz)*g)  
   H_ATM(nz) = bkmg*tav
   DO j = 1 , nq
-     SCALE_H(j,nz) = bkmg*T(nz)*wt/MASS(j)
+     SCALE_H(j,nz) = bkmg*T(nz)*mubar_z(nz)/MASS(j)
   ENDDO
   do j = 1,nq
-    bx1x2(j,NZ) = 1.52d18*(1.d0/mass(j)+1.d0/wt)**0.5d0*(T(nz)**0.5d0)
+    bx1x2(j,NZ) = 1.52d18*(1.d0/mass(j)+1.d0/mubar_z(nz))**0.5d0*(T(nz)**0.5d0)
   enddo
 
 end subroutine
