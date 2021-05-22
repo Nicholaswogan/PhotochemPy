@@ -6,7 +6,7 @@
                               wavl, wav, wavu, dz, z, ztrop, &
                               lgrid, flux, &
                               top_atmos, bottom_atmos, background_mu, mass, &
-                              r0, grav_surf, grav_z
+                              r0, grav_surf, grav_z, rainout_on
                               
     use photochem_vars, only: den, P, press, T, edd, usol_init, rpar_init, &
                               wfall_init, aersol_init
@@ -74,8 +74,13 @@
       call mean_molecular_weight(nq, usol_init(:,i), mass, background_mu, mubar_z(i))
     enddo
     call densty(nz, mubar_z, T, den, P, press)
-    call rainout(.true.,Jtrop,usol_init,nq,nz, T,den, rain, raingc,err)
-    if (len_trim(err) /= 0) return 
+    if (rainout_on) then
+      call rainout(.true.,Jtrop,usol_init,nq,nz, T,den, rain, raingc, err)
+      if (len_trim(err) /= 0) return
+    else
+      rain = 0.d0
+      raingc = 0.d0
+    endif
     ! end stuff that needs to be inizialized
   end subroutine
   

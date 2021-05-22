@@ -6,7 +6,7 @@ subroutine read_settings(set_file, err)
   use photochem_data, only: grav_surf, fscale, alb, ztrop, r0, p0, planet, &
                             AGL, EPSJ, prono, hcdens, zy, Lgrid, &
                             IO2, ino, frak, ihztype, lightning, &
-                            np, top_atmos, bottom_atmos, nz
+                            np, top_atmos, bottom_atmos, nz, rainout_on
   implicit none
   
   character(len=*), intent(in) :: set_file
@@ -68,6 +68,8 @@ subroutine read_settings(set_file, err)
       if (associated(io_err)) then; err = trim(set_file)//trim(io_err%message); return; endif
       lightning = set_dict%get_logical('lightning',error = io_err)
       if (associated(io_err)) then; err = trim(set_file)//trim(io_err%message); return; endif
+      rainout_on = set_dict%get_logical('rainout-on',error = io_err)
+      if (associated(io_err)) then; err = trim(set_file)//trim(io_err%message); return; endif
       nz = set_dict%get_integer('number-layers',error = io_err)
       if (associated(io_err)) then; err = trim(set_file)//trim(io_err%message); return; endif
       bottom_atmos = set_dict%get_real('bottom-atmosphere',error = io_err)
@@ -118,6 +120,12 @@ subroutine read_settings(set_file, err)
     err = "bottom of the atmosphere must be lower than the top. See "//trim(set_file)
     return
   endif
+  
+  if ((.not.rainout_on) .and. (lightning)) then
+    err = "rainout must be on if lightning is on. See "//trim(set_file)
+    return
+  endif
+  
 
 end subroutine
 

@@ -20,9 +20,8 @@ settings:
   hcdens: 0.63
   ihztype: 0
   solar-zenith-angle: 50.0
-  lightning: true
-  rainout-on: true
+  lightning: false
+  rainout-on: false
   number-layers: 200
   top-atmosphere: 100.0e5
   bottom-atmosphere: 0.0
-  

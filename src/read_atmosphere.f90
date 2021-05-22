@@ -346,6 +346,7 @@ subroutine new_z_grid(nq, np, nz_in, ztrop_in, P_surf_in, z_in, T_in, edd_in, us
   use photochem_data, only: nz, z, dz, jtrop, ztrop, P0, LH2O, mass, background_mu, r0, grav_surf, grav_z
   use photochem_vars, only: T, edd, usol_init, rpar_init, &
                             wfall_init, aersol_init
+  use photochem_wrk, only: rpar
   implicit none
   
   integer, intent(in) :: nq, np, nz_in
@@ -388,6 +389,7 @@ subroutine new_z_grid(nq, np, nz_in, ztrop_in, P_surf_in, z_in, T_in, edd_in, us
   do i = 1,np
     rpar_init(:,i) = rpar_layer(i)
   enddo
+  rpar = rpar_init
   wfall_init = 0.d0
   aersol_init = 0.d0
   ! end stuff dthat depends on just z

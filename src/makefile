@@ -8,8 +8,25 @@ SRC=photochem_data.f90 \
 		photochem.f90 \
 		cvode_funcs.f90	\
 		lin_alg.f \
-		main.f90
-OBJ=$(SRC:.f90=.o)
+		main.f90 \
+		test_all.f90
+# OBJ=$(SRC:.f90=.o)
+OBJ=photochem_data.o \
+		photochem_vars.o \
+		photochem_wrk.o \
+		photochem_clima.o \
+		photochem.o \
+		cvode_funcs.o	\
+		lin_alg.o \
+		main.o 
+OBJJ=photochem_data.o \
+		photochem_vars.o \
+		photochem_wrk.o \
+		photochem_clima.o \
+		photochem.o \
+		cvode_funcs.o	\
+		lin_alg.o \
+		test_all.o
 	
 IDIR=dependencies/include
 MODDIR=dependencies/modules
@@ -21,10 +38,16 @@ LIBS=-lgomp -lm -lsundials_fcvode -lsundials_cvode \
 %.o: %.f90
 	$(FC) $(FCFLAGS) -c $< $(FFLAGS) $(LIBS)
 
+%.o: %.f
+	$(FC) $(FCFLAGS) -c $< $(FFLAGS) $(LIBS)
+
 photo.run: $(OBJ)
 	$(FC) $(FCFLAGS) -o $@ $(OBJ) $(FFLAGS) $(LIBS)
 
+test.all: $(OBJJ)
+	gfortran $(FCFLAGS) -o $@ $(OBJJ) $(FFLAGS) $(LIBS)
+
 clean:
-	@rm -f *.mod *.o photo.run 
-	@touch photo.run.dSYM
-	@rm -r photo.run.dSYM
+	@rm -f *.mod *.o photo.run test.all
+	@touch photo.run.dSYM test.all.dSYM
+	@rm -r photo.run.dSYM test.all.dSYM

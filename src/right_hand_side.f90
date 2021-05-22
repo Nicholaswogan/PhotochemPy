@@ -4,7 +4,7 @@
                               lco, lhcaer, lhcaer2, lh2o, lo, &
                               ls8aer, lso4aer, background_spec, lh, lh2, &
                               z, dz, jtrop, ispec, photoreac, photonums, &
-                              lightning, mass, background_mu
+                              lightning, mass, background_mu, rainout_on
                               
     use photochem_vars, only: lbound, fixedmr, vdep, vdep0, veff, veff0, smflux, sgflux, &
                               distheight, distflux, mbound, T, den, edd, H2Osat, P, &
@@ -128,8 +128,13 @@
       CO2(I) = absorbers(JCO2,I)
     enddo
     
-    call rainout(.false.,Jtrop,Usol,nq,nz, T,den, rain, raingc, err)
-    if (len_trim(err) /= 0) return
+    if (rainout_on) then
+      call rainout(.false.,Jtrop,Usol,nq,nz, T,den, rain, raingc, err)
+      if (len_trim(err) /= 0) return
+    else
+      rain = 0.d0
+      raingc = 0.d0
+    endif
 
     call aercon(nq, nz, usol, P, T, H2SO4S, S8S, fsulf)
 

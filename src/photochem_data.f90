@@ -67,6 +67,7 @@ module photochem_data
   real*8 :: AGL, EPSJ, prono, hcdens, zy
   integer :: Lgrid, IO2, ino, frak, ihztype
   logical :: lightning
+  logical :: rainout_on
   
   ! needed in subroutine photgrid (in photgrid.f90)
   real*8, allocatable, dimension(:) :: z ! altitude of middle of grid

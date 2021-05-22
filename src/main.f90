@@ -6,7 +6,6 @@ program main
   use photochem_vars, only: rootdir,  max_cvode_steps, redox_factor, usol_init
   use photochem_wrk, only: surf_radiance
   implicit none
-  logical converged
   logical success
   character(len=1000) :: err
   character(len=:), allocatable :: template
@@ -51,10 +50,10 @@ program main
   ! 
   ! print*,P0
   
-  ! call integrate(10000,converged,err)
+  ! call integrate(10000,success,err)
   ! max_cvode_steps = 100000
   ! print*,max_cvode_steps
-  call cvode_equilibrium(1.d-3, 1.d-27, .true., success, err)
+  call cvode_equilibrium(1.d-3, 1.d-30, .true., success, err)
   if (len_trim(err) /= 0) then
     print*,trim(err)
     print*,'error worked properly'

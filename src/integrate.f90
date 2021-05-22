@@ -4,7 +4,7 @@
                               lco, lh, lh2, lhcaer, lhcaer2, lh2o, lo, &
                               ls4, ls8aer, lso4aer, &
                               z, dz, jtrop, ispec, photoreac, photonums, nsp2, &
-                              background_spec, lightning, mass, background_mu
+                              background_spec, lightning, mass, background_mu, rainout_on
     use photochem_vars, only: verbose, usol_init, usol_out, rpar_init, wfall_init, aersol_init, &
                               lbound, fixedmr, vdep, vdep0, veff, veff0, smflux, sgflux, &
                               distheight, distflux, mbound, T, den, edd, fluxo, flow, H2Osat, P, &
@@ -71,8 +71,13 @@
       call mean_molecular_weight(nq, usol_init(:,i), mass, background_mu, mubar_z(i))
     enddo
     call densty(nz, mubar_z, T, den, P, press) 
-    call rainout(.true.,Jtrop,usol_init,nq,nz, T,den, rain, raingc, err) 
-    if (len_trim(err) /= 0) return
+    if (rainout_on) then
+      call rainout(.true.,Jtrop,usol_init,nq,nz, T,den, rain, raingc, err)
+      if (len_trim(err) /= 0) return
+    else
+      rain = 0.d0
+      raingc = 0.d0
+    endif
     ! end stuff that needs to be inizialized
 
     do i=1,nq
@@ -162,8 +167,13 @@
         CO2(I) = absorbers(JCO2,I)
       enddo
 
-      call rainout(.false.,Jtrop,Usol,nq,nz, T,den, rain, raingc, err)
-      if (len_trim(err) /= 0) return
+      if (rainout_on) then
+        call rainout(.false.,Jtrop,Usol,nq,nz, T,den, rain, raingc, err)
+        if (len_trim(err) /= 0) return
+      else
+        rain = 0.d0
+        raingc = 0.d0
+      endif
 
       call aercon(nq, nz, usol, P, T, H2SO4S, S8S, fsulf)
 

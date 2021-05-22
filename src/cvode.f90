@@ -1,7 +1,7 @@
 
 subroutine cvode(T0, usol_start, nnq, nnz, t_eval, num_t_eval, rtol, atol, &
                  use_fast_jacobian, solution, success, err)
-  use photochem_data, only: neq, nq, nz, jtrop, np, mass, background_mu
+  use photochem_data, only: neq, nq, nz, jtrop, np, mass, background_mu, rainout_on
   use photochem_vars, only: verbose, lbound, fixedmr, T, den, P, Press, max_cvode_steps, &
                             rpar_init
   use photochem_wrk, only: cvode_stepper, rain, raingc, global_err, rpar
@@ -57,8 +57,13 @@ subroutine cvode(T0, usol_start, nnq, nnz, t_eval, num_t_eval, rtol, atol, &
     call mean_molecular_weight(nq, usol_start(:,i), mass, background_mu, mubar_z(i))
   enddo
   call densty(nz, mubar_z, T, den, P, press) 
-  call rainout(.true.,Jtrop,usol_start,nq,nz, T,den, rain, raingc,err)
-  if (len_trim(err) /= 0) return 
+  if (rainout_on) then
+    call rainout(.true.,Jtrop,usol_start,nq,nz, T,den, rain, raingc, err)
+    if (len_trim(err) /= 0) return
+  else
+    rain = 0.d0
+    raingc = 0.d0
+  endif
   ! end stuff that needs to be inizialized
 
   ! initial conditions
@@ -197,7 +202,7 @@ subroutine cvode_save(T0, usol_start, nnq, nnz, t_eval, num_t_eval, rtol, atol, 
                       use_fast_jacobian, outfilename, amount2save, success, err)
   use photochem_data, only: neq, nq, nz, jtrop, ispec, np, nr, background_spec, &
                             nw, wavl, z, jchem, kj, ks, photoreac, photonums, photospec, &
-                            jchem, nmax, iprod, iloss,nump,numl, nsp, background_mu, mass
+                            jchem, nmax, iprod, iloss,nump,numl, nsp, background_mu, mass, rainout_on
   use photochem_vars, only: verbose, lbound, fixedmr, T, den, P, Press, max_cvode_steps, &
                             rpar_init, edd
   use photochem_wrk, only: cvode_stepper, rain, raingc, global_err, rpar, surf_radiance, A, yp, yl
@@ -263,8 +268,13 @@ subroutine cvode_save(T0, usol_start, nnq, nnz, t_eval, num_t_eval, rtol, atol, 
     call mean_molecular_weight(nq, usol_start(:,i), mass, background_mu, mubar_z(i))
   enddo
   call densty(nz, mubar_z, T, den, P, press) 
-  call rainout(.true.,Jtrop,usol_start,nq,nz, T,den, rain, raingc, err)
-  if (len_trim(err) /= 0) return
+  if (rainout_on) then
+    call rainout(.true.,Jtrop,usol_start,nq,nz, T,den, rain, raingc, err)
+    if (len_trim(err) /= 0) return
+  else
+    rain = 0.d0
+    raingc = 0.d0
+  endif
   ! end stuff that needs to be inizialized
 
   ! initial conditions
@@ -467,7 +477,7 @@ end subroutine
 
 subroutine cvode_equilibrium(rtol, atol, use_fast_jacobian, success, err)
   use photochem_data, only: nr, nq, np, nz1, nq1, isl, nz, jtrop, &
-                            lh2o, dz, nsp2, jtrop, background_mu, mass
+                            lh2o, dz, nsp2, jtrop, background_mu, mass, rainout_on
   use photochem_vars, only: verbose, usol_init, usol_out, &
                             den, fluxo, flow, T, P, den, press, rpar_init
   use photochem_wrk, only: cvode_stepper, wfall, dk, scale_h, h_atm, yp, yl, &
@@ -505,8 +515,13 @@ subroutine cvode_equilibrium(rtol, atol, use_fast_jacobian, success, err)
     call mean_molecular_weight(nq, usol_init(:,i), mass, background_mu, mubar_z(i))
   enddo
   call densty(nz, mubar_z, T, den, P, press) 
-  call rainout(.true.,Jtrop,usol_init,nq,nz, T,den, rain, raingc, err)
-  if (len_trim(err) /= 0) return
+  if (rainout_on) then
+    call rainout(.true.,Jtrop,usol_init,nq,nz, T,den, rain, raingc, err)
+    if (len_trim(err) /= 0) return
+  else
+    rain = 0.d0
+    raingc = 0.d0
+  endif
   ! end stuff that needs to be inizialized
 
   t_eval(1) = 1.d17
