@@ -19,7 +19,7 @@ program main
   err = ''
 
   rootdir = '../PhotochemPy/'
-  template = "Archean2Proterozoic"
+  template = "Archean+haze"
 
   call setup('../input/templates/'//template//'/species.dat', &
              '../input/templates/'//template//'/reactions.rx', &

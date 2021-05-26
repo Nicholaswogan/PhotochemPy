@@ -10,3 +10,4 @@ build
 a.out
 *.dSYM
 build_dir
+test.all

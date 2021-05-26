@@ -75,6 +75,7 @@ def read_evolve_output(filename):
     edd = f.read_record(np.double)
     rpar = f.read_record(np.double).reshape((nz,npp),order='F')
     wavl = f.read_record(np.double)
+    flux = f.read_record(np.double)
 
     nt = f.read_record(np.int32)[0]
     amount2save = f.read_record(np.int32)[0]
@@ -90,6 +91,7 @@ def read_evolve_output(filename):
     sol['edd'] = edd
     sol['rpar'] = rpar
     sol['wavl'] = wavl
+    sol['flux'] = flux
     
     sol['jchem'] = jchem
     sol['iprod'] = iprod
@@ -98,14 +100,14 @@ def read_evolve_output(filename):
     sol['numl'] = numl
     sol['A'] = A
     
-    for sp in ispec[:nq]:
+    for sp in ispec:
         sol[sp] = np.empty((nt,nz))
     sol['time'] = np.empty((nt))
+    sol['den'] = np.empty((nt,nz))
     if amount2save == 1:
         for sp in ispec[:nq]:
             sol[sp+'_chemprod'] = np.empty((nt,nz))
             sol[sp+'_chemloss'] = np.empty((nt,nz))
-        sol['den'] = np.empty((nt,nz))
         sol['P'] = np.empty((nt,nz))
         sol['surf_radiance'] = np.empty((nt,nw))
         for sp in photospecies:
@@ -115,9 +117,9 @@ def read_evolve_output(filename):
         try:
             tmp = f.read_record(np.int32)
             t = f.read_record(np.double)[0]
-            usol = f.read_record(np.double).reshape((nq,nz),order='F')
+            D = f.read_record(np.double).reshape((nsp+2,nz),order='F')
+            den = f.read_record(np.double)
             if amount2save == 1:
-                den = f.read_record(np.double)
                 P = f.read_record(np.double)
                 surf_radiance = f.read_record(np.double)
                 photorates = f.read_record(np.double).reshape((ks,nz),order='F')
@@ -125,14 +127,14 @@ def read_evolve_output(filename):
                 loss = f.read_record(np.double).reshape((nq,nz),order='F')
 
             # save
-            for i,sp in enumerate(ispec[:nq]):
-                sol[sp][j] = usol[i]
+            for i,sp in enumerate(ispec):
+                sol[sp][j] = D[i]/den
             sol['time'][j] = t
+            sol['den'][j] = den
             if amount2save == 1:
                 for i,sp in enumerate(ispec[:nq]):
                     sol[sp+"_chemprod"][j] = yp[i]
                     sol[sp+"_chemloss"][j] = loss[i]
-                sol['den'][j] = den
                 sol['P'][j] = P
                 sol['surf_radiance'][j] = surf_radiance
                 for i,sp in enumerate(photospecies):
@@ -142,14 +144,14 @@ def read_evolve_output(filename):
 
     if j != nt-1:        
         # need to delete j:
-        for i,sp in enumerate(ispec[:nq]):
+        for i,sp in enumerate(ispec):
             sol[sp] = np.delete(sol[sp],slice(j,nt),axis=0)
         sol['time'] = np.delete(sol['time'],slice(j,nt),axis=0)
+        sol['den'] = np.delete(sol['den'],slice(j,nt),axis=0)
         if amount2save == 1:
             for i,sp in enumerate(ispec[:nq]):
                 sol[sp+"_chemprod"] = np.delete(sol[sp+"_chemprod"],slice(j,nt),axis=0)
                 sol[sp+"_chemloss"] = np.delete(sol[sp+"_chemloss"],slice(j,nt),axis=0)
-            sol['den'] = np.delete(sol['den'],slice(j,nt),axis=0)
             sol['P'] = np.delete(sol['P'],slice(j,nt),axis=0)
             sol['surf_radiance'] = np.delete(sol['surf_radiance'],slice(j,nt),axis=0)
             for i,sp in enumerate(photospecies):
@@ -176,27 +178,28 @@ def prod_and_loss(sol, spec, j):
         k = sol['iloss'][0,i,ii]-1
         n = sol['jchem'][0,k]-1 # reactant 1
         m = sol['jchem'][1,k]-1 # reactant 2
-        try:
-            if m == nsp:
-                loss[jj] = sol['A'][k]*sol[sol['ispec'][n]][j]*sol['den'][j]
-                l1 = [sol['jchem'][2,k]-1,sol['jchem'][3,k]-1,sol['jchem'][4,k]-1]
-                loss_react[jj] = sol['ispec'][n]+" + "+'hv'+" => "
-                for l in l1:
-                    if l != -1:
-                        loss_react[jj] += sol['ispec'][l]+" + "     
-                loss_react[jj] = loss_react[jj][:-3]
-            else:
-                loss[jj] = sol['A'][k]*sol[sol['ispec'][n]][j]*sol[sol['ispec'][m]][j]*sol['den'][j]**2
-                l1 = [sol['jchem'][2,k]-1,sol['jchem'][3,k]-1,sol['jchem'][4,k]-1]
-                loss_react[jj] = sol['ispec'][n]+" + "+sol['ispec'][m]+" => "
-                for l in l1:
-                    if l != -1:
-                        loss_react[jj] += sol['ispec'][l]+" + "     
-                loss_react[jj] = loss_react[jj][:-3]
-            jj += 1
-        except:
-            kk += 1
-            pass
+        # try:
+        # if sol['ispec'][m] == "HV":
+        #     loss[jj] = sol['A'][k]*sol[sol['ispec'][n]][j]*sol['den'][j]
+        #     l1 = [sol['jchem'][2,k]-1,sol['jchem'][3,k]-1,sol['jchem'][4,k]-1]
+        #     loss_react[jj] = sol['ispec'][n]+" + "+'hv'+" => "
+        #     for l in l1:
+        #         if l != -1:
+        #             loss_react[jj] += sol['ispec'][l]+" + "     
+        #     loss_react[jj] = loss_react[jj][:-3]
+        # else:
+        loss[jj] = sol['A'][k]*sol[sol['ispec'][n]][j]*sol[sol['ispec'][m]][j]*sol['den'][j]**2
+        l1 = [sol['jchem'][2,k]-1,sol['jchem'][3,k]-1,sol['jchem'][4,k]-1]
+        loss_react[jj] = sol['ispec'][n]+" + "+sol['ispec'][m]+" => "
+        for l in l1:
+            if l != -1:
+                loss_react[jj] += sol['ispec'][l]+" + "     
+        loss_react[jj] = loss_react[jj][:-3]
+        jj += 1
+        # except:
+        #     kk += 1
+        #     pass
+    kk = 0
     loss = np.delete(loss,slice(ll-kk,ll),axis=0)
     loss_react = np.delete(loss_react,slice(ll-kk,ll)).tolist()
 
@@ -211,19 +214,20 @@ def prod_and_loss(sol, spec, j):
         k = sol['iprod'][i,ii]-1
         n = sol['jchem'][0,k]-1 # reactant 1
         m = sol['jchem'][1,k]-1 # reactant 2
-        try:
-            production[jj] = sol['A'][k]*sol[sol['ispec'][n]][j]*sol[sol['ispec'][m]][j]*sol['den'][j]**2
+        # try:
+        production[jj] = sol['A'][k]*sol[sol['ispec'][n]][j]*sol[sol['ispec'][m]][j]*sol['den'][j]**2
 
-            p1 = [sol['jchem'][2,k]-1,sol['jchem'][3,k]-1,sol['jchem'][4,k]-1]
-            prod_react[jj] = sol['ispec'][n]+" + "+sol['ispec'][m]+" => "
-            for p in p1:
-                if p != -1:
-                    prod_react[jj] += sol['ispec'][p]+" + "     
-            prod_react[jj] = prod_react[jj][:-3]
-            jj += 1
-        except:
-            kk += 1
-            pass
+        p1 = [sol['jchem'][2,k]-1,sol['jchem'][3,k]-1,sol['jchem'][4,k]-1]
+        prod_react[jj] = sol['ispec'][n]+" + "+sol['ispec'][m]+" => "
+        for p in p1:
+            if p != -1:
+                prod_react[jj] += sol['ispec'][p]+" + "     
+        prod_react[jj] = prod_react[jj][:-3]
+        jj += 1
+        # except:
+        # kk += 1
+        # pass
+    kk = 0
     production = np.delete(production,slice(pp-kk,pp),axis=0)
     prod_react = np.delete(prod_react,slice(pp-kk,pp)).tolist()
 

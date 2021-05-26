@@ -202,10 +202,11 @@ subroutine cvode_save(T0, usol_start, nnq, nnz, t_eval, num_t_eval, rtol, atol, 
                       use_fast_jacobian, outfilename, amount2save, success, err)
   use photochem_data, only: neq, nq, nz, jtrop, ispec, np, nr, background_spec, &
                             nw, wavl, z, jchem, kj, ks, photoreac, photonums, photospec, &
-                            jchem, nmax, iprod, iloss,nump,numl, nsp, background_mu, mass, rainout_on
+                            jchem, nmax, iprod, iloss,nump,numl, nsp, background_mu, mass, rainout_on, &
+                            Flux
   use photochem_vars, only: verbose, lbound, fixedmr, T, den, P, Press, max_cvode_steps, &
                             rpar_init, edd
-  use photochem_wrk, only: cvode_stepper, rain, raingc, global_err, rpar, surf_radiance, A, yp, yl
+  use photochem_wrk, only: cvode_stepper, rain, raingc, global_err, rpar, surf_radiance, A, yp, yl, D
   
   implicit none
 
@@ -316,6 +317,7 @@ subroutine cvode_save(T0, usol_start, nnq, nnz, t_eval, num_t_eval, rtol, atol, 
   write(2) edd
   write(2) rpar_init
   write(2) wavl
+  write(2) flux
   
   write(2) num_t_eval
   write(2) amount2save
@@ -438,9 +440,10 @@ subroutine cvode_save(T0, usol_start, nnq, nnz, t_eval, num_t_eval, rtol, atol, 
     open(2,file=outfilename,status='old',form="unformatted", position="append")
     write(2) 999
     write(2) t_eval(ii)
-    write(2) solution_temp
+    ! write(2) solution_temp
+    write(2) D
+    write(2) den
     if (amount2save == 1) then
-      write(2) den
       write(2) P
       write(2) surf_radiance
       write(2) photorates

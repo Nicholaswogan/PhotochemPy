@@ -261,6 +261,7 @@ contains
       deallocate(fluxo)
       deallocate(yp)
       deallocate(yl)
+      deallocate(D)
       deallocate(grav_z)
     endif
     
@@ -381,11 +382,13 @@ contains
     allocate(fluxo(nq,nz))
     allocate(yp(nq,nz))
     allocate(yl(nq,nz))
+    allocate(D(nsp2,nz))
     usol_out = 0.0d0
     flow = 0.0d0
     fluxo = 0.0d0
     yp = 0.0d0
     yl = 0.0d0
+    D = 0.d0
   
   end subroutine
   

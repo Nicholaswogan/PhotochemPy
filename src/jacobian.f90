@@ -14,7 +14,7 @@
                              A, rain, raingc, &
                              adl, add, adu, dl, dd, du, dk, &
                              zapNO, zapO2, zapCO, zapH2, zapO, tauedd, &
-                             H2SO4S, S8S, fsulf, surf_radiance
+                             H2SO4S, S8S, fsulf, surf_radiance, D
     implicit none
     ! module variables
     ! all of them?
@@ -48,7 +48,7 @@
     integer lpolyscount
     real*8 ZTOP, ZTOP1, DTINV
     real*8 DPU(NZ,NP),DPL(NZ,NP)
-    real*8, dimension(nsp2,nz) :: D
+    ! real*8, dimension(nsp2,nz) :: D
     real(8) :: mubar_z(nz)
     ! real*8, dimension(nq,nz) :: fv
     ! integer cr, cm, c1, c2

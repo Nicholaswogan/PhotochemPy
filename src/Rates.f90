@@ -44,7 +44,10 @@
               A(J,I) = TBDY(rateparams(1,j),rateparams(2,j), &
                       rateparams(3,j),rateparams(4,j),T(I),DEN(I))  !computed three body reaction rate
             enddo
-
+          else if (reactype(j) == "ELEMT") then
+            do i = 1,nz
+              A(j,i) = rateparams(1,j) * T(i)**(rateparams(2,j))*dexp(-rateparams(3,j)/T(i))
+            enddo
           ! SPECIFY 'WEIRD' REACTION RATES
           ! FILL UP WEIRD RATE CONSTANTS
           ! the below are rate constants which don't fit in the 2BODY or 3BODY category

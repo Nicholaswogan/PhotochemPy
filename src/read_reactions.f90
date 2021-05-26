@@ -81,6 +81,18 @@ subroutine read_reactions(reactions_rx, err)
               trim(adjustl(temp))//' in the file '//trim(reactions_rx)
         return
       endif
+    else if (REACTYPE(i) .EQ. 'ELEMT') then ! elementary reaction from Cantera
+      read(9,'(58X,E9.2,3X,F8.2,3X,F8.2)',iostat = io) rateparams(1,i), rateparams(2,i), rateparams(3,i)
+      backspace(9)
+      read(9,'(58X,A9,3X,A8,3X,A8)',iostat = io) temp1, temp2, temp3
+      if ((len_trim(temp1) == 0) .or. (len_trim(temp2) == 0) .or. &
+          (len_trim(temp3) == 0) .or. &
+          (io /= 0)) then
+        write(temp,'(i5)') i
+        err = 'Problem reading in reaction rate parameters at line '// &
+              trim(adjustl(temp))//' in the file '//trim(reactions_rx)
+        return
+      endif
     else if (REACTYPE(i) .EQ. 'WEIRD') then
       ! If it is weird, then there is nothing to read. Just skip line
       read(9,*)

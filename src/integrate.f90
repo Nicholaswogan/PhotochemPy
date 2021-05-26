@@ -13,7 +13,7 @@
                              A, yl, yp, rain, raingc, &
                              adl, add, adu, dl, dd, du, dk, &
                              zapNO, zapO2, zapCO, zapH2, zapO, tauedd, &
-                             H2SO4S, S8S, fsulf, surf_radiance
+                             H2SO4S, S8S, fsulf, surf_radiance, D
     implicit none
     ! module variables
     ! all of them?
@@ -51,7 +51,7 @@
     real*8, dimension(nq,nz) :: Fval, fv
     integer cr, cm, c1, c2
     real*8,dimension(nq1) :: SR, FUP
-    real*8, dimension(nsp2,nz) :: D
+    ! real*8, dimension(nsp2,nz) :: D
     real(8) :: mubar_z(nz)
 
     converged = .true.

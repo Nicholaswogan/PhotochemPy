@@ -51,6 +51,7 @@ module photochem_wrk
   ! needed in integrate.f90
   real*8, allocatable, dimension(:,:) :: yp
   real*8, allocatable, dimension(:,:) :: yl
+  real*8, allocatable, dimension(:,:) :: D ! density 
   
   ! cvode
   real*8 :: time_prev = -1.d0 ! for printing time

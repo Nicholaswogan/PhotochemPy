@@ -52,7 +52,7 @@ subroutine DIFCO(nq, nz, mubar_z, T, den, edd, &
   ENDDO
   
   ! top layer of atmosphere
-  bkmg = 1.38E-16/(1.67E-24*mubar_z(nz)*grav_z(i))  
+  bkmg = 1.38E-16/(1.67E-24*mubar_z(nz)*grav_z(nz))  
   H_ATM(nz) = bkmg*tav
   DO j = 1 , nq
      SCALE_H(j,nz) = bkmg*T(nz)*mubar_z(nz)/MASS(j)
