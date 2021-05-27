@@ -14,7 +14,7 @@ To install PhotochemPy, you must have the following installed on your system.
 **Python Module:** After satisfying the requirements, then follow these setups to install PhotochemPy
 
 - Clone or download the github repository [`https://github.com/Nicholaswogan/PhotochemPy`](https://github.com/Nicholaswogan/PhotochemPy)
-- In a terminal, navigate to the folder `src/cvode-5.7.0/build_dir`, and run the shell script `compile.sh`. This compiles CVODE.
+- In a terminal, navigate to the folder `src/dependencies`, and run the shell script `compile.sh`.
 - Navigate to the root directory of PhotochemPy, then install with `python -m pip install .`
 
 **Fortran source:** If you prefer to use the code exclusively in Fortran, that is OK too. An example is provided in the folder `examples/fortran_example`.
