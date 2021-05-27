@@ -8,8 +8,7 @@ star = 'Sun_4.0Ga.txt'
 
 pc = PhotochemPy(template+'/species.dat', \
                  template+'/reactions.rx', \
-                 template+'/planet.dat', \
-                 template+'/input_photchem.dat', \
+                 template+'/settings.yaml', \
                  template+'/atmosphere.txt', \
                  template+'/'+star)
 

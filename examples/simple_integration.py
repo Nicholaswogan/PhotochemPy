@@ -1,20 +1,11 @@
 import numpy as np
 from matplotlib import pyplot as plt
-
-# Import PhotochemPy. Do this one of the following ways!
-from PhotochemPy import PhotochemPy # If installed with pip use this!
-
-# If compiled in root directory with compile.sh, uncomment this
-# (and comment out the other import command)
-# import sys
-# sys.path.append("..")
-# from PhotochemPy import PhotochemPy
+from PhotochemPy import PhotochemPy 
 
 # Load input files
 pc = PhotochemPy('../input/templates/Archean+haze/species.dat', \
                  '../input/templates/Archean+haze/reactions.rx', \
-                 '../input/templates/Archean+haze/planet.dat', \
-                 '../input/templates/Archean+haze/input_photchem.dat', \
+                 '../input/templates/Archean+haze/settings.yaml', \
                  '../input/templates/Archean+haze/atmosphere.txt', \
                  '../input/templates/Archean+haze/Sun_2.7Ga.txt')
 

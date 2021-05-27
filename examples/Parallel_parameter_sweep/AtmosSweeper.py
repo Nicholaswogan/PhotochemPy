@@ -5,7 +5,7 @@ import sys
 import time
 import os
 
-pc = PhotochemPy(None,None,None,None,None,None)
+pc = PhotochemPy(None,None,None,None,None)
 
 method = 'Backward_Euler'
 rtol = 1e-3
@@ -13,27 +13,24 @@ atol = 1e-27
 
 def wrapper(inpt):
     move_ind,init_ind,solutions,aersol_props,params,param_space,nsteps = inpt
-    pc.photo.usol_init = solutions[init_ind]
-    pc.photo.rpar_init = aersol_props[init_ind][0]
-    pc.photo.wfall_init = aersol_props[init_ind][1]
-    pc.photo.aersol_init = aersol_props[init_ind][2]
+    pc.vars.usol_init = solutions[init_ind]
+    pc.vars.rpar_init = aersol_props[init_ind][0]
+    pc.vars.wfall_init = aersol_props[init_ind][1]
+    pc.vars.aersol_init = aersol_props[init_ind][2]
     for i,key in enumerate(params.keys()):
-        if key == 'CO2' and pc.photo.co2_inert==1:
-            pc.photo.fco2 = 10**param_space[i][move_ind]
-        else:
-            pc.set_mr(key,10**param_space[i][move_ind])
+        pc.set_mr(key,10**param_space[i][move_ind])
     converged = pc.integrate(method = method,nsteps = nsteps,rtol=rtol,atol=atol)
     # converged = True
     if not converged:
         return [converged,np.nan,np.nan,np.nan,np.nan]
     if converged:
-        aersol_props_converged = [pc.photo.rpar,pc.photo.wfall,pc.photo.aersol]
-        return [converged,pc.photo.usol_out,aersol_props_converged,pc.out_dict(),pc.surf_flux()]
+        aersol_props_converged = [pc.wrk.rpar,pc.wrk.wfall,pc.wrk.aersol]
+        return [converged,pc.vars.usol_out,aersol_props_converged,pc.out_dict(),pc.surf_flux()]
 
 def sweep(files, params, max_processes = None, verbose=True, nsteps_list=[1000], nsteps_init = 1000,random_seed=True,seeds=None):
 
-    species_dat,reactions_rx,planet,input_phot,atmosphere,sun = files
-    pc.setup(species_dat,reactions_rx,planet,input_phot,atmosphere,sun)
+    species_dat,reactions_rx,settings,atmosphere,sun = files
+    pc.setup(species_dat,reactions_rx,settings,atmosphere,sun)
 
     # If no max_processes given, then use os.cpu_count()
     if type(max_processes)!=int:
@@ -43,13 +40,10 @@ def sweep(files, params, max_processes = None, verbose=True, nsteps_list=[1000],
 
     # check that all params are mixing ratios
     for key in params.keys():
-        if key == 'CO2' and pc.photo.co2_inert==1:
-            pass
-        else:
-            ind = pc.ispec.index(key)
-            if pc.photo.lbound[ind] != 1:
-                sys.exit('All species must have fixed mixing ratios (lbound = 1)\n'+
-                          key+' has lbound = '+str(pc.photo.lbound[ind]))
+        ind = pc.ispec.index(key)
+        if pc.vars.lbound[ind] != 1:
+            sys.exit('All species must have fixed mixing ratios (lbound = 1)\n'+
+                      key+' has lbound = '+str(pc.vars.lbound[ind]))
 
     # Make a grid for the parameters
     param_space = np.meshgrid(*(v for _, v in params.items()),indexing='ij')
@@ -62,20 +56,14 @@ def sweep(files, params, max_processes = None, verbose=True, nsteps_list=[1000],
     # find the "closest" part of the grid to input atmosphere
     closest = []
     for key in params.keys():
-        if key == 'CO2' and pc.photo.co2_inert==1:
-            mr = np.log10(pc.photo.fco2)
-        else:
-            ind = pc.ispec.index(key) # index
-            mr = np.log10(pc.photo.fixedmr[ind])
+        ind = pc.ispec.index(key) # index
+        mr = np.log10(pc.vars.fixedmr[ind])
         closest.append(np.abs(params[key]-mr).argmin())
     closest = tuple(closest)
     start_vals = [params1[closest] for params1 in param_space]
     # now input the closest part of the grid
     for i,key in enumerate(params.keys()):
-        if key == 'CO2' and pc.photo.co2_inert==1:
-            pc.photo.fco2 = 10**start_vals[i]
-        else:
-            pc.set_mr(key,10**start_vals[i])
+        pc.set_mr(key,10**start_vals[i])
 
     # find equlibrium at first grid point
     print('Trying to move to closest point on the grid...')
@@ -85,14 +73,14 @@ def sweep(files, params, max_processes = None, verbose=True, nsteps_list=[1000],
         +"Try increasing nsteps_init, or starting with an atmosphere.txt closer to the grid.")
     print('Successful.')
     pc.out2in()
-    pc.photo.verbose = True
+    pc.vars.verbose = True
 
     # save first grid point
     progress[closest] = 1
-    solutions[closest] = pc.photo.usol_out
+    solutions[closest] = pc.vars.usol_out
     solutions_dict[closest] = pc.out_dict()
     fluxes[closest] = pc.surf_flux()
-    aersol_props[closest] = [pc.photo.rpar,pc.photo.wfall,pc.photo.aersol]
+    aersol_props[closest] = [pc.wrk.rpar,pc.wrk.wfall,pc.wrk.aersol]
 
 
     if random_seed:

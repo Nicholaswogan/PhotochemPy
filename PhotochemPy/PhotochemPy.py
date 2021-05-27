@@ -122,8 +122,8 @@ class PhotochemPy:
 
         self.species_dat = species_dat
         self.reactions_rx = reactions_rx
-        self.planet_dat = planet_dat
         self.set_file = set_file
+        self.atmosphere_txt = atmosphere_txt
         self.flux_txt = flux_txt
 
         # get species names
