@@ -21,6 +21,10 @@ To install PhotochemPy, you must have the following installed on your system.
 
 **Fortran source:** If you prefer to use the code exclusively in Fortran, that is OK too. An example is provided in the folder `examples/fortran_example`.
 
+## Examples/Tutorial
+
+See the `examples` directory. Also check out [this tutorial](https://github.com/Nicholaswogan/PhotochemPy/blob/main/docs/source/Tutorial.ipynb)
+
 <!-- ## Documentation
 Read the [documentation here](https://photochempy.readthedocs.io/en/latest/). The best way to get started is [with this Tutorial in the documentation](https://photochempy.readthedocs.io/en/latest/Tutorial.html). -->
 
