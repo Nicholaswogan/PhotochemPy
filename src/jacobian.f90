@@ -4,7 +4,8 @@
                               lco, lhcaer, lhcaer2, lh2o, lo, &
                               ls8aer, lso4aer, background_spec, lh, lh2, &
                               z, dz, jtrop, ispec, photoreac, photonums, &
-                              lda, epsj, lightning, mass, background_mu, rainout_on
+                              lda, epsj, lightning, mass, background_mu, rainout_on, &
+                              fix_water_in_troposphere
                               
     use photochem_vars, only: lbound, fixedmr, vdep, vdep0, veff, veff0, smflux, sgflux, &
                               distheight, distflux, mbound, T, den, edd, H2Osat, P, &
@@ -58,7 +59,11 @@
     DO I=1,NQ
       DO J=1,NZ
         K = I + (J-1)*NQ
-        usol(i,j) = usol_flat(k)
+        if (usol_flat(k) < 0.d0) then
+          usol(i,j) = min(usol_flat(k),-tiny(1.d0)**0.5d0)
+        else
+          usol(i,j) = max(usol_flat(k),tiny(1.d0)**0.5d0)
+        endif
       enddo
     enddo
 
@@ -80,10 +85,12 @@
     call densty(nz, mubar_z, T, den, P, press) 
     call difco(nq,nz,mubar_z, T, den, edd, &
               hscale, tauedd, DK, H_atm, bx1x2, scale_H)
-    call photsatrat(nz, T, P, den, Jtrop, H2Osat, H2O) ! H2o mixing ratio
-    DO J=1,JTROP
-      USOL(LH2O,J) = H2O(J) 
-    enddo
+    if (fix_water_in_troposphere) then
+      call photsatrat(nz, T, P, den, Jtrop, H2Osat, H2O) ! H2o mixing ratio
+      DO J=1,JTROP
+        USOL(LH2O,J) = H2O(J) 
+      enddo
+    endif
     if (lightning) then 
       call ltning(nq, nz, usol, &
                   zapNO, zapO2, zapCO, zapH2, zapO)
@@ -151,7 +158,7 @@
           if (JJ.eq.2)  nparti = LS8AER
           if (JJ.eq.3)  nparti = LHCAER
           if (JJ.eq.4)  nparti = LHCAER2
-          AERSOL(J,JJ) = USOL(nparti,J)*DEN(J)/(CONVER(J,JJ))
+          AERSOL(J,JJ) = max(USOL(nparti,J)*DEN(J)/(CONVER(J,JJ)),1.d-100)
         enddo
       enddo
     do J=1,NP
@@ -366,20 +373,22 @@
     enddo
 
 !   HOLD H2O CONSTANT BELOW ZTROP
-    L = LH2O
-    DO J=1,JTROP
-      K = L + (J-1)*NQ
-      RHS(K) = 0.
-      DO M=1,NQ
-        MM = M - L + KD
-        DJAC(MM,K) = 0.
+    if (fix_water_in_troposphere) then
+      L = LH2O
+      DO J=1,JTROP
+        K = L + (J-1)*NQ
+        RHS(K) = 0.
+        DO M=1,NQ
+          MM = M - L + KD
+          DJAC(MM,K) = 0.
+        enddo
+        DJAC(KD,K) = DTINV
+        DJAC(KU,K+NQ) = 0.
+        IF(J.NE.1) then
+          DJAC(KL,K-NQ) = 0.
+        endif
       enddo
-      DJAC(KD,K) = DTINV
-      DJAC(KU,K+NQ) = 0.
-      IF(J.NE.1) then
-        DJAC(KL,K-NQ) = 0.
-      endif
-    enddo
+    endif
 
 !  distributed (volcanic) sources
 

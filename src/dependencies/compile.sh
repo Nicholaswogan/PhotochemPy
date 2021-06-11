@@ -6,7 +6,6 @@ cd ../cvode-5.7.0
 mkdir build_dir
 cd build_dir
 cmake \
--DEXAMPLES_ENABLE_C=OFF \
 -DEXAMPLES_ENABLE_CXX=OFF \
 -DCMAKE_INSTALL_PREFIX=../../dependencies \
 -DEXAMPLES_ENABLE_F77=OFF \

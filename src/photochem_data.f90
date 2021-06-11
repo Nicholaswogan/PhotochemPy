@@ -68,6 +68,8 @@ module photochem_data
   integer :: Lgrid, IO2, ino, frak, ihztype
   logical :: lightning
   logical :: rainout_on
+  logical :: H2O_strat_condensation
+  logical :: fix_water_in_troposphere
   
   ! needed in subroutine photgrid (in photgrid.f90)
   real*8, allocatable, dimension(:) :: z ! altitude of middle of grid

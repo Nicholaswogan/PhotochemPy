@@ -231,7 +231,7 @@
          tau(n) = taug(n) + taup(n)
       !w0 = total scattering/total extinction
          w0(n) = (tausg(n)+tausp(n))/tau(n)
-         w0(n) = AMIN1(w0(n),0.99999)
+         w0(n) = min(w0(n),0.999999d0)
 !-mab: Was "0.999" before - extra 99s needed for WASP12B convergence
 
       !GFT is still bottom to top, so needs a switch
@@ -247,7 +247,7 @@
             ENDDO
 
       !dont let assymetry factor get larger than 1
-            gt(n) = AMIN1(gpnew,0.99999)
+            gt(n) = min(gpnew,0.999999d0)
          ELSE
             gt(n) = 0.0
          ENDIF

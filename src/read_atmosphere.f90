@@ -46,7 +46,7 @@ subroutine read_atmosphere_file(atmosphere_txt, err)
   z_file = 0.d0
   T_file = 0.d0
   edd_file = 0.d0
-  usol_file = 0.d0
+  usol_file = 1.d-40
   rpar_file = 0.d0
   wfall_file = 0.d0
   aersol_file = 0.d0

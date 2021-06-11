@@ -15,7 +15,7 @@ SUBROUTINE FCVFUN(TT, U, UDOT, IPAR, RRPAR, IER)
   endif
   
   if ((TT .ne. time_prev) .and. (verbose)) then
-    print"(1x,'N =',i6,3x,'Time = ',es20.14,3x,'max(df/dt) = ',es10.3)",cvode_stepper,TT,maxval(UDOT)
+    print"(1x,'N =',i6,3x,'Time = ',es20.14,3x,'max(df/dt) = ',es10.3)",cvode_stepper,TT,maxval(abs(UDOT))
     cvode_stepper = cvode_stepper + 1
   endif
   

@@ -3,7 +3,7 @@ subroutine dochem(N, nr, nsp2, nq, nz, usol, A, nshort, jtrop, D, fval)
   use photochem_data, only: nsp, lco, &
                             lh2, lh2o, &
                             lh2so4, lno, lo, lo2, lso4aer, &
-                            planet, lightning
+                            planet, lightning, H2O_strat_condensation
                             
   use photochem_vars, only: den, H2OSAT
   use photochem_wrk, only: zapco, zaph2, zapno, zapo, rain, raingc, &
@@ -148,15 +148,17 @@ subroutine dochem(N, nr, nsp2, nq, nz, usol, A, nshort, jtrop, D, fval)
  ! from Kevin's Mars paper
 !       RHCOLD = 0.10  ! Jim had 0.1 ?  my standard is 0.4  <-Kevin words (mc - this seems wrong)
   ENDIF
-  DO j = jt1 , nz
-    h2ocrt = rhcold*H2OSAT(j)
-    IF ( USOL(lh2o,j).GE.h2ocrt ) THEN
-      ! CONDEN(j) = confac*(USOL(lh2o,j)-h2ocrt)
-      CONDEN1 = confac*(USOL(lh2o,j)-h2ocrt)
-                                             !this is saved in SATBLK to be printed out in output file
-      Fval(lh2o,j) = Fval(lh2o,j) - CONDEN1
-    ENDIF
-  ENDDO
+  if (H2O_strat_condensation) then
+    DO j = jt1 , nz
+      h2ocrt = rhcold*H2OSAT(j)
+      IF ( USOL(lh2o,j).GE.h2ocrt ) THEN
+        ! CONDEN(j) = confac*(USOL(lh2o,j)-h2ocrt)
+        CONDEN1 = confac*(USOL(lh2o,j)-h2ocrt)
+                                               !this is saved in SATBLK to be printed out in output file
+        Fval(lh2o,j) = Fval(lh2o,j) - CONDEN1
+      ENDIF
+    ENDDO
+  endif
   
 !   H2SO4 CONDENSATION
   ll = lh2so4
@@ -164,6 +166,9 @@ subroutine dochem(N, nr, nsp2, nq, nz, usol, A, nshort, jtrop, D, fval)
   DO j = 1 , nz
     CONSO4(j) = confac*(USOL(ll,j)-H2SO4S(j))
     IF ( CONSO4(j).GT.0 ) THEN
+      ! This exponent is the reduce stiffness, and increase stability. 
+      ! An "if" statement discontinuity is very stiff!
+      CONSO4(j) = CONSO4(j)*(-exp(-CONSO4(j)/1.d-20) + 1)
                         !dont allow artifical evaporation
       Fval(ll,j) = Fval(ll,j) - CONSO4(j)
       Fval(lla,j) = Fval(lla,j) + CONSO4(j)

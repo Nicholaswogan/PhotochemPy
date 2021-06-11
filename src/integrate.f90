@@ -4,7 +4,8 @@
                               lco, lh, lh2, lhcaer, lhcaer2, lh2o, lo, &
                               ls4, ls8aer, lso4aer, &
                               z, dz, jtrop, ispec, photoreac, photonums, nsp2, &
-                              background_spec, lightning, mass, background_mu, rainout_on
+                              background_spec, lightning, mass, background_mu, rainout_on, &
+                              fix_water_in_troposphere
     use photochem_vars, only: verbose, usol_init, usol_out, rpar_init, wfall_init, aersol_init, &
                               lbound, fixedmr, vdep, vdep0, veff, veff0, smflux, sgflux, &
                               distheight, distflux, mbound, T, den, edd, fluxo, flow, H2Osat, P, &
@@ -118,10 +119,12 @@
       call densty(nz, mubar_z, T, den, P, press) 
       call difco(nq, nz, mubar_z, T, den, edd, &
                 hscale, tauedd, DK, H_atm, bx1x2, scale_H)
-      call photsatrat(nz, T, P, den, Jtrop, H2Osat, H2O) ! H2o mixing ratio
-      DO J=1,JTROP
-        USOL(LH2O,J) = H2O(J) 
-      enddo
+      if (fix_water_in_troposphere) then
+        call photsatrat(nz, T, P, den, Jtrop, H2Osat, H2O) ! H2o mixing ratio
+        DO J=1,JTROP
+          USOL(LH2O,J) = H2O(J) 
+        enddo
+      endif
       if (lightning) then 
         call ltning(nq, nz, usol, &
                     zapNO, zapO2, zapCO, zapH2, zapO)
@@ -404,21 +407,22 @@
       enddo
 
 !   HOLD H2O AND S8 CONSTANT BELOW ZTROP
-
-      L = LH2O
-      DO J=1,JTROP
-        K = L + (J-1)*NQ
-        RHS(K) = 0.
-        DO M=1,NQ
-          MM = M - L + KD
-          DJAC(MM,K) = 0.
+      if (fix_water_in_troposphere) then
+        L = LH2O
+        DO J=1,JTROP
+          K = L + (J-1)*NQ
+          RHS(K) = 0.
+          DO M=1,NQ
+            MM = M - L + KD
+            DJAC(MM,K) = 0.
+          enddo
+          DJAC(KD,K) = DTINV
+          DJAC(KU,K+NQ) = 0.
+          IF(J.NE.1) then
+            DJAC(KL,K-NQ) = 0.
+          endif
         enddo
-        DJAC(KD,K) = DTINV
-        DJAC(KU,K+NQ) = 0.
-        IF(J.NE.1) then
-          DJAC(KL,K-NQ) = 0.
-        endif
-      enddo
+      endif
 
 
 
@@ -501,9 +505,11 @@
       enddo
 
       ! make sure H2O doesn't change below trop
-      DO J=1,JTROP
-        USOL(LH2O,J) = H2O(J)
-      enddo
+      if (fix_water_in_troposphere) then
+        DO J=1,JTROP
+          USOL(LH2O,J) = H2O(J)
+        enddo
+      endif
 
       if (NP.GT.0) then
 ! switch around main loop particles
@@ -679,7 +685,9 @@
       FLOW(K) = FLUXO(K,1) - (YP(K,1) - YL(K,1)*D(K,1))*DZ(1)
       FUP(K) = FLUXO(K,NZ1) + (YP(K,NZ) - YL(K,NZ)*D(K,NZ))*DZ(NZ)
     enddo
-    FLOW(LH2O) = FLUXO(LH2O,jtrop)
+    if (fix_water_in_troposphere) then
+      FLOW(LH2O) = FLUXO(LH2O,jtrop)
+    endif
 
     DO I=1,NQ
       SR(I) = 0.

@@ -480,7 +480,8 @@ end subroutine
 
 subroutine cvode_equilibrium(rtol, atol, use_fast_jacobian, success, err)
   use photochem_data, only: nr, nq, np, nz1, nq1, isl, nz, jtrop, &
-                            lh2o, dz, nsp2, jtrop, background_mu, mass, rainout_on
+                            lh2o, dz, nsp2, jtrop, background_mu, mass, rainout_on, &
+                            fix_water_in_troposphere
   use photochem_vars, only: verbose, usol_init, usol_out, &
                             den, fluxo, flow, T, P, den, press, rpar_init
   use photochem_wrk, only: cvode_stepper, wfall, dk, scale_h, h_atm, yp, yl, &
@@ -582,7 +583,9 @@ subroutine cvode_equilibrium(rtol, atol, use_fast_jacobian, success, err)
       FLOW(K) = FLUXO(K,1) - (YP(K,1) - YL(K,1)*D(K,1))*DZ(1)
       FUP(K) = FLUXO(K,NZ1) + (YP(K,NZ) - YL(K,NZ)*D(K,NZ))*DZ(NZ)
     enddo
-    FLOW(LH2O) = FLUXO(LH2O,jtrop)
+    if (fix_water_in_troposphere) then
+      FLOW(LH2O) = FLUXO(LH2O,jtrop)
+    endif
 
     DO I=1,NQ
       SR(I) = 0.

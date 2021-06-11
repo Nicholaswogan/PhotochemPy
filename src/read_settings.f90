@@ -6,7 +6,8 @@ subroutine read_settings(set_file, err)
   use photochem_data, only: grav_surf, fscale, alb, ztrop, r0, p0, planet, &
                             AGL, EPSJ, prono, hcdens, zy, Lgrid, &
                             IO2, ino, frak, ihztype, lightning, &
-                            np, top_atmos, bottom_atmos, nz, rainout_on
+                            np, top_atmos, bottom_atmos, nz, rainout_on, &
+                            H2O_strat_condensation, fix_water_in_troposphere
   implicit none
   
   character(len=*), intent(in) :: set_file
@@ -70,6 +71,10 @@ subroutine read_settings(set_file, err)
       if (associated(io_err)) then; err = trim(set_file)//trim(io_err%message); return; endif
       rainout_on = set_dict%get_logical('rainout-on',error = io_err)
       if (associated(io_err)) then; err = trim(set_file)//trim(io_err%message); return; endif
+      
+      H2O_strat_condensation = set_dict%get_logical('H2O-stratosphere-condensation', .true.,error = io_err)
+      fix_water_in_troposphere = set_dict%get_logical('fix-water-in-troposphere', .true.,error = io_err)
+
       nz = set_dict%get_integer('number-layers',error = io_err)
       if (associated(io_err)) then; err = trim(set_file)//trim(io_err%message); return; endif
       bottom_atmos = set_dict%get_real('bottom-atmosphere',error = io_err)
@@ -123,6 +128,11 @@ subroutine read_settings(set_file, err)
   
   if ((.not.rainout_on) .and. (lightning)) then
     err = "rainout must be on if lightning is on. See "//trim(set_file)
+    return
+  endif
+  
+  if (H2O_strat_condensation .and. .not. fix_water_in_troposphere) then
+    err = "fix-water-in-troposhere must be on if stratospheric H2O condensation is on. See "//trim(set_file)
     return
   endif
   
