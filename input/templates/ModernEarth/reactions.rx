@@ -140,7 +140,7 @@ S         HCO       HS        CO                2BODY     1.0E-11     0.        
 S         HO2       HS        O2                2BODY     5.0E-12     0.                     ! Kasting [1990] uses 1.5e-11 KZ: no information
 S         HO2       SO        OH                2BODY     5.0E-12     0.                     ! Kasting [1990] uses 1.5e-11 KZ: no information
 S         S         S2                          WEIRD     !at some point put a better comment here
-S2        OH        HSO       S                 WEIRD     0.                                 !there appears to be a mistake here in Kevin's rates.f
+S2        OH        HSO       S                 2BODY     0.          0.                     !there appears to be a mistake here in Kevin's rates.f
 S2        O         S         SO                2BODY     1.1E-11     0.                     ! Hills et al. [1987]                                                           
 HS        H2CO      H2S       HCO               2BODY     0.          0.                     ! KZ:no information, an unlikely abstraction CH3 + H2CO -> CH4 + HCO is very slow  (Shawn has fast)
 S2        HV        S         S                 PHOTO                                                                                               

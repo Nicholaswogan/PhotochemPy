@@ -19,13 +19,13 @@ program main
   err = ''
 
   rootdir = '../PhotochemPy/'
-  template = "Archean+haze"
+  template = "ModernEarth"
 
   call setup('../input/templates/'//template//'/species.dat', &
              '../input/templates/'//template//'/reactions.rx', &
              '../input/templates/'//template//'/settings.yaml', &
              '../input/templates/'//template//'/atmosphere.txt', &
-             '../input/templates/'//template//'/Sun_2.7Ga.txt', err)
+             '../input/templates/'//template//'/Sun_now.txt', err)
   if (len_trim(err) /= 0) then
     print*,trim(err)
     print*,'error worked properly'

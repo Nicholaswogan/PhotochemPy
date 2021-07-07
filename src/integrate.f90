@@ -144,7 +144,8 @@
         - 1./scale_H(LH,nz))
       endif
       
-      call rates(nz, nr, T, den, A)
+      call rates(nz, nr, T, den, A, err)
+      if (len_trim(err) > 0) return
       call dochem(-1, nr, nsp2, nq, nz, usol, A, isl, jtrop, D, fval)
 
       lpolyscount = 0
