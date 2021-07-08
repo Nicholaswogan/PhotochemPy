@@ -22,6 +22,7 @@ only = 'only: setup right_hand_side jacobian'+ \
 sources = ['src/photochem_data.f90', \
            'src/photochem_vars.f90', \
            'src/photochem_wrk.f90', \
+           'src/photochem_lightning.f90', \
            'src/photochem_clima.f90', \
            'src/photochem.f90', \
            'src/cvode_funcs.f90', \
