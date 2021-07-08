@@ -60,7 +60,6 @@ module photochem_data
   
   ! needed in read_planet.f90
   real*8 :: grav_surf, Fscale, Alb, ztrop,far,R0,P0
-  character(len=8) :: planet
   real(8), allocatable :: grav_z(:)
   
   ! needed in read_photochem.f90
@@ -69,7 +68,10 @@ module photochem_data
   logical :: lightning
   logical :: rainout_on
   logical :: H2O_strat_condensation
+  real(8) :: confac, rhcold
   logical :: fix_water_in_troposphere
+  logical :: use_manabe
+  real(8) :: relative_humidity
   
   ! needed in subroutine photgrid (in photgrid.f90)
   real*8, allocatable, dimension(:) :: z ! altitude of middle of grid

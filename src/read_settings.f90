@@ -3,11 +3,12 @@
 subroutine read_settings(set_file, err)
   use yaml, only : parse, error_length
   use yaml_types, only : type_node, type_dictionary, type_error
-  use photochem_data, only: grav_surf, fscale, alb, ztrop, r0, p0, planet, &
+  use photochem_data, only: grav_surf, fscale, alb, ztrop, r0, p0, &
                             AGL, EPSJ, light_disp_rate, hcdens, zy, Lgrid, &
                             IO2, ino, frak, ihztype, lightning, &
                             np, top_atmos, bottom_atmos, nz, rainout_on, &
-                            H2O_strat_condensation, fix_water_in_troposphere
+                            H2O_strat_condensation, fix_water_in_troposphere, &
+                            relative_humidity, use_manabe, confac, rhcold
   implicit none
   
   character(len=*), intent(in) :: set_file
@@ -17,6 +18,8 @@ subroutine read_settings(set_file, err)
   class (type_node), pointer :: root
   class (type_dictionary), pointer :: planet_dict, set_dict
   type (type_error), pointer :: io_err
+  character(len=30) :: temp_char
+  integer :: io
   err = ''
   
   ! parse yaml file
@@ -42,8 +45,8 @@ subroutine read_settings(set_file, err)
       if (associated(io_err)) then; err = trim(set_file)//trim(io_err%message); return; endif
       p0 = planet_dict%get_real('surface-pressure',error = io_err)
       if (associated(io_err)) then; err = trim(set_file)//trim(io_err%message); return; endif
-      planet = planet_dict%get_string('planet',error = io_err)
-      if (associated(io_err)) then; err = trim(set_file)//trim(io_err%message); return; endif
+      ! planet = planet_dict%get_string('planet',error = io_err)
+      ! if (associated(io_err)) then; err = trim(set_file)//trim(io_err%message); return; endif
       
       set_dict => root%get_dictionary('settings',.true.,error = io_err)
       if (associated(io_err)) then; err = trim(set_file)//trim(io_err%message); return; endif
@@ -73,7 +76,33 @@ subroutine read_settings(set_file, err)
       if (associated(io_err)) then; err = trim(set_file)//trim(io_err%message); return; endif
       
       H2O_strat_condensation = set_dict%get_logical('H2O-stratosphere-condensation', .true.,error = io_err)
+      if (H2O_strat_condensation) then ! then we need rh of cold trap
+        rhcold = set_dict%get_real('relative-humidity-cold-trap',error = io_err)
+        if (associated(io_err)) then; err = trim(set_file)//trim(io_err%message); return; endif
+      endif
+      
+      confac = set_dict%get_real('condensation-factor',error = io_err)
+      if (associated(io_err)) then; err = trim(set_file)//trim(io_err%message); return; endif
+      
       fix_water_in_troposphere = set_dict%get_logical('fix-water-in-troposphere', .true.,error = io_err)
+      relative_humidity = -1.d0
+      if (fix_water_in_troposphere) then
+        temp_char = set_dict%get_string('relative-humidity',error = io_err)
+        if (associated(io_err)) then; err = trim(set_file)//trim(io_err%message); return; endif
+        
+        read(temp_char,*,iostat = io) relative_humidity
+        if (io /= 0) then
+          ! it isn't a float
+          if (trim(temp_char) == "manabe") then
+            use_manabe = .true.
+          else
+            err = '"relative-humidity" can only be a number between 0 and 1, or "manabe". See '//trim(set_file)
+            return 
+          endif
+        else
+          use_manabe = .false.
+        endif  
+      endif
 
       nz = set_dict%get_integer('number-layers',error = io_err)
       if (associated(io_err)) then; err = trim(set_file)//trim(io_err%message); return; endif
@@ -102,10 +131,10 @@ subroutine read_settings(set_file, err)
     return
   endif
   
-  if ((planet /= "EARTH") .and. (planet /= "MARS")) then
-    err = "Planet must be set to EARTH or MARS. See "//trim(set_file)
-    return
-  endif
+  ! if ((planet /= "EARTH") .and. (planet /= "MARS")) then
+  !   err = "Planet must be set to EARTH or MARS. See "//trim(set_file)
+  !   return
+  ! endif
   
   if (nz < 50) then
     err = "nz can not be less than 50. See "//trim(set_file)
@@ -126,13 +155,19 @@ subroutine read_settings(set_file, err)
     return
   endif
   
-  if ((.not.rainout_on) .and. (lightning)) then
-    err = "rainout must be on if lightning is on. See "//trim(set_file)
+  if (H2O_strat_condensation .and. .not. fix_water_in_troposphere) then
+    err = "fix-water-in-troposhere must be on if stratospheric H2O condensation is on. See "//trim(set_file)
     return
   endif
   
-  if (H2O_strat_condensation .and. .not. fix_water_in_troposphere) then
-    err = "fix-water-in-troposhere must be on if stratospheric H2O condensation is on. See "//trim(set_file)
+  if (rainout_on .and. .not. fix_water_in_troposphere) then
+    err = "fix-water-in-troposhere must be on if rainout is on. See "//trim(set_file)
+    return
+  endif
+  
+  if (.not. use_manabe .and. ((relative_humidity < 0.d0) .or. (relative_humidity > 1.d0))) then
+    err = "relative-humidity must be between 0 and 1 or it can be set to 'manabe'"//&
+          ". See "//trim(set_file)
     return
   endif
   

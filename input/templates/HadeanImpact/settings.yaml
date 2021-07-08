@@ -7,7 +7,6 @@ planet:
   tropopause-altitude: 1.1e6 # cm
   planet-radius: 6.371e8 # cm
   surface-pressure: 1.013 # bar
-  planet: EARTH
 
 settings:
   diurnal-averaging-factor: 0.5
@@ -22,6 +21,9 @@ settings:
   solar-zenith-angle: 50.0
   lightning: false
   rainout-on: false
+  condensation-factor: 1.6e-5 # not sure what this is
+  relative-humidity-cold-trap: 0.1
+  relative-humidity: manabe # can be manabe or a number between 0 and 1
   number-layers: 200
   top-atmosphere: 100.0e5
   bottom-atmosphere: 0.0

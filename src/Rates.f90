@@ -1,5 +1,5 @@
       subroutine rates(nz, nr, T, den, A, err)
-        use photochem_data, only: planet, rateparams, reactype, chemj
+        use photochem_data, only: background_spec, rateparams, reactype, chemj
         implicit none
 
         ! input
@@ -24,7 +24,6 @@
 
 
         ! rate constant units are cm^3/molecules/s
-        ! planet = 'EARTH' ! for now
         bi = 0d0
         do J=1,NR
           ! Should add Cantera reaction types (https://cantera.org/science/reactions.html)
@@ -41,7 +40,7 @@
 
           ! READ IN THREE BODY REACTION RATES
           else if (REACTYPE(J) .EQ. '3BODY') then
-            if (PLANET .EQ. 'MARS') then
+            if (background_spec .EQ. 'CO2') then
               rateparams(1,j)=rateparams(1,j)*2.5      !multiply low density rate by 2.5 to account for CO2 rather than N2 as background gas (Nair, 94)
             endif
 
@@ -114,7 +113,7 @@
               !   CH3 + CH3 + M  ->  C2H6 + M
               else if (CHEMJ(1,J).EQ.'CH3'.AND.CHEMJ(2,J).EQ.'CH3') THEN
                 A71_3 = 1.17e-25*exp(-500./T(I))
-                if (PLANET .EQ. 'MARS') A71_3=A71_3*2.5    !CO2 rather than N2
+                if (background_spec .EQ. 'CO2') A71_3=A71_3*2.5    !CO2 rather than N2
                 A(J,I) = TBDY(A71_3,3.0D-11,3.75D0,1.0D0,T(I),DEN(I))   ! what a mess NIST 2005 -
                 ! A(J,I) = 1.7E-17/T(I)**2.3 * DEN(I)
               ! endif

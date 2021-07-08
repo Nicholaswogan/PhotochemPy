@@ -1,6 +1,6 @@
 
 SUBROUTINE PHOTSATRAT(nz, T, P, den, Jtrop, H2Osat, H2O)
-  use photochem_data, only: planet
+  use photochem_data, only: relative_humidity, use_manabe
 
   implicit none
 
@@ -51,22 +51,14 @@ SUBROUTINE PHOTSATRAT(nz, T, P, den, Jtrop, H2Osat, H2O)
     H2OSAT(j) = pv/P(j)
   ENDDO
   !   CALCULATE TROPOSPHERIC H2O CONCENTRATIONS
-  DO j = 1 , Jtrop
-  IF ( planet.EQ.'EARTH' ) THEN
-    rel = 0.77*(P(j)/ps-0.02)/0.98  !manabe formula
-  !       REL = 1.0 ! Saturated troposphere - eventual should abstract this and ATACAMA
-  !       REL = 0.17   !test ATACAMA
-  ELSEIF ( planet.EQ.'MARS' ) THEN
-  !      REL = 0.12                         ! 7 microns
-    rel = 0.17                    ! this is good for 9.5 micrometers
-  ! this makes the model very dry  - warning nonstandard!!!
-  ELSEIF ( planet.EQ.'DRY' ) THEN
-  !Dry planets. Implemented originally for post-runaway, O2-rich atmospheres
-    rel = 1.E-8
-  ! For H2O-free atmospheres. Set above zero to prevent floating point errors. - EWS - 9/14/2015
-  ENDIF
-   ! RELH(j) = rel
-  H2o(j) = rel*H2OSAT(j)
-  ENDDO
+  do j = 1 , Jtrop
+    if (use_manabe) then
+      rel = 0.77*(P(j)/ps-0.02)/0.98  !manabe formula
+    else
+      ! for mars, rel = 0.17   
+      rel = relative_humidity
+    endif
+    H2o(j) = rel*H2OSAT(j)
+  enddo
   
 end subroutine

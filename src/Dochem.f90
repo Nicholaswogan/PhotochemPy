@@ -3,8 +3,8 @@ subroutine dochem(N, nr, nsp2, nq, nz, usol, A, nshort, jtrop, D, fval)
   use photochem_data, only: nsp, lco, &
                             lh2, lh2o, &
                             lh2so4, lno, lo, lo2, lso4aer, ln2, lco2, &
-                            planet, lightning, H2O_strat_condensation, &
-                            background_spec, z
+                            lightning, H2O_strat_condensation, &
+                            background_spec, z, confac, rhcold
                             
   use photochem_vars, only: den, H2OSAT
   use photochem_wrk, only: prod_rates, raingc, &
@@ -26,9 +26,9 @@ subroutine dochem(N, nr, nsp2, nq, nz, usol, A, nshort, jtrop, D, fval)
 
   integer i, j, ll, lla
   real*8 xp(nz), xl(nz), conso4(nz)
-  real*8 xlj, confac
+  real*8 xlj
   integer jt1
-  real*8 rhcold, h2ocrt, zap, CONDEN1
+  real*8 h2ocrt, zap, CONDEN1
 
 !   THIS SUBROUTINE DOES THE CHEMISTRY BY CALLING CHEMPL.  PHOTO-
 !   CHEMICAL EQUILIBRIUM SPECIES ARE DONE FIRST.  THESE MUST CON-
@@ -71,13 +71,13 @@ subroutine dochem(N, nr, nsp2, nq, nz, usol, A, nshort, jtrop, D, fval)
     ENDDO
   ENDDO
   
-  IF ( planet.EQ.'EARTH' ) THEN
-    confac = 1.6D-5     !condensation factor
-  ELSEIF ( planet.EQ.'MARS' ) THEN
-    confac = 1.6D-5*10. ! reduce supersaturation of stratosphere
-  ELSEIF ( planet.EQ.'DRY' ) THEN
-    confac = 1.6D-5*10.  ! reduce supersaturation of stratosphere
-  ENDIF
+  ! IF ( planet.EQ.'EARTH' ) THEN
+  !   confac = 1.6D-5     !condensation factor
+  ! ELSEIF ( planet.EQ.'MARS' ) THEN
+  !   confac = 1.6D-5*10. ! reduce supersaturation of stratosphere
+  ! ELSEIF ( planet.EQ.'DRY' ) THEN
+  !   confac = 1.6D-5*10.  ! reduce supersaturation of stratosphere
+  ! ENDIF
 !   ZERO OUT H2O TERMS IN THE TROPOSPHERE AND INCLUDE LIGHTNING
 !   PRODUCTION OF NO AND O2
   ! changel = 1     !mc temp var for testing lightning changes versus OLD JFK method
@@ -180,16 +180,16 @@ subroutine dochem(N, nr, nsp2, nq, nz, usol, A, nshort, jtrop, D, fval)
 !   H2O CONDENSATION IN THE STRATOSPHERE
 !   (RHCOLD IS THE ASSUMED RELATIVE HUMIDITY AT THE COLD TRAP)
 ! dunno what to do here, I'll take it to be small
-  rhcold = 0.1d0
-  IF ( planet.EQ.'EARTH' ) THEN
-    rhcold = 0.1
+  ! rhcold = 0.1d0
+  ! IF ( planet.EQ.'EARTH' ) THEN
+    ! rhcold = 0.1
 ! Jim had 0.1 ; what needs to be here is something that will give the right stratospheric H2O 3ppm
-  ELSEIF ( planet.EQ.'MARS' ) THEN
+  ! ELSEIF ( planet.EQ.'MARS' ) THEN
 !      RHCOLD = 0.4  ! Jim had 0.1 ?  my standard is 0.4  <-Kevin words (mc - this seems wrong)
-    rhcold = 0.17
+    ! rhcold = 0.17
  ! from Kevin's Mars paper
 !       RHCOLD = 0.10  ! Jim had 0.1 ?  my standard is 0.4  <-Kevin words (mc - this seems wrong)
-  ENDIF
+  ! ENDIF
   if (H2O_strat_condensation) then
     DO j = jt1 , nz
       h2ocrt = rhcold*H2OSAT(j)

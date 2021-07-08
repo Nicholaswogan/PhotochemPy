@@ -1,6 +1,6 @@
 
       SUBROUTINE RAINOUT(initialize,Jtrop,Usol,nq,nz, T,den, rain, raingc, err)
-        use photochem_data, only: naq, planet, lh2co, lh2s, lso2, lso4aer, &
+        use photochem_data, only: naq, lh2co, lh2s, lso2, lso4aer, &
                                   lh2so4, ispec, z, lco2, background_spec
         use photochem_wrk, only: H, xsave
 
@@ -433,17 +433,17 @@
          ENDIF
          wh2o = 10.**y
 
-         IF ( planet.EQ.'EARTH' ) THEN
-            wh2o = 1.0*wh2o
+         ! IF ( planet.EQ.'EARTH' ) THEN
+            ! wh2o = 1.0*wh2o
                           ! nominal earthly rain
 !       wh2o=1e-9*wh2o  !ATACAMA
-         ELSEIF ( planet.EQ.'MARS' ) THEN
-            wh2o = 1E-9*wh2o
+         ! ELSEIF ( planet.EQ.'MARS' ) THEN
+            ! wh2o = 1E-9*wh2o
                           !turn off the rain
-         ELSEIF ( planet.EQ.'DRY' ) THEN
-            wh2o = 1E-9*wh2o
+         ! ELSEIF ( planet.EQ.'DRY' ) THEN
+            ! wh2o = 1E-9*wh2o
                           !turn off rain for dry planet - EWS 9/14/2015
-         ENDIF
+         ! ENDIF
 
 !  Find F(Z)
          IF ( zkm.LE.1.51 ) THEN
