@@ -1,8 +1,7 @@
 
 subroutine DIFCO(nq, nz, mubar_z, T, den, edd, &
                  hscale, tauedd, DK, H_atm, bx1x2, scale_H)
-  use photochem_data, only: grav_z, mass, &
-                            background_mu
+  use photochem_data, only: grav_z, mass
   implicit none
   
   integer, intent(in) :: nq, nz

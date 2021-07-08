@@ -1,7 +1,7 @@
 
 subroutine densty(nz, mubar_z, T, den, P, press)
   use photochem_data, only: grav_z, p0, &
-                            dz, z, mass, background_mu
+                            dz
   implicit none
   
   integer, intent(in) :: nz

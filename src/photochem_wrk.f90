@@ -35,7 +35,7 @@ module photochem_wrk
   
   
   ! needed in ltning.f90
-  real*8 :: ZAPNO,ZAPO2,ZAPCO,ZAPH2,ZAPO
+  real(8) :: prod_rates(8)
   
   ! needed in Difco.f90
   real*8, allocatable, dimension(:) :: HSCALE

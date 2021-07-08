@@ -15,7 +15,7 @@ settings:
   io2: 2
   ino: 1
   epsj: 1.0e-9
-  prono: 1.0e9
+  lightning-dissipation-rate: 9.8019e-9 # power dissipated divided by planet area [Watts/cm^2]
   frak: 1
   hcdens: 0.63
   ihztype: 0

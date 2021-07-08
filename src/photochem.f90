@@ -25,7 +25,7 @@ contains
   include "Xsections.f90"
   include "Rainout.f90"
   include "Aqueous.f90"
-  include "Ltning.f90" ! Needs work for time dependent model
+  include "Ltning.f90"
   include "Aertab.f90"
   include "Densty.f90"
   include "Aercon.f90"

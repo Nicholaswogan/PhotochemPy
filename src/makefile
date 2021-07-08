@@ -1,9 +1,10 @@
 
 FC=gfortran
-FCFLAGS=-g -freal-4-real-8 -g#-Wunused-variable# -fbounds-check # I think fbounds-check is finding a false-positive
+FCFLAGS=-g -freal-4-real-8 -O3# -Wunused-variable# -fbounds-check # I think fbounds-check is finding a false-positive
 SRC=photochem_data.f90 \
 		photochem_vars.f90 \
 		photochem_wrk.f90 \
+		photochem_lightning.f90 \
 		photochem_clima.f90 \
 		photochem.f90 \
 		cvode_funcs.f90	\
@@ -14,6 +15,7 @@ SRC=photochem_data.f90 \
 OBJ=photochem_data.o \
 		photochem_vars.o \
 		photochem_wrk.o \
+		photochem_lightning.o \
 		photochem_clima.o \
 		photochem.o \
 		cvode_funcs.o	\
@@ -22,6 +24,7 @@ OBJ=photochem_data.o \
 OBJJ=photochem_data.o \
 		photochem_vars.o \
 		photochem_wrk.o \
+		photochem_lightning.o \
 		photochem_clima.o \
 		photochem.o \
 		cvode_funcs.o	\

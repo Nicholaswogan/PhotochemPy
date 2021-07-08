@@ -5,7 +5,7 @@
                               ls4, ls8aer, lso4aer, &
                               z, dz, jtrop, ispec, photoreac, photonums, nsp2, &
                               background_spec, lightning, mass, background_mu, rainout_on, &
-                              fix_water_in_troposphere
+                              fix_water_in_troposphere, P0, light_disp_rate
     use photochem_vars, only: verbose, usol_init, usol_out, rpar_init, wfall_init, aersol_init, &
                               lbound, fixedmr, vdep, vdep0, veff, veff0, smflux, sgflux, &
                               distheight, distflux, mbound, T, den, edd, fluxo, flow, H2Osat, P, &
@@ -13,7 +13,7 @@
     use photochem_wrk, only: rpar, wfall, aersol, hscale, scale_h, h_atm, bx1x2, &
                              A, yl, yp, rain, raingc, &
                              adl, add, adu, dl, dd, du, dk, &
-                             zapNO, zapO2, zapCO, zapH2, zapO, tauedd, &
+                             prod_rates, tauedd, &
                              H2SO4S, S8S, fsulf, surf_radiance, D
     implicit none
     ! module variables
@@ -126,8 +126,8 @@
         enddo
       endif
       if (lightning) then 
-        call ltning(nq, nz, usol, &
-                    zapNO, zapO2, zapCO, zapH2, zapO)
+        call ltning(nq, nz, usol, P0, light_disp_rate, prod_rates, err)
+        
       endif
       call diffusion_coeffs(nq, nz, den, dz, DK, bx1x2, scale_H, H_atm, &
                            DU, DL, DD, ADU, ADL, ADD)

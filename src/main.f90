@@ -60,6 +60,8 @@ program main
     stop
   endif
   
+  print*,redox_factor
+  
   ! do i = 1,nw
     ! print*,wavl(i)/10.d0,surf_radiance(i)
   ! enddo

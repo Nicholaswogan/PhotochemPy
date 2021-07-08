@@ -64,7 +64,7 @@ module photochem_data
   real(8), allocatable :: grav_z(:)
   
   ! needed in read_photochem.f90
-  real*8 :: AGL, EPSJ, prono, hcdens, zy
+  real*8 :: AGL, EPSJ, light_disp_rate, hcdens, zy
   integer :: Lgrid, IO2, ino, frak, ihztype
   logical :: lightning
   logical :: rainout_on

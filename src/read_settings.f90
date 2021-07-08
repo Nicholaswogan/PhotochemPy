@@ -4,7 +4,7 @@ subroutine read_settings(set_file, err)
   use yaml, only : parse, error_length
   use yaml_types, only : type_node, type_dictionary, type_error
   use photochem_data, only: grav_surf, fscale, alb, ztrop, r0, p0, planet, &
-                            AGL, EPSJ, prono, hcdens, zy, Lgrid, &
+                            AGL, EPSJ, light_disp_rate, hcdens, zy, Lgrid, &
                             IO2, ino, frak, ihztype, lightning, &
                             np, top_atmos, bottom_atmos, nz, rainout_on, &
                             H2O_strat_condensation, fix_water_in_troposphere
@@ -57,7 +57,7 @@ subroutine read_settings(set_file, err)
       if (associated(io_err)) then; err = trim(set_file)//trim(io_err%message); return; endif
       epsj = set_dict%get_real('epsj',error = io_err)
       if (associated(io_err)) then; err = trim(set_file)//trim(io_err%message); return; endif
-      prono = set_dict%get_real('prono',error = io_err)
+      light_disp_rate = set_dict%get_real('lightning-dissipation-rate',error = io_err)
       if (associated(io_err)) then; err = trim(set_file)//trim(io_err%message); return; endif
       frak = set_dict%get_integer('frak',error = io_err)
       if (associated(io_err)) then; err = trim(set_file)//trim(io_err%message); return; endif

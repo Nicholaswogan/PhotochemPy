@@ -2,11 +2,12 @@
 subroutine dochem(N, nr, nsp2, nq, nz, usol, A, nshort, jtrop, D, fval)
   use photochem_data, only: nsp, lco, &
                             lh2, lh2o, &
-                            lh2so4, lno, lo, lo2, lso4aer, &
-                            planet, lightning, H2O_strat_condensation
+                            lh2so4, lno, lo, lo2, lso4aer, ln2, lco2, &
+                            planet, lightning, H2O_strat_condensation, &
+                            background_spec, z
                             
   use photochem_vars, only: den, H2OSAT
-  use photochem_wrk, only: zapco, zaph2, zapno, zapo, rain, raingc, &
+  use photochem_wrk, only: prod_rates, raingc, &
                            yp, yl, H2SO4S
 
   implicit none
@@ -25,7 +26,7 @@ subroutine dochem(N, nr, nsp2, nq, nz, usol, A, nshort, jtrop, D, fval)
 
   integer i, j, ll, lla
   real*8 xp(nz), xl(nz), conso4(nz)
-  real*8 xlj, confac, scale
+  real*8 xlj, confac
   integer jt1
   real*8 rhcold, h2ocrt, zap, CONDEN1
 
@@ -89,14 +90,55 @@ subroutine dochem(N, nr, nsp2, nq, nz, usol, A, nshort, jtrop, D, fval)
   enddo
   if (lightning) then
     do j = 1,jtrop
-      scale = RAIN(j)/RAIN(1)
-      zap = zapno*scale
-      Fval(lno,j) = Fval(lno,j) + zap/DEN(j)
-      YP(lno,j) = YP(lno,j) + zap
+      ! PN2, PCO2, PCO, PH2, PH2O, PO2, PO, PNO
+      if (background_spec == "N2") then
+        ! pass
+      else
+        zap = (prod_rates(1)/z(jtrop))
+        Fval(lN2,j) = Fval(lN2,j) + zap/DEN(j)
+        YP(lN2,j) = YP(lN2,j) + zap
+      endif
+      if (background_spec == "CO2") then
+        ! pass
+      else
+        zap = (prod_rates(2)/z(jtrop))
+        Fval(lCO2,j) = Fval(lCO2,j) + zap/DEN(j)
+        YP(lCO2,j) = YP(lCO2,j) + zap
+      endif
+      zap = (prod_rates(3)/z(jtrop))
+      Fval(lCO,j) = Fval(lCO,j) + zap/DEN(j)
+      YP(lCO,j) = YP(lCO,j) + zap
+      if (background_spec == "H2") then
+        ! pass
+      else
+        zap = (prod_rates(4)/z(jtrop))
+        Fval(lH2,j) = Fval(lH2,j) + zap/DEN(j)
+        YP(lH2,j) = YP(lH2,j) + zap
+      endif
+      zap = (prod_rates(5)/z(jtrop))
+      Fval(lH2O,j) = Fval(lH2O,j) + zap/DEN(j)
+      YP(lH2O,j) = YP(lH2O,j) + zap
+      
+      zap = (prod_rates(6)/z(jtrop))
+      Fval(lO2,j) = Fval(lO2,j) + zap/DEN(j)
+      YP(lO2,j) = YP(lO2,j) + zap
+      
+      zap = (prod_rates(7)/z(jtrop))
+      Fval(lO,j) = Fval(lO,j) + zap/DEN(j)
+      YP(lO,j) = YP(lO,j) + zap
+      
+      zap = (prod_rates(8)/z(jtrop))
+      Fval(lNO,j) = Fval(lNO,j) + zap/DEN(j)
+      YP(lNO,j) = YP(lNO,j) + zap
+      
+      ! scale = RAIN(j)/RAIN(1)
+      ! zap = zapno*scale
+      ! Fval(lno,j) = Fval(lno,j) + zap/DEN(j)
+      ! YP(lno,j) = YP(lno,j) + zap
       ! IF ( changel.EQ.1 ) THEN
     !-mc 4/28/06      making NO requires subtracting 1/2 O2   (1/2 N2 + 1/2 O2 <-> NO)
-      Fval(lo2,j) = Fval(lo2,j) - 0.5*zap/DEN(j)
-      YP(lo2,j) = YP(lo2,j) - 0.5*zap
+      ! Fval(lo2,j) = Fval(lo2,j) - 0.5*zap/DEN(j)
+      ! YP(lo2,j) = YP(lo2,j) - 0.5*zap
       ! ELSE
     !-mc   4/28/06 the following is no longer needed as the code computes how much of each reductant is produced
     !-mc   i use these numbers to compute the amount of O2 produced. This is fine because CO2 and H2O reservoirs are effectivly infinte
@@ -109,25 +151,25 @@ subroutine dochem(N, nr, nsp2, nq, nz, usol, A, nshort, jtrop, D, fval)
       ! IF ( changel.EQ.1 ) THEN
     ! - mc adding lightning CO/H2 into chemistry for better redox conservation
     !- kevin's addition of 3-20-06
-      zap = zaph2*scale
-      Fval(lh2,j) = Fval(lh2,j) + zap/DEN(j)
-      YP(lh2,j) = YP(lh2,j) + zap
+      ! zap = zaph2*scale
+      ! Fval(lh2,j) = Fval(lh2,j) + zap/DEN(j)
+      ! YP(lh2,j) = YP(lh2,j) + zap
   !-mc 4/28/06 adding H2 also requires adding 1/2 O2    (H2O <-> H2 + 1/2 O2)
-      Fval(lo2,j) = Fval(lo2,j) + 0.5*zap/DEN(j)
-      YP(lo2,j) = YP(lo2,j) + 0.5*zap
+      ! Fval(lo2,j) = Fval(lo2,j) + 0.5*zap/DEN(j)
+      ! YP(lo2,j) = YP(lo2,j) + 0.5*zap
   !-mc
-      zap = zapco*scale
-      Fval(lco,j) = Fval(lco,j) + zap/DEN(j)
-      YP(lco,j) = YP(lco,j) + zap
+      ! zap = zapco*scale
+      ! Fval(lco,j) = Fval(lco,j) + zap/DEN(j)
+      ! YP(lco,j) = YP(lco,j) + zap
   !-mc 4/28/06  adding CO also requires adding 1/2 O2
-      Fval(lo2,j) = Fval(lo2,j) + 0.5*zap/DEN(j)
-      YP(lo2,j) = YP(lo2,j) + 0.5*zap
+      ! Fval(lo2,j) = Fval(lo2,j) + 0.5*zap/DEN(j)
+      ! YP(lo2,j) = YP(lo2,j) + 0.5*zap
   !-mc now figure out how much O is produced: add to O, subtract 1/2 O2  (1/2 O2 <-> O)
-      zap = zapo*scale
-      Fval(lo,j) = Fval(lo,j) + zap/DEN(j)
-      YP(lo,j) = YP(lo,j) + zap
-      Fval(lo2,j) = Fval(lo2,j) - 0.5*zap/DEN(j)
-      YP(lo2,j) = YP(lo2,j) - 0.5*zap
+      ! zap = zapo*scale
+      ! Fval(lo,j) = Fval(lo,j) + zap/DEN(j)
+      ! YP(lo,j) = YP(lo,j) + zap
+      ! Fval(lo2,j) = Fval(lo2,j) - 0.5*zap/DEN(j)
+      ! YP(lo2,j) = YP(lo2,j) - 0.5*zap
       ! ENDIF
 
     !        stop
