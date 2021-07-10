@@ -1,7 +1,8 @@
 
       SUBROUTINE RAINOUT(initialize,Jtrop,Usol,nq,nz, T,den, rain, raingc, err)
-        use photochem_data, only: naq, lh2co, lh2s, lso2, lso4aer, &
-                                  lh2so4, ispec, z, lco2, background_spec
+        use photochem_data, only: naq, lh2co, lh2s, lso2, lso4aer, lh2o, &
+                                  lh2so4, ispec, dz, z, lco2, background_spec
+        use photochem_vars, only: edd
         use photochem_wrk, only: H, xsave
 
       implicit none
@@ -22,11 +23,11 @@
       real*8 F(NAQ),FP(NAQ),TAQ(NZ),X(NAQ)
       integer LSO2g,LH2COg,LSO2aq,LH2COaq,LHCO3_,LCO3_2,LHSO3_
       integer LSO3_2,LH2COSO3,LOH_
-      real*8 eps, GAM15, GAM8, AV, wl, R, zkm, xs, gamma
+      real*8 eps, GAM15, GAM8, AV, wl, R, zkm, xs
       integer NH, nh1, i, in, inewt, info, j, k, l1, l2, ltest
-      real*8 ch2oh2, dx, fac, fhso3_, fz, h2cog
+      real*8 ch2oh2, dx, fac, fhso3_, h2cog
       real*8 hso3_, qj, rkj, so2aq, so2g, so3_2
-      real*8 t_triple, temp, test, tfac, wh2o, y, fco2
+      real*8 t_triple, temp, test, tfac, fco2
 
       real*8, dimension(nz) :: HCO2
       real*8, dimension(nz) :: R4, R5, R6, R7, R8, R9
@@ -40,6 +41,17 @@
       real*8 alpharain, co2aq, h2cog0, hh2co
       real*8 hso2, so2g0, so4_2
       real(8) :: rain_parameters(7)
+      
+      real(8) :: wH2O(jtrop)
+      real(8) :: slope, intercept
+      real(8) :: denav_p, eddav_p, denav_m, eddav_m
+      real(8) :: scale_factor
+      real(8), parameter :: earth_rainfall_rate = 1.1e+17 ! molecules/cm2/s
+      ! Both parameters below use to be polynomial fits. I have changed them to
+      ! constants. I distrust polynomials.
+      real(8), parameter :: fz = 0.05d0 ! fraction of the time it rains
+      real(8), parameter :: gamma = 4.d5 ! average time of storm cycles (s)
+      
       err = ''
 
 
@@ -294,8 +306,43 @@
                                  !9
 
       ENDIF
-
-
+      
+      !!!!!!! calculate raining rate !!!!!!!
+      ! middle of atmosphere
+      wH2O = 0.d0
+      do i = 2,nh-1
+        denav_p = sqrt(den(i+1)*den(i))
+        eddav_p = sqrt(edd(i+1)*edd(i))
+        denav_m = sqrt(den(i-1)*den(i))
+        eddav_m = sqrt(edd(i-1)*edd(i))
+        wH2O(i) = (eddav_p*denav_p/dz(i)**2.d0) * usol(lH2O,i+1) &
+                - (eddav_p*denav_p/dz(i)**2.d0 + eddav_m*denav_m/dz(i)**2.d0) * usol(lH2O,i) &
+                + (eddav_m*denav_m/dz(i)**2.d0) * usol(lH2O,i-1)
+        if (wH2O(i) < 0.d0) then
+          wH2O(i) = 1.d-20
+        endif
+      enddo
+      ! lets just lienarly extrapolate wH2O to bottom and top grid cell
+      !!! lower boundary !!!
+      slope = (wH2O(3) - wH2O(2))/(dz(2))
+      intercept = wH2O(2) - slope*z(2)
+      wH2O(1) = slope*z(1) + intercept
+      if (wH2O(1) < 0.d0) then
+        wH2O(1) = 1.d-20
+      endif
+      !!! upper boundary !!!
+      slope = (wH2O(nh-1) - wH2O(nh-2))/(dz(nh-1))
+      intercept = wH2O(nh-1) - slope*z(nh-1)
+      wH2O(nh) = slope*z(nh) + intercept
+      if (wH2O(nh) < 0.d0) then
+        wH2O(nh) = 1.d-20
+      endif
+      ! Earth's globally averaged rainfall is 1.1e+17 molecules/cm2/s (Giorgi+1985)
+      ! here we rescale the raining rate so that the total integrated value is
+      ! the same as Earth's.
+      scale_factor = earth_rainfall_rate/sum(wH2O*dz(1))
+      wH2O = wH2O*scale_factor    
+      !!!!!!! end calculate raining rate !!!!!!!
 !
 ! ***** LOOP OVER ALTITUDE *****
       DO i = 1 , nh           !this is a big loop (NH is the tropopause height index JTROP elsewhere)
@@ -417,21 +464,22 @@
          temp = T(i)
 !
 !  Find appropriate GAMMA
-         IF ( zkm.LE.1.51 ) THEN
-            gamma = gam15
-         ELSEIF ( zkm.LT.8. ) THEN
-            gamma = gam15 + (gam8-gam15)*((zkm-1.5)/6.5)
-         ELSE
-            gamma = gam8
-         ENDIF
+         ! IF ( zkm.LE.1.51 ) THEN
+         !    gamma = gam15
+         ! ELSEIF ( zkm.LT.8. ) THEN
+         !    gamma = gam15 + (gam8-gam15)*((zkm-1.5)/6.5)
+         ! ELSE
+         !    gamma = gam8
+         ! ENDIF
 !
 !  Find WH2O
-         IF ( zkm.LE.1. ) THEN
-            y = 11.35 + 0.1*zkm
-         ELSE
-            y = 11.5444 - 0.085333*zkm - 9.1111E-03*zkm*zkm
-         ENDIF
-         wh2o = 10.**y
+         ! IF ( zkm.LE.1. ) THEN
+            ! y = 11.35 + 0.1*zkm
+         ! ELSE
+            ! y = 11.5444 - 0.085333*zkm - 9.1111E-03*zkm*zkm
+         ! ENDIF
+         ! wh2o = 10.**y
+         ! print*,wh2o(i)
 
          ! IF ( planet.EQ.'EARTH' ) THEN
             ! wh2o = 1.0*wh2o
@@ -446,15 +494,15 @@
          ! ENDIF
 
 !  Find F(Z)
-         IF ( zkm.LE.1.51 ) THEN
-            fz = 0.1
-         ELSE
-            fz = 0.16615 - 0.04916*zkm + 3.37451E-3*zkm*zkm
-         ENDIF
+         ! IF ( zkm.LE.1.51 ) THEN
+         !    fz = 0.1
+         ! ELSE
+         !    fz = 0.16615 - 0.04916*zkm + 3.37451E-3*zkm*zkm
+         ! ENDIF
 !
 !  Loop over species
          DO j = 1 , nq
-            rkj = wh2o/55./(av*wl*1.E-9+1./(heff(j)*r*temp))
+            rkj = wh2o(i)/55./(av*wl*1.E-9+1./(heff(j)*r*temp))
             qj = 1. - fz + fz/(gamma*rkj)*(1.0-EXP(-rkj*gamma))
             RAINGC(j,i) = (1.-EXP(-rkj*gamma))/(gamma*qj)
          ENDDO
