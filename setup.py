@@ -14,7 +14,7 @@ import numpy as np
 # if err:
 #     raise Exception('The dependencies failed to compile.')
 
-version = '0.2.0'
+version = '0.2.1'
 
 only = 'only: setup right_hand_side jacobian'+ \
         ' integrate cvode cvode_save cvode_equilibrium steam2photochem :'
