@@ -48,6 +48,7 @@ if option == 1: # installing with parallel computation
           packages=['PhotochemPy'],
           version=version,
           ext_modules=extensions,
+          install_requires=['pathos'],
           configuration=configuration)
 
 if option == 2: # istalling with serial compuation
@@ -67,4 +68,5 @@ if option == 2: # istalling with serial compuation
           packages=['PhotochemPy'],
           version=version,
           ext_modules=extensions,
+          install_requires=['pathos'],
           configuration=configuration)
