@@ -61,6 +61,8 @@ class PhotochemPy:
         self.vars = photochem_vars
         self.wrk = photochem_wrk
         
+        self.warnings = True
+        
         if all(fil==None for fil in [species_dat,reactions_rx, \
                                     set_file, atmosphere_txt, flux_txt]):
             pass
@@ -82,8 +84,13 @@ class PhotochemPy:
                 else:
                     if line.split()[1] == 'LL':
                         self.ispec.append(line.split()[0])
+                    if line.split()[1] == 'SL':
+                        self.ispec.append(line.split()[0])
                     if line.split()[1] == 'IN':
                         self.background_spec = line.split()[0]
+                        self.ispec.append(line.split()[0])
+            self.ispec.append('HV')
+            self.ispec.append('M')
             err = self.photo.setup(species_dat, \
                                    reactions_rx, \
                                    set_file, \
@@ -137,9 +144,13 @@ class PhotochemPy:
             else:
                 if line.split()[1] == 'LL':
                     self.ispec.append(line.split()[0])
+                if line.split()[1] == 'SL':
+                    self.ispec.append(line.split()[0])
                 if line.split()[1] == 'IN':
                     self.background_spec = line.split()[0]
-
+                    self.ispec.append(line.split()[0])
+        self.ispec.append('HV')
+        self.ispec.append('M')
         err = self.photo.setup(species_dat, \
                                reactions_rx, \
                                set_file, \
@@ -197,12 +208,12 @@ class PhotochemPy:
 
             # check redox conservation
             self.redox_factor = self.vars.redox_factor
-            if np.abs(self.redox_factor) > 1e-3:
+            if np.abs(self.redox_factor) > 1e-3 and self.warnings:
                 print('Warning, redox conservation is not very good.')
                 print('redox factor =','%.2e'%self.redox_factor)
                 
             # check for mixing ratios greater than 1
-            if np.max(self.vars.usol_out) > 1:
+            if np.max(self.vars.usol_out) > 1 and self.warnings:
                 print('Warning, some mixing ratios are greater than 1.')
                 
         return self.code_run
@@ -285,6 +296,11 @@ class PhotochemPy:
             out['T'] = self.vars.t
             for i in range(self.data.nq):
                 out[self.ispec[i]] = self.vars.usol_out[i,:]
+            for i in range(self.data.nq,self.data.nq+self.data.isl):
+                out[self.ispec[i]] = self.wrk.d[i]/self.vars.den
+            out[self.ispec[-3]] = self.wrk.d[-3]/self.vars.den
+            out[self.ispec[-2]] = self.wrk.d[-2]/self.vars.den
+            out[self.ispec[-1]] = self.wrk.d[-1]/self.vars.den
             return out
 
     def in_dict(self):
@@ -307,6 +323,9 @@ class PhotochemPy:
         out['T'] = self.vars.t
         for i in range(self.data.nq):
             out[self.ispec[i]] = self.vars.usol_init[i,:]
+        for i in range(self.data.nq,self.data.nq+self.data.isl):
+            out[self.ispec[i]] = self.wrk.d[i]/self.vars.den
+        out[self.ispec[-1]] = self.wrk.d[-3]/self.vars.den
         return out
 
     def surf_flux(self):
@@ -383,7 +402,9 @@ class PhotochemPy:
         '''
         try:
             ind = self.ispec.index(spec)
-        except:
+            if ind+1 > pc.data.nq:
+                raise PhotochemError('Only long-lived species can have boundary conditions')
+        except ValueError:
             raise PhotochemError('species not in the model')
         if self.vars.lbound[ind] == 2 or self.vars.lbound[ind] == 3:
             self.vars.sgflux[ind] = flx
@@ -409,7 +430,9 @@ class PhotochemPy:
         '''
         try:
             ind = self.ispec.index(spec)
-        except:
+            if ind+1 > pc.data.nq:
+                raise PhotochemError('Only long-lived species can have boundary conditions')
+        except ValueError:
             raise PhotochemError('species not in the model')
         if self.vars.lbound[ind] == 1:
             self.vars.fixedmr[ind] = mix
@@ -435,7 +458,9 @@ class PhotochemPy:
         '''
         try:
             ind = self.ispec.index(spec)
-        except:
+            if ind+1 > pc.data.nq:
+                raise PhotochemError('Only long-lived species can have boundary conditions')
+        except ValueError:
             raise PhotochemError('species not in the model')
         if self.vars.lbound[ind] == 0 or self.vars.lbound[ind] == 3:
             self.vars.vdep[ind] = vdep
@@ -471,8 +496,10 @@ class PhotochemPy:
             raise PhotochemError('lbound must be 0, 1, 2 or 3')
         try:
             ind = self.ispec.index(spec)
+            if ind+1 > pc.data.nq:
+                raise PhotochemError('Only long-lived species can have boundary conditions')
             self.vars.lbound[ind] = lbound
-        except:
+        except ValueError:
             raise PhotochemError('species not in the model')
 
     def set_mbound(self,spec,mbound):
@@ -501,8 +528,10 @@ class PhotochemPy:
             raise PhotochemError('lbound must be 0, 1, or 2')
         try:
             ind = self.ispec.index(spec)
+            if ind+1 > pc.data.nq:
+                raise PhotochemError('Only long-lived species can have boundary conditions')
             self.vars.mbound[ind] = mbound
-        except:
+        except ValueError:
             raise PhotochemError('species not in the model')
 
     def right_hand_side(self,usol_flat):
@@ -614,8 +643,8 @@ class PhotochemPy:
         f['density'] = out['den']
         f['eddy'] = self.vars.edd
 
-        for spec in self.ispec:
-            f[spec] = out[spec]
+        for i in range(self.data.nq):
+            f[self.ispec[i]] = out[self.ispec[i]]
 
         # particle stuff
         if self.data.np > 0:
@@ -640,3 +669,77 @@ class PhotochemPy:
                 fil.write('{:25}'.format('%.16e'%f[key][i]))
             fil.write('\n')
         fil.close()
+        
+    def production_and_loss(self,spec):
+        
+        try:
+            i = self.ispec.index(spec)
+        except ValueError:
+            raise PhotochemError('species not in the model')
+            
+        sol = self.out_dict()
+        # loss
+        ll = self.data.numl[i]
+        nz = self.data.nz
+        nsp = self.data.nsp
+        loss = np.empty((ll,nz))
+        loss_react = ['' for a in range(ll)]
+        kk = 0
+        jj = 0
+        for ii in range(ll):
+            k = self.data.iloss[0,i,ii]-1
+            n = self.data.jchem[0,k]-1 # reactant 1
+            m = self.data.jchem[1,k]-1 # reactant 2
+            loss[jj] = self.wrk.a[k]*sol[self.ispec[n]]*sol[self.ispec[m]]*self.vars.den**2
+            l1 = [self.data.jchem[2,k]-1,self.data.jchem[3,k]-1,self.data.jchem[4,k]-1]
+            loss_react[jj] = self.ispec[n]+" + "+self.ispec[m]+" => "
+            for l in l1:
+                if l != -1:
+                    loss_react[jj] += self.ispec[l]+" + "     
+            loss_react[jj] = loss_react[jj][:-3]
+            jj += 1
+            
+        pp = self.data.nump[i]
+        production = np.empty((pp,nz))
+        prod_react = ['' for a in range(pp)]
+        kk = 0
+        jj = 0
+        for ii in range(pp):
+            k = self.data.iprod[i,ii]-1
+            n = self.data.jchem[0,k]-1 # reactant 1
+            m = self.data.jchem[1,k]-1 # reactant 2
+            production[jj] = self.wrk.a[k]*sol[self.ispec[n]]*sol[self.ispec[m]]*self.vars.den**2
+
+            p1 = [self.data.jchem[2,k]-1,self.data.jchem[3,k]-1,self.data.jchem[4,k]-1]
+            prod_react[jj] = self.ispec[n]+" + "+self.ispec[m]+" => "
+            for p in p1:
+                if p != -1:
+                    prod_react[jj] += self.ispec[p]+" + "     
+            prod_react[jj] = prod_react[jj][:-3]
+            jj += 1
+
+        integ_loss = np.sum(loss,axis=1)*(self.data.dz[0])
+        integ_prod = np.sum(production,axis=1)*(self.data.dz[0])
+        
+        # sort
+        ind = np.argsort(integ_prod)
+        prod_react = np.array(prod_react)[ind].tolist()[::-1]
+        production = production[ind][::-1]
+        integ_prod = integ_prod[ind][::-1]
+
+        ind = np.argsort(integ_loss)
+        loss_react = np.array(loss_react)[ind].tolist()[::-1]
+        loss = loss[ind][::-1]
+        integ_loss = integ_loss[ind][::-1]
+        
+        pl = {}
+        pl['loss'] = loss
+        pl['loss_react'] = loss_react
+        pl['loss_integ'] = integ_loss
+        pl['production'] = production
+        pl['prod_react'] = prod_react
+        pl['prod_integ'] = integ_prod
+        
+        return pl
+        
+        
