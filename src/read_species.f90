@@ -98,7 +98,7 @@ subroutine read_species(species_dat, err)
                 trim(species_dat)
           return
         endif
-        if ((lbc < 0) .or. (lbc > 3)) then
+        if ((lbc < -1) .or. (lbc > 3)) then
           write(ax,'(i8)') lbc
           err = 'lbound = '//trim(adjustl(AX))//' for '//trim(species)//' in '// &
                 trim(species_dat)//' is not a valid boundary condition'

@@ -5,7 +5,8 @@
                               ls4, ls8aer, lso4aer, &
                               z, dz, jtrop, ispec, photoreac, photonums, nsp2, &
                               background_spec, lightning, mass, background_mu, rainout_on, &
-                              fix_water_in_troposphere, P0, light_disp_rate
+                              fix_water_in_troposphere, P0, light_disp_rate, &
+                              estimate_CO2_photo_above_grid
     use photochem_vars, only: verbose, usol_init, usol_out, rpar_init, wfall_init, aersol_init, &
                               lbound, fixedmr, vdep, vdep0, veff, veff0, smflux, sgflux, &
                               distheight, distflux, mbound, T, den, edd, fluxo, flow, H2Osat, P, &
@@ -248,8 +249,10 @@
 ! this behavior is turned on and off by setting MBOUND=2 for CO2 in species.dat
       JCO2_O1D = JCO2+1
       VCO2 = (prates(JCO2,NZ) + prates(JCO2_O1D,NZ) ) * HSCALE(NZ)
-      SMFLUX(LO) = - VCO2*CO2(NZ)*DEN(NZ)
-      SMFLUX(LCO) = SMFLUX(LO)
+      if (estimate_CO2_photo_above_grid) then
+        SMFLUX(LO) = - VCO2*CO2(NZ)*DEN(NZ)
+        SMFLUX(LCO) = SMFLUX(LO)
+      endif
 
 ! ***** SET UP THE JACOBIAN MATRIX AND RIGHT-HAND SIDE *****
       djac = 0.d0
@@ -368,12 +371,20 @@
           enddo
           DJAC(KU,K+NQ) = 0.d0
           DJAC(KD,K) = DTINV + DU(k,1) - ADU(k,1)
-        else
+        else if (LB == 2) then
 !       CONSTANT UPWARD FLUX
           RHS(K) = RHS(K) + DU(k,1)*(USOL(K,2) - U(K)) &
           + ADU(k,1)*(USOL(K,2) + U(K)) + SGFLUX(K)/DEN(1)/DZ(1)
           DJAC(KD,K) = DJAC(KD,K) + DTINV + DU(k,1) - ADU(k,1)
           DJAC(KU,K+NQ) = - DU(k,1) - ADU(k,1)
+        else if (LB == -1) then 
+          ! Julie Moses 2000 boundary condition
+          RHS(K) = RHS(K) + DU(k,1)*(USOL(K,2) - U(K)) &
+          + ADU(k,1)*(USOL(K,2) + U(K)) - (edd(1)/h_atm(1))*U(K)/DZ(1)
+          DJAC(KD,K) = DJAC(KD,K) +DTINV +DU(k,1) -ADU(k,1) &
+          + (edd(1)/h_atm(1))/DZ(1)
+          DJAC(KU,K+NQ) = - DU(k,1) - ADU(k,1)
+          
         endif
       enddo
 

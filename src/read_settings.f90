@@ -8,7 +8,8 @@ subroutine read_settings(set_file, err)
                             IO2, ino, frak, ihztype, lightning, &
                             np, top_atmos, bottom_atmos, nz, rainout_on, &
                             H2O_strat_condensation, fix_water_in_troposphere, &
-                            relative_humidity, use_manabe, confac, rhcold
+                            relative_humidity, use_manabe, confac, rhcold, &
+                            estimate_CO2_photo_above_grid
   implicit none
   
   character(len=*), intent(in) :: set_file
@@ -110,6 +111,11 @@ subroutine read_settings(set_file, err)
       if (associated(io_err)) then; err = trim(set_file)//trim(io_err%message); return; endif
       top_atmos = set_dict%get_real('top-atmosphere',error = io_err)
       if (associated(io_err)) then; err = trim(set_file)//trim(io_err%message); return; endif
+      
+      ! no error possible  
+      estimate_CO2_photo_above_grid = set_dict%get_logical('estimate-CO2-photo-above-grid', &
+                                      .true.,error = io_err)
+      
   
       call root%finalize()
       deallocate(root)
@@ -162,12 +168,6 @@ subroutine read_settings(set_file, err)
   
   if (rainout_on .and. .not. fix_water_in_troposphere) then
     err = "fix-water-in-troposhere must be on if rainout is on. See "//trim(set_file)
-    return
-  endif
-  
-  if (.not. use_manabe .and. ((relative_humidity < 0.d0) .or. (relative_humidity > 1.d0))) then
-    err = "relative-humidity must be between 0 and 1 or it can be set to 'manabe'"//&
-          ". See "//trim(set_file)
     return
   endif
   

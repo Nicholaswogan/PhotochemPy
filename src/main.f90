@@ -19,13 +19,13 @@ program main
   err = ''
 
   rootdir = '../PhotochemPy/'
-  template = "Hadean+HCN"
+  template = "ModernEarth"
 
   call setup('../input/templates/'//template//'/species.dat', &
              '../input/templates/'//template//'/reactions.rx', &
              '../input/templates/'//template//'/settings.yaml', &
              '../input/templates/'//template//'/atmosphere.txt', &
-             '../input/templates/'//template//'/Sun_4.0Ga.txt', err)
+             '../input/templates/'//template//'/Sun_now.txt', err)
   if (len_trim(err) /= 0) then
     print*,trim(err)
     print*,'error worked properly'
@@ -60,7 +60,6 @@ program main
     stop
   endif
   
-  print*,redox_factor
   
   ! do i = 1,nw
     ! print*,wavl(i)/10.d0,surf_radiance(i)

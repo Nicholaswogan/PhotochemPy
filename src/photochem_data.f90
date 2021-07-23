@@ -72,6 +72,7 @@ module photochem_data
   logical :: fix_water_in_troposphere
   logical :: use_manabe
   real(8) :: relative_humidity
+  logical :: estimate_CO2_photo_above_grid
   
   ! needed in subroutine photgrid (in photgrid.f90)
   real*8, allocatable, dimension(:) :: z ! altitude of middle of grid

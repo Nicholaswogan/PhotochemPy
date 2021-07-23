@@ -343,7 +343,8 @@ end subroutine
 
 
 subroutine new_z_grid(nq, np, nz_in, ztrop_in, P_surf_in, z_in, T_in, edd_in, usol_layer, rpar_layer, err)
-  use photochem_data, only: nz, z, dz, jtrop, ztrop, P0, LH2O, mass, background_mu, r0, grav_surf, grav_z
+  use photochem_data, only: nz, z, dz, jtrop, ztrop, P0, LH2O, mass, background_mu, r0, grav_surf, grav_z, &
+                            fix_water_in_troposphere
   use photochem_vars, only: T, edd, usol_init, rpar_init, &
                             wfall_init, aersol_init
   use photochem_wrk, only: rpar
@@ -379,13 +380,15 @@ subroutine new_z_grid(nq, np, nz_in, ztrop_in, P_surf_in, z_in, T_in, edd_in, us
     call mean_molecular_weight(nq, usol_init(:,i), mass, background_mu, mubar_z(i))
   enddo
   call densty(nz, mubar_z, T, den_tmp, P_tmp, press_tmp) 
-  call photsatrat(nz, T, P_tmp, den_tmp, Jtrop, H2Osat_tmp, H2O_tmp)
-  do i=1,jtrop
-    usol_init(LH2O,i) = H2O_tmp(i) 
-  enddo
-  do i = jtrop+1,nz
-    usol_init(lH2O,i) = H2O_tmp(jtrop)
-  enddo
+  if (fix_water_in_troposphere) then
+    call photsatrat(nz, T, P_tmp, den_tmp, Jtrop, H2Osat_tmp, H2O_tmp)
+    do i=1,jtrop
+      usol_init(LH2O,i) = H2O_tmp(i) 
+    enddo
+    do i = jtrop+1,nz
+      usol_init(lH2O,i) = H2O_tmp(jtrop)
+    enddo
+  endif
   do i = 1,np
     rpar_init(:,i) = rpar_layer(i)
   enddo

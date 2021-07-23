@@ -4,7 +4,7 @@ subroutine dochem(N, nr, nsp2, nq, nz, usol, A, nshort, jtrop, D, fval)
                             lh2, lh2o, &
                             lh2so4, lno, lo, lo2, lso4aer, ln2, lco2, &
                             lightning, H2O_strat_condensation, &
-                            background_spec, z, confac, rhcold
+                            background_spec, z, confac, rhcold, fix_water_in_troposphere
                             
   use photochem_vars, only: den, H2OSAT
   use photochem_wrk, only: prod_rates, raingc, &
@@ -83,11 +83,13 @@ subroutine dochem(N, nr, nsp2, nq, nz, usol, A, nshort, jtrop, D, fval)
   ! changel = 1     !mc temp var for testing lightning changes versus OLD JFK method
                  !changeL=1 uses new code, changeL=0 uses old code
   jt1 = Jtrop + 1     ! same as NH1
-  do j = 1 , Jtrop
-    Fval(lh2o,j) = 0.
-    YP(lh2o,j) = 0.
-    YL(lh2o,j) = 0.
-  enddo
+  if (fix_water_in_troposphere) then
+    do j = 1 , Jtrop
+      Fval(lh2o,j) = 0.
+      YP(lh2o,j) = 0.
+      YL(lh2o,j) = 0.
+    enddo
+  endif
   if (lightning) then
     do j = 1,jtrop
       ! PN2, PCO2, PCO, PH2, PH2O, PO2, PO, PNO
