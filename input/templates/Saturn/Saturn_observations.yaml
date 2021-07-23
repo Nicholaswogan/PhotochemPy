@@ -1,0 +1,58 @@
+# Moses et al. (2000) compilation of Saturn observations (Table 1)
+# Pressures are in mbar
+CH3:
+  P_low: [None]
+  P_med: [2e-4]
+  P_high: [None]
+  mixing-ratio: [1e-7]
+
+CH4:
+  P_low: [0.2, 50, 50, 40, 1, 100, None, None, None, None]
+  P_med: [2, None, None, None, None, None, 3.6e-5, 2.6e-5, 1.4e-5, 2.6e-5]
+  P_high: [10, 2000, 2000, 2000, 3000, 1500, None, None, None, None]
+  mixing-ratio: [4.3e-3, 2.5e-3, 4.2e-3, 2.2e-3, 3.0e-3, 1.7e-3, 9.1e-5,
+                 6.0e-5, 5.8e-6, 1.4e-4]
+                 
+C2H2:
+  P_low: [0.6, 0.1, 2, None, None]
+  P_med: [3, 1.1, 7, 0.1, 1]
+  P_high: [15, 10, 22, None, None]
+  mixing-ratio: [2e-7, 3.6e-7, 1.2e-7, 3.5e-6, 2.5e-7]
+  
+C2H6:
+  P_low: [0.16, 0.1, 0.1, 0.15]
+  P_med: [0.8, 1.1, 2, 1]
+  P_high: [4, 10, 8, 5]
+  mixing-ratio: [2.9e-6, 8e-6, 7.1e-6, 4e-6]
+  
+CH3C2H:
+  P_low: [0.3]
+  P_med: [2]
+  P_high: [10]
+  mixing-ratio: [4e-10]
+  
+C4H2:
+  P_low: [0.3]
+  P_med: [2]
+  P_high: [10]
+  mixing-ratio: [5e-11]
+  
+CO:
+  P_low: [2000]
+  P_med: [5000]
+  P_high: [9000]
+  mixing-ratio: [1e-9]
+  
+CO2:
+  P_low: [0.3]
+  P_med: [2]
+  P_high: [10]
+  mixing-ratio: [3e-10]
+  
+H2O:
+  P_low: [0, 0.07]
+  P_med: [None, 0.2]
+  P_high: [2, 0.7]
+  mixing-ratio: [1.5e-7, 6e-9]
+    
+    
