@@ -40,9 +40,6 @@
 
           ! READ IN THREE BODY REACTION RATES
           else if (REACTYPE(J) .EQ. '3BODY') then
-            if (background_spec .EQ. 'CO2') then
-              rateparams(1,j)=rateparams(1,j)*2.5      !multiply low density rate by 2.5 to account for CO2 rather than N2 as background gas (Nair, 94)
-            endif
 
             do i=1,nz
               A(J,I) = TBDY(rateparams(1,j),rateparams(2,j), &

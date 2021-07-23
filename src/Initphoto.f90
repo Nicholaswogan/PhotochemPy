@@ -2,14 +2,15 @@
       SUBROUTINE INITPHOTO(err)
         use photochem_data, only: kj, ks, nw, &
                                   photospec, ispec, &
-                                  wavl, wav
+                                  wavl, wav, photoreac
         use photochem_vars, only: T
       implicit none !!!!!
 
       ! local variables
       ! character(len=*),intent(in) :: flux_txt
       character(len=err_len) :: err
-      Integer j,i
+      Integer j,i, k, kk, current_j
+      character(len = 20) :: tmp1, tmp2
 
 
 
@@ -115,12 +116,32 @@
 ! c at some point do away with all of the above, just taking what's relevant into single datafiles
 
 ! C read in relevant cross sections and set the Jnumbers,photospec,and photolabel
-
-!
+      
       j=1
       do i=1,ks   !number of photolysis species
+        kk = 0
+        do k = 1,kj
+          if (photospec(i) == photoreac(k)) then
+            kk = kk + 1
+          endif
+        enddo
+        ! now kk is how much j should go up by
+        current_j = j
+        
         CALL XS(ISPEC(INT(photospec(i))),nw,wavl,wav,T,j,err)
         if (len_trim(err) /= 0) return
+        
+        if (j - current_j /= kk) then
+          write(tmp1,'(i8)') kk 
+          write(tmp2,'(i8)') j - current_j
+          err = 'Problem reading in photolysis xsections for '//trim(ISPEC(INT(photospec(i))))// &
+                '. The reactions file has '//trim(adjustl(tmp1))//' photolysis reactions'// &
+                ' for this species, but PhotochemPy read in '//trim(adjustl(tmp2))// &
+                ' photolysis reactions.'
+          return
+        endif
+        
+        
       enddo
       if (j /= kj + 1) then
         err = 'Problem reading in xsections. It is hard to tell what is '// &

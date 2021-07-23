@@ -1,0 +1,31 @@
+
+
+planet:
+  surface-gravity: 373.0 # cm/s2
+  fscale: 0.43
+  surface-albedo: 0.215
+  tropopause-altitude: 1.5E6 # cm
+  planet-radius: 3.3766E8 # cm
+  surface-pressure: 0.0063 # bar
+
+settings:
+  diurnal-averaging-factor: 0.5
+  lgrid: 0
+  io2: 2
+  ino: 0
+  epsj: 1.0e-9
+  lightning-dissipation-rate: 9.8019e-9 # power dissipated divided by planet area [Watts/cm^2]
+  frak: 0
+  hcdens: 0.63
+  ihztype: 0
+  solar-zenith-angle: 50.0
+  lightning: false
+  rainout-on: false
+  H2O-stratosphere-condensation: true
+  fix-water-in-troposphere: true
+  condensation-factor: 1.6e-4 # not sure what this is
+  relative-humidity-cold-trap: 0.1
+  relative-humidity: 0.17 # can be manabe or a number between 0 and 1
+  number-layers: 200
+  top-atmosphere: 100.0e5
+  bottom-atmosphere: 0.0

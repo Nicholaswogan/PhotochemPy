@@ -4,7 +4,8 @@ subroutine read_reactions(reactions_rx, err)
                             reactype, rateparams, chemj, jchem, &
                             nump, numl, iprod, iloss, ispec, &
                             photospec, photoreac, photonums, &
-                            atomsO, atomsH, atomsC, atomsS, atomsN, atomsCl
+                            atomsO, atomsH, atomsC, atomsS, atomsN, atomsCl, &
+                            background_spec
   implicit none
 
   ! local variables
@@ -12,7 +13,7 @@ subroutine read_reactions(reactions_rx, err)
   character(len=err_len), intent(out) :: err
   character(len=50) :: fmat1, fmat11, temp1, temp2, temp3, temp4
   character(len=50) :: fmat2, fmat22, temp
-  integer :: i, m, j, n, k, io
+  integer :: i, m, j, n, k, io, iio
   integer :: rhOcount, rhHcount, rhCcount, rhScount
   integer :: rhNcount, rhCLcount, numprod, bad
   integer, allocatable, dimension(:) :: testvec
@@ -59,9 +60,9 @@ subroutine read_reactions(reactions_rx, err)
     if (REACTYPE(i) .EQ. '2BODY') then
       read(9,fmat1,iostat = io) rateparams(1,i), rateparams(2,i)
       backspace(9)
-      read(9,fmat11,iostat = io) temp1, temp2
+      read(9,fmat11,iostat = iio) temp1, temp2
       if ((len_trim(temp1) == 0) .or. (len_trim(temp2) == 0) .or. &
-          (io /= 0)) then
+          (io /= 0) .or. (iio /= 0)) then
         write(temp,'(i5)') i
         err = 'Problem reading in reaction rate parameters at line '// &
               trim(adjustl(temp))//' in the file '//trim(reactions_rx)
@@ -71,23 +72,27 @@ subroutine read_reactions(reactions_rx, err)
       read(9,fmat2,iostat = io) rateparams(1,i), rateparams(2,i), &
                                 rateparams(3,i), rateparams(4,i)
       backspace(9)
-      read(9,fmat22,iostat = io) temp1, temp2, temp3, temp4
-      
+      read(9,fmat22,iostat = iio) temp1, temp2, temp3, temp4
       if ((len_trim(temp1) == 0) .or. (len_trim(temp2) == 0) .or. &
           (len_trim(temp3) == 0) .or. (len_trim(temp4) == 0) .or. &
-          (io /= 0)) then
+          (io /= 0) .or. (iio /= 0)) then
         write(temp,'(i5)') i
         err = 'Problem reading in reaction rate parameters at line '// &
               trim(adjustl(temp))//' in the file '//trim(reactions_rx)
         return
       endif
+      
+      if (background_spec .EQ. 'CO2') then
+        rateparams(1,i)=rateparams(1,i)*2.5      !multiply low density rate by 2.5 to account for CO2 rather than N2 as background gas (Nair, 94)
+      endif
+      
     else if (REACTYPE(i) .EQ. 'ELEMT') then ! elementary reaction from Cantera
       read(9,'(58X,E9.2,3X,F8.2,3X,F8.2)',iostat = io) rateparams(1,i), rateparams(2,i), rateparams(3,i)
       backspace(9)
-      read(9,'(58X,A9,3X,A8,3X,A8)',iostat = io) temp1, temp2, temp3
+      read(9,'(58X,A9,3X,A8,3X,A8)',iostat = iio) temp1, temp2, temp3
       if ((len_trim(temp1) == 0) .or. (len_trim(temp2) == 0) .or. &
           (len_trim(temp3) == 0) .or. &
-          (io /= 0)) then
+          (io /= 0) .or. (iio /= 0)) then
         write(temp,'(i5)') i
         err = 'Problem reading in reaction rate parameters at line '// &
               trim(adjustl(temp))//' in the file '//trim(reactions_rx)

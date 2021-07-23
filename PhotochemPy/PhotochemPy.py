@@ -402,7 +402,7 @@ class PhotochemPy:
         '''
         try:
             ind = self.ispec.index(spec)
-            if ind+1 > pc.data.nq:
+            if ind+1 > self.data.nq:
                 raise PhotochemError('Only long-lived species can have boundary conditions')
         except ValueError:
             raise PhotochemError('species not in the model')
@@ -430,7 +430,7 @@ class PhotochemPy:
         '''
         try:
             ind = self.ispec.index(spec)
-            if ind+1 > pc.data.nq:
+            if ind+1 > self.data.nq:
                 raise PhotochemError('Only long-lived species can have boundary conditions')
         except ValueError:
             raise PhotochemError('species not in the model')
@@ -458,7 +458,7 @@ class PhotochemPy:
         '''
         try:
             ind = self.ispec.index(spec)
-            if ind+1 > pc.data.nq:
+            if ind+1 > self.data.nq:
                 raise PhotochemError('Only long-lived species can have boundary conditions')
         except ValueError:
             raise PhotochemError('species not in the model')
@@ -496,7 +496,7 @@ class PhotochemPy:
             raise PhotochemError('lbound must be 0, 1, 2 or 3')
         try:
             ind = self.ispec.index(spec)
-            if ind+1 > pc.data.nq:
+            if ind+1 > self.data.nq:
                 raise PhotochemError('Only long-lived species can have boundary conditions')
             self.vars.lbound[ind] = lbound
         except ValueError:
@@ -528,7 +528,7 @@ class PhotochemPy:
             raise PhotochemError('lbound must be 0, 1, or 2')
         try:
             ind = self.ispec.index(spec)
-            if ind+1 > pc.data.nq:
+            if ind+1 > self.data.nq:
                 raise PhotochemError('Only long-lived species can have boundary conditions')
             self.vars.mbound[ind] = mbound
         except ValueError:
