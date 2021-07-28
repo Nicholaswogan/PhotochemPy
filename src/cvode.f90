@@ -429,7 +429,7 @@ subroutine cvode_save(T0, usol_start, nnq, nnz, t_eval, num_t_eval, rtol, atol, 
     photorates = 0.d0
     do j=1,kj
       i = photoreac(j)   
-      ind = findloc(photospec,i)
+      ind = findloc_integer(size(photospec),photospec,i)
       photorates(ind(1),:) = photorates(ind(1),:) + A(photonums(j),:)*solution_temp(i,:)*den
     enddo
     do j = 1,nq

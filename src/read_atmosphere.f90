@@ -106,7 +106,7 @@ subroutine read_atmosphere_file(atmosphere_txt, err)
   rewind(4)
   read(4,*)
   ! reads in temperature
-  ind = findloc(labels,'temp')
+  ind = findloc_character(size(labels),labels,'temp')
   if (ind(1) /= 0) then
     do k=1,nzf
       read(4,*,iostat = io) (temp(ii),ii=1,n)
@@ -124,7 +124,7 @@ subroutine read_atmosphere_file(atmosphere_txt, err)
   rewind(4)
   read(4,*)
   ! reads in alt
-  ind = findloc(labels,'alt')
+  ind = findloc_character(size(labels),labels,'alt')
   if (ind(1) /= 0) then
     do k=1,nzf
       read(4,*,iostat = io) (temp(ii),ii=1,n)
@@ -142,7 +142,7 @@ subroutine read_atmosphere_file(atmosphere_txt, err)
   rewind(4)
   read(4,*)
   ! reads in eddy diffusion?
-  ind = findloc(labels,'eddy')
+  ind = findloc_character(size(labels),labels,'eddy')
   if (ind(1) /= 0) then
     do k=1,nzf
       read(4,*,iostat = io) (temp(ii),ii=1,n)
@@ -214,9 +214,39 @@ subroutine read_atmosphere_file(atmosphere_txt, err)
     return
   endif
   
-  
-
 end subroutine
+
+function findloc_character(n, char_array, char)
+  implicit none
+  integer, intent(in) :: n
+  character(len=*), intent(in) :: char_array(n)
+  character(len=*), intent(in) :: char
+  integer :: findloc_character(1)
+  integer :: i
+  findloc_character(1) = 0
+  do i = 1,n
+    if (char_array(i) == char) then
+      findloc_character(1) = i
+      return
+    endif
+  enddo  
+end function
+
+function findloc_integer(n, int_array, int)
+  implicit none
+  integer, intent(in) :: n
+  integer, intent(in) :: int_array(n)
+  integer, intent(in) :: int
+  integer :: findloc_integer(1)
+  integer :: i
+  findloc_integer(1) = 0
+  do i = 1,n
+    if (int_array(i) == int) then
+      findloc_integer(1) = i
+      return
+    endif
+  enddo  
+end function
 
 subroutine interp2atmosfile(nz, nq, np, z, T, edd, usol, rpar, wfall, aersol, err)
   use photochem_data, only: nzf, z_file, &

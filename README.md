@@ -11,7 +11,7 @@ PhotochemPy is a Python wrapper to Fortran source code. This makes the code very
 **Requirements:**
 To install PhotochemPy, you must have the following installed on your system.
 - `Python` (>3.6.0) with the `numpy` package. I suggest using [anaconda](https://www.anaconda.com/) to install these regardless of your operating system.
-- A Fortran and C compiler. The GNU compiler collection, version >4.9.4 (includes `gfortran`, `gcc`, etc.). If you are using a Mac, install it with Homebrew: `brew install gcc`. For other operating systems [follow this GNU installation guide](https://gcc.gnu.org/install/binaries.html).
+- A Fortran and C compiler. I suggest the GNU compiler collection, version >9 (includes `gfortran`, `gcc`, etc.). If you are using a Mac, install it with Homebrew: `brew install gcc`. For other operating systems [follow this GNU installation guide](https://gcc.gnu.org/install/binaries.html).
 
 **Python Module:** After satisfying the requirements, then follow these setups to install PhotochemPy
 
