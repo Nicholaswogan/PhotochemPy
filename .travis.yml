@@ -10,9 +10,6 @@ before_install:
   - sudo apt-get install gcc
 
 install:
-  - cd src/dependencies
-  - ./compile.sh
-  - cd ../../
   - pip install .
 
 script:

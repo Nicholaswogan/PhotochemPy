@@ -10,7 +10,7 @@
     use photochem_vars, only: verbose, usol_init, usol_out, rpar_init, wfall_init, aersol_init, &
                               lbound, fixedmr, vdep, vdep0, veff, veff0, smflux, sgflux, &
                               distheight, distflux, mbound, T, den, edd, fluxo, flow, H2Osat, P, &
-                              press
+                              press, equilibrium_time
     use photochem_wrk, only: rpar, wfall, aersol, hscale, scale_h, h_atm, bx1x2, &
                              A, yl, yp, rain, raingc, &
                              adl, add, adu, dl, dd, du, dk, &
@@ -89,7 +89,7 @@
     DT = 1.D-6
     DTINV = 1./DT
     TIME = 0.
-    TSTOP = 1.D17
+    TSTOP = equilibrium_time
     ! NSTEPS = 50000
     nn = 0
     KD = 2*NQ + 1

@@ -1,5 +1,5 @@
 import numpy as np
-from Photochem import photochem, photochem_data, photochem_vars, photochem_wrk
+from ._photochem import photochem, photochem_data, photochem_vars, photochem_wrk
 import sys
 import os
 

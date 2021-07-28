@@ -483,7 +483,8 @@ subroutine cvode_equilibrium(rtol, atol, use_fast_jacobian, success, err)
                             lh2o, dz, nsp2, jtrop, background_mu, mass, rainout_on, &
                             fix_water_in_troposphere
   use photochem_vars, only: verbose, usol_init, usol_out, &
-                            den, fluxo, flow, T, P, den, press, rpar_init
+                            den, fluxo, flow, T, P, den, press, rpar_init, &
+                            equilibrium_time
   use photochem_wrk, only: cvode_stepper, wfall, dk, scale_h, h_atm, yp, yl, &
                            bx1x2, raingc, A, rain, rpar
   implicit none
@@ -528,7 +529,7 @@ subroutine cvode_equilibrium(rtol, atol, use_fast_jacobian, success, err)
   endif
   ! end stuff that needs to be inizialized
 
-  t_eval(1) = 1.d17
+  t_eval(1) = equilibrium_time
   call system_clock(count = c1, count_rate = cr, count_max = cm)
   call cvode(T0, usol_init, nq, nz, t_eval, num_t_eval, rtol, atol, &
              use_fast_jacobian, solution, success, err)
