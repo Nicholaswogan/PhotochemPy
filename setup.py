@@ -11,7 +11,7 @@ setup(
     python_requires='>3.6.0',
     version="0.2.3",
     license="MIT",
-    install_requires=['numpy>=1.20','scipy'],
+    install_requires=['numpy<=1.20','scipy'],
     author='Nicholas Wogan',
     author_email = 'nicholaswogan@gmail.com',
     description = "Photochemical model of planet's atmospheres.",

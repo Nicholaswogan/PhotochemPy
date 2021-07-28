@@ -11,17 +11,21 @@ PhotochemPy is a Python wrapper to Fortran source code. This makes the code very
 **Requirements:**
 To install PhotochemPy, you must have the following installed on your system.
 - `Python` (>3.6.0) with the `numpy` package. I suggest using [anaconda](https://www.anaconda.com/) to install these regardless of your operating system.
-- The GNU compiler collection, version >4.9.4 (includes `gfortran`, `gcc`, etc.). If you are using a Mac, I suggest installing it with Homebrew: `brew install gcc`. For other operating systems [follow this GNU installation guide](https://gcc.gnu.org/install/binaries.html).
-- CMake. On Mac you can install with `brew install cmake`.
-
+- A Fortran and C compiler. The GNU compiler collection, version >4.9.4 (includes `gfortran`, `gcc`, etc.). If you are using a Mac, install it with Homebrew: `brew install gcc`. For other operating systems [follow this GNU installation guide](https://gcc.gnu.org/install/binaries.html).
 
 **Python Module:** After satisfying the requirements, then follow these setups to install PhotochemPy
 
 - Clone or download the github repository [`https://github.com/Nicholaswogan/PhotochemPy`](https://github.com/Nicholaswogan/PhotochemPy)
-- In a terminal, navigate to the folder `src/dependencies`, and run the shell script `compile.sh`.
 - Navigate to the root directory of PhotochemPy, then install with `python -m pip install .`
 
-**Fortran source:** If you prefer to use the code exclusively in Fortran, that is OK too. An example is provided in the folder `examples/fortran_example`.
+**Fortran source:** If you prefer to use the code exclusively in Fortran, that is OK too. You can build `libphotochem` with CMake. Download or clone this respository, then from the root directory of the repository run
+
+```sh
+mkdir build
+cd build
+cmake ..
+make -j # -j builds in parallel
+```
 
 ## Examples/Tutorial
 
