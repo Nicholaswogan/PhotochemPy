@@ -42,6 +42,7 @@ contains
   include "right_hand_side.f90"
   include "jacobian.f90"
   include "cvode.f90"
+  include "cvode_funcs.f90"
 
   include "redox_conservation.f90"
 

@@ -7,7 +7,6 @@ SRC=photochem_data.f90 \
 		photochem_lightning.f90 \
 		photochem_clima.f90 \
 		photochem.f90 \
-		cvode_funcs.f90	\
 		lin_alg.f \
 		main.f90 \
 		test_all.f90
@@ -18,7 +17,6 @@ OBJ=photochem_data.o \
 		photochem_lightning.o \
 		photochem_clima.o \
 		photochem.o \
-		cvode_funcs.o	\
 		lin_alg.o \
 		main.o 
 OBJJ=photochem_data.o \
@@ -27,16 +25,15 @@ OBJJ=photochem_data.o \
 		photochem_lightning.o \
 		photochem_clima.o \
 		photochem.o \
-		cvode_funcs.o	\
 		lin_alg.o \
 		test_all.o
 	
 IDIR=dependencies/include
 MODDIR=dependencies/modules
 LDIR=dependencies/lib
-FFLAGS=-I$(IDIR) -I$(MODDIR) -L$(LDIR)
-LIBS=-lgomp -lm -lsundials_fcvode -lsundials_cvode \
- 		 -lsundials_fnvecserial -lsundials_nvecserial -lyaml -lminpack
+FFLAGS=-I$(IDIR) -I$(MODDIR) -L$(LDIR) -Idependencies/fortran
+LIBS=-lgomp -lm -lsundials_fcvode_mod -lsundials_cvode \
+ 		  -lyaml -lminpack
 
 %.o: %.f90
 	$(FC) $(FCFLAGS) -c $< $(FFLAGS) $(LIBS)

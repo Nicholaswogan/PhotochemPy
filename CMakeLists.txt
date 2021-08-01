@@ -35,7 +35,6 @@ set(PHOTOCHEM_SOURCES ${CMAKE_SOURCE_DIR}/src/photochem_data.f90
                       ${CMAKE_SOURCE_DIR}/src/photochem_lightning.f90 
                       ${CMAKE_SOURCE_DIR}/src/photochem_clima.f90
                       ${CMAKE_SOURCE_DIR}/src/photochem.f90
-                      ${CMAKE_SOURCE_DIR}/src/cvode_funcs.f90
                       ${CMAKE_SOURCE_DIR}/src/lin_alg.f)
 
 set(PHOTOCHEM_DEPS ${CMAKE_SOURCE_DIR}/src/determine_dimensions.f90
@@ -71,6 +70,9 @@ set(PHOTOCHEM_DEPS ${CMAKE_SOURCE_DIR}/src/determine_dimensions.f90
 set_source_files_properties(${CMAKE_SOURCE_DIR}/src/photochem.f90 
                             PROPERTIES OBJECT_DEPENDS ${PHOTOCHEM_DEPS})
 
+set_source_files_properties(${CMAKE_SOURCE_DIR}/src/photochem.f90
+PROPERTIES OBJECT_DEPENDS ${CMAKE_SOURCE_DIR}/src/cvode_funcs.f90)
+
 if (BUILD_STATIC_PHOTOCHEM)  
   # libphotochem.a
   add_library(photochem 
@@ -78,19 +80,18 @@ if (BUILD_STATIC_PHOTOCHEM)
   
   target_link_libraries(photochem 
                         yaml 
-                        sundials_fcvode
+                        sundials_fcvode_mod
                         sundials_cvode
-                        sundials_fnvecserial
-                        sundials_nvecserial
                         yaml 
                         minpack)
+  # target_compile_options(photochem PRIVATE -Wunused-variable)
   # target_include_directories(photochem PUBLIC
   #                           "${CMAKE_BINARY_DIR}/modules"
   #                           )
 
   # the main executable
   add_executable(photo.run ${CMAKE_SOURCE_DIR}/src/main.f90)
-  target_link_libraries(photo.run photochem)
+  target_link_libraries(photo.run photochem )
   # target_include_directories(photo.run PRIVATE ${CMAKE_BINARY_DIR}/modules)
 
   #  tests
@@ -141,10 +142,8 @@ if (BUILD_F2PY_PHOTOCHEM)
     
   target_link_libraries(${generated_module_file} 
                         yaml 
-                        sundials_fcvode
+                        sundials_fcvode_mod
                         sundials_cvode
-                        sundials_fnvecserial
-                        sundials_nvecserial
                         yaml 
                         minpack)
   target_include_directories(${generated_module_file} PUBLIC

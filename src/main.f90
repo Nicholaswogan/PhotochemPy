@@ -1,7 +1,7 @@
 
 
 program main
-  use photochem, only: setup, integrate, allocate_memory, cvode_equilibrium, steam2photochem!, read_settings
+  use photochem, only: setup, integrate, allocate_memory, cvode_equilibrium, steam2photochem!, cvode_save!, read_settings
   use photochem_data, only: nq, np, z, nz, P0
   use photochem_vars, only: rootdir,  max_cvode_steps, redox_factor, usol_init
   use photochem_wrk, only: surf_radiance
@@ -10,6 +10,8 @@ program main
   character(len=1000) :: err
   character(len=:), allocatable :: template
   integer :: i
+  ! real(8) :: t_eval(100)
+  ! integer :: num_t_eval = 100
   
   ! for steam2photochem
   integer :: nz_in
@@ -60,7 +62,17 @@ program main
     stop
   endif
   
-  
+  ! do i = 1,num_t_eval
+  !   t_eval(i) = 10.d0**(5.d0 + (i-1)*(17.d0 - 5.d0)/num_t_eval)
+  ! enddo
+  ! call cvode_save(0.d0, usol_init, nq, nz, t_eval, num_t_eval, 1.d-3, 1.d-30, &
+  !                    .true., 'blatest.dat', 1, success, err)
+  !  if (len_trim(err) /= 0) then
+  !    print*,trim(err)
+  !    print*,'error worked properly'
+  !    stop
+  !  endif
+
   ! do i = 1,nw
     ! print*,wavl(i)/10.d0,surf_radiance(i)
   ! enddo

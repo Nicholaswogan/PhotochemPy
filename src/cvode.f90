@@ -1,54 +1,65 @@
 
-subroutine cvode(T0, usol_start, nnq, nnz, t_eval, num_t_eval, rtol, atol, &
-                 use_fast_jacobian, solution, success, err)
+subroutine cvode(t0, usol_start, nnq, nnz, t_eval, num_t_eval, rtol, atol, &
+                     use_fast_jacobian, solution, success, err)
   use photochem_data, only: neq, nq, nz, jtrop, np, mass, background_mu, rainout_on
-  use photochem_vars, only: verbose, lbound, fixedmr, T, den, P, Press, max_cvode_steps, &
-                            rpar_init
+  use photochem_vars, only: lbound, fixedmr, T, den, P, Press, &
+                            rpar_init, &
+                            max_cvode_steps, initial_dt, max_err_test_failures, max_order
   use photochem_wrk, only: cvode_stepper, rain, raingc, global_err, rpar
   
+  use, intrinsic :: iso_c_binding
+  use fcvode_mod, only: CV_BDF, CV_NORMAL, FCVodeInit, FCVodeSStolerances, &
+                        FCVodeSetLinearSolver, FCVode, FCVodeCreate, FCVodeFree, &
+                        FCVodeSetMaxNumSteps, FCVodeSetJacFn, FCVodeSetInitStep, &
+                        FCVodeGetCurrentStep, FCVodeSetMaxErrTestFails, FCVodeSetMaxOrd
+  use fsundials_nvector_mod, only: N_Vector, FN_VDestroy
+  use fnvector_serial_mod, only: FN_VMake_Serial   
+  use fsunmatrix_band_mod, only: FSUNBandMatrix
+  use fsundials_matrix_mod, only: SUNMatrix, FSUNMatDestroy
+  use fsundials_linearsolver_mod, only: SUNLinearSolver, FSUNLinSolFree
+  use fsunlinsol_band_mod, only: FSUNLinSol_Band
   
   implicit none
-
-  ! inputs
-  double precision, intent(in) :: T0 ! intial time
-  double precision, dimension(nnq,nnz) :: usol_start ! initial atmosphere
+  
+  real(8), intent(in) :: t0 ! initial time
+  real(8), dimension(nnq,nnz) :: usol_start ! initial atmosphere
   integer, intent(in) :: nnq
   integer, intent(in) :: nnz
-  double precision, dimension(num_t_eval), intent(in) :: t_eval ! times to evaluate solution
+  real(8), dimension(num_t_eval), intent(in) :: t_eval ! times to evaluate solution
   integer, intent(in) :: num_t_eval ! dimension of t_eval
-  double precision, intent(in) :: rtol ! relative tolerance
-  double precision, intent(in) :: atol ! absolute tolerance
+  real(8), intent(in) :: rtol ! relative tolerance
+  real(8), intent(in) :: atol ! absolute tolerance
   logical, intent(in) :: use_fast_jacobian ! if True then use my jacobian
-  character(len=1000), intent(out) :: err
-  character(len=10) :: message
-
-  ! output
-  double precision, dimension(num_t_eval,nnq,nnz),intent(out) :: solution
+  
+  real(8), dimension(num_t_eval,nnq,nnz),intent(out) :: solution
   logical, intent(out) :: success
-
-  ! other
-  integer*4 LNST, LNFE, LNSETUP, LNNI, LNCF, LNETF, LNJE ! for printing stats
-  data LNST/3/, LNFE/4/, LNETF/5/,  LNCF/6/, LNNI/7/, LNSETUP/8/, &
-      LNJE/17/
-  integer*4 :: IER, METH, IATOL, ITASK ! some options
-  integer i, j, k, ii
-
-  ! The following declaration specification should match C type long int.
-  integer*8 nneq, IOUT(25), IPAR(2), mu, ml
-  double precision TT
-  double precision U(neq), ROUT(10), RRPAR(1)
-  real(8) :: mubar_z(nz)
-
+  character(len=1000), intent(out) :: err
+  
+  ! local
+  real(c_double) :: tcur(1)    ! current time
+  integer(c_int) :: ierr       ! error flag from C functions
+  type(c_ptr)    :: cvode_mem  ! CVODE memory
+  type(N_Vector), pointer :: sunvec_y ! sundials vector
+  real(c_double) :: yvec(neq)
+  integer(c_long) :: neq_long
+  integer(c_long) :: mu, ml
+  integer(c_long) :: mxsteps_ ! unused
+  type(SUNMatrix), pointer :: sunmat
+  type(SUNLinearSolver), pointer :: sunlin
+  
+  real(8) :: mubar_z(nz) ! needed for initialization
+  character(len=10) :: message
+  integer :: i, j, k, ii
+  
   cvode_stepper = 0
   err = ''
-
-  nneq = neq ! number of equations
-  METH = 2 ! CVODE BDF method
-  IATOL = 1 ! scalar absolute tolerance
-  mu = nq ! upper diagonal
-  ml = nq ! lower diagonal
-  ITASK = 1 ! for output
-
+  
+  mxsteps_ = max_cvode_steps
+  neq_long = neq
+  tcur   = t0
+  mu = nq
+  ml = nq
+  
   ! begin stuff that needs to be inizialized
   if (np.gt.0) then
     rpar = rpar_init
@@ -65,201 +76,217 @@ subroutine cvode(T0, usol_start, nnq, nnz, t_eval, num_t_eval, rtol, atol, &
     raingc = 0.d0
   endif
   ! end stuff that needs to be inizialized
-
+  
   ! initial conditions
-  DO I=1,NQ
-    DO J=1,NZ
-      K = I + (J-1)*NQ
-      U(K) = usol_start(i,j)
+  do i = 1,nq
+    do j = 1,nz
+      k = i + (j-1)*nq
+      yvec(k) = usol_start(i,j)
     enddo
   enddo
-
-  CALL FNVINITS(1, nneq, IER)
-  if (ier .ne. 0) then
-    err = 'SUNDIALS_ERROR: FNVINITS'
+  
+  ! create SUNDIALS N_Vector
+  sunvec_y => FN_VMake_Serial(neq_long, yvec)
+  if (.not. associated(sunvec_y)) then
+    err = "CVODE setup error."
     return
-  endif
-
-  ! initialize banded matrix module
-  call FSUNBANDMATINIT(1, nneq, mu, ml, mu+ml, ier)
-  if (ier .ne. 0) then
-    err = 'SUNDIALS_ERROR: FSUNBANDMATINIT'
+  end if
+  
+  ! create CVode memory
+  cvode_mem = FCVodeCreate(CV_BDF)
+  if (.not. c_associated(cvode_mem)) then
+    err = "CVODE setup error."
     return
-  endif
-
-  ! initialize banded linear solver module
-  call FSUNBANDLINSOLINIT(1, IER)
-  if (ier .ne. 0) then
-    err = 'SUNDIALS_ERROR: FSUNBANDLINSOLINIT'
+  end if
+  
+  ierr = FCVodeInit(cvode_mem, c_funloc(RhsFn), t0, sunvec_y)
+  if (ierr /= 0) then
+    err = "CVODE setup error."
     return
-  endif
-
-  call FCVMALLOC(T0, U, METH, IATOL, RTOL, ATOL, &
-                 IOUT, ROUT, IPAR, RRPAR, IER)
-  if (ier .ne. 0) then
-   err = 'SUNDIALS_ERROR: FCVMALLOC'
-   return
-  endif
-
-  ! attach matrix and linear solver modules to CVLs interface
-  CALL FCVLSINIT(IER)
-  if (ier .ne. 0) then
-    err = 'SUNDIALS_ERROR: FCVLSINIT'
-    CALL FCVFREE
+  end if
+  
+  ierr = FCVodeSStolerances(cvode_mem, rtol, atol)
+  if (ierr /= 0) then
+    err = "CVODE setup error."
     return
-  endif
-
-  CALL FCVSETIIN('MAX_NSTEPS', 1000000, IER)
-  if (ier .ne. 0) then
-    err = 'SUNDIALS_ERROR: FCVSETIIN'
-    CALL FCVFREE
+  end if
+  
+  sunmat => FSUNBandMatrix(neq_long, mu, ml)
+  sunlin => FSUNLinSol_Band(sunvec_y,sunmat)
+  
+  ierr = FCVodeSetLinearSolver(cvode_mem, sunlin, sunmat)
+  if (ierr /= 0) then
+    err = "CVODE setup error."
     return
-  endif
-
-  CALL FCVSETIIN('MAX_ERRFAIL', 15, IER)
-  if (ier .ne. 0) then
-    err = 'SUNDIALS_ERROR: FCVSETIIN'
-    CALL FCVFREE
-    return
-  endif
-
-  ! start with tiny step
-  call FCVSETRIN('INIT_STEP',1.d-6,ier)
-  if (ier .ne. 0) then
-    err = 'SUNDIALS_ERROR: FCVSETRIN'
-    CALL FCVFREE
-    return
-  endif
-
+  end if
+  
   if (use_fast_jacobian) then
-    CALL FCVBANDSETJAC(1, IER)
-    if (ier .ne. 0) then
-      err = 'SUNDIALS_ERROR: FCVBANDSETJAC'
-      CALL FCVFREE
+    ierr = FCVodeSetJacFn(cvode_mem, c_funloc(JacFn))
+    if (ierr /= 0) then
+      err = "CVODE setup error."
       return
-    endif
+    end if
   endif
-
-  do ii=1,num_t_eval
-
-    CALL FCVODE(t_eval(ii), TT, U, ITASK, IER)
-    if (ier < 0) then ! then there is a problem
-      if ((global_err == 'max steps') .and. (ier == -8)) then ! reached max steps
+  
+  ierr = FCVodeSetMaxNumSteps(cvode_mem, mxsteps_)
+  if (ierr /= 0) then
+    err = "CVODE setup error."
+    return
+  end if
+  
+  ierr = FCVodeSetInitStep(cvode_mem, initial_dt)
+  if (ierr /= 0) then
+    err = "CVODE setup error."
+    return
+  end if
+  
+  ierr = FCVodeSetMaxErrTestFails(cvode_mem, max_err_test_failures)
+  if (ierr /= 0) then
+    err = "CVODE setup error."
+    return
+  end if
+  
+  ierr = FCVodeSetMaxOrd(cvode_mem, max_order)
+  if (ierr /= 0) then
+    err = "CVODE setup error."
+    return
+  end if
+  
+  do ii = 1, num_t_eval
+    ierr = FCVode(cvode_mem, t_eval(ii), sunvec_y, tcur, CV_NORMAL)
+    if (ierr /= 0) then
+      success = .false.
+      if ((global_err == 'max steps') .and. (ierr == -8)) then ! reached max steps
         write(message,'(i10)')  max_cvode_steps 
         print*,'CVODE stopped because it reached the maximum number of of specified steps: '//trim(message)
-        CALL FCVFREE
+        call FN_VDestroy(sunvec_y)
+        call FCVodeFree(cvode_mem)
+        ierr = FSUNLinSolFree(sunlin)
+        call FSUNMatDestroy(sunmat)
         return
-      else if ((global_err /= 'max steps') .and. (ier == -8)) then ! err in my rhs
+      else if ((global_err /= 'max steps') .and. (ierr == -8)) then ! err in my rhs
         err = global_err
-        CALL FCVFREE
+        call FN_VDestroy(sunvec_y)
+        call FCVodeFree(cvode_mem)
+        ierr = FSUNLinSolFree(sunlin)
+        call FSUNMatDestroy(sunmat)
         return
       else
-        write(message,'(i4)') ier
+        write(message,'(i4)') ierr
         err = 'SUNDIALS_ERROR: FCVODE '//trim(message)
-        CALL FCVFREE
+        call FN_VDestroy(sunvec_y)
+        call FCVodeFree(cvode_mem)
+        ierr = FSUNLinSolFree(sunlin)
+        call FSUNMatDestroy(sunmat)
         return
       endif
-    endif
+    else
+      success = .true.
 
-    ! save the solution
-    do I=1,NQ
-      do J=1,NZ
-        K = I + (J-1)*NQ
-        solution(ii,i,j) = U(k)
+      ! save the solution
+      do I=1,NQ
+        do J=1,NZ
+          K = I + (J-1)*NQ
+          solution(ii,i,j) = yvec(k)
+        enddo
       enddo
-    enddo
 
-    ! fix lbound = 1
-    do i=1,nq
-      if (lbound(i) .eq.1) then
-        solution(ii,i,1) = fixedmr(i)
-      endif
-    enddo
-
+      ! fix lbound = 1
+      do i=1,nq
+        if (lbound(i) .eq.1) then
+          solution(ii,i,1) = fixedmr(i)
+        endif
+      enddo
+  
+    endif
+    
   enddo
-
-  if (verbose) then
-    WRITE(6,80) IOUT(LNFE), IOUT(LNJE), IOUT(LNSETUP), &
-               IOUT(LNNI), IOUT(LNCF), IOUT(LNETF)
-80  FORMAT(//'Final statistics:'// &
-          ' No. f-s = ', I4, &
-          '  No. J-s = ', I4, '   No. LU-s = ', I4/ &
-          ' No. nonlinear iterations = ', I4/ &
-          ' No. nonlinear convergence failures = ', I4/ &
-          ' No. error test failures = ', I4)
-  endif
-
-  if (ier >= 0) then
-    success = .true.
-  else
-    success = .false.
-  endif
-  call fcvfree
+    
+  ! free memory
+  call FN_VDestroy(sunvec_y)
+  call FCVodeFree(cvode_mem)
+  ierr = FSUNLinSolFree(sunlin)
+  if (ierr /= 0) then
+    err = "CVODE deallocation error"
+    return
+  end if
+  call FSUNMatDestroy(sunmat)
 
 end subroutine
 
-subroutine cvode_save(T0, usol_start, nnq, nnz, t_eval, num_t_eval, rtol, atol, &
+
+subroutine cvode_save(t0, usol_start, nnq, nnz, t_eval, num_t_eval, rtol, atol, &
                       use_fast_jacobian, outfilename, amount2save, success, err)
   use photochem_data, only: neq, nq, nz, jtrop, ispec, np, nr, background_spec, &
                             nw, wavl, z, jchem, kj, ks, photoreac, photonums, photospec, &
                             jchem, nmax, iprod, iloss,nump,numl, nsp, background_mu, mass, rainout_on, &
-                            Flux
-  use photochem_vars, only: verbose, lbound, fixedmr, T, den, P, Press, max_cvode_steps, &
-                            rpar_init, edd
+                            Flux                         
+  use photochem_vars, only: lbound, fixedmr, T, den, P, Press, &
+                            rpar_init, edd, &
+                            max_cvode_steps, initial_dt, max_err_test_failures, max_order
   use photochem_wrk, only: cvode_stepper, rain, raingc, global_err, rpar, surf_radiance, A, yp, yl, D
-  
+
+  use, intrinsic :: iso_c_binding
+  use fcvode_mod, only: CV_BDF, CV_NORMAL, FCVodeInit, FCVodeSStolerances, &
+                        FCVodeSetLinearSolver, FCVode, FCVodeCreate, FCVodeFree, &
+                        FCVodeSetMaxNumSteps, FCVodeSetJacFn, FCVodeSetInitStep, &
+                        FCVodeGetCurrentStep, FCVodeSetMaxErrTestFails, FCVodeSetMaxOrd
+  use fsundials_nvector_mod, only: N_Vector, FN_VDestroy
+  use fnvector_serial_mod, only: FN_VMake_Serial   
+  use fsunmatrix_band_mod, only: FSUNBandMatrix
+  use fsundials_matrix_mod, only: SUNMatrix, FSUNMatDestroy
+  use fsundials_linearsolver_mod, only: SUNLinearSolver, FSUNLinSolFree
+  use fsunlinsol_band_mod, only: FSUNLinSol_Band
+
   implicit none
 
-  ! inputs
-  double precision, intent(in) :: T0 ! intial time
-  double precision, dimension(nnq,nnz) :: usol_start ! initial atmosphere
+  real(8), intent(in) :: t0 ! intial time
+  real(8), dimension(nnq,nnz) :: usol_start ! initial atmosphere
   integer, intent(in) :: nnq
   integer, intent(in) :: nnz
-  double precision, dimension(num_t_eval), intent(in) :: t_eval ! times to evaluate solution
+  real(8), dimension(num_t_eval), intent(in) :: t_eval ! times to evaluate solution
   integer, intent(in) :: num_t_eval ! dimension of t_eval
-  double precision, intent(in) :: rtol ! relative tolerance
-  double precision, intent(in) :: atol ! absolute tolerance
+  real(8), intent(in) :: rtol ! relative tolerance
+  real(8), intent(in) :: atol ! absolute tolerance
   logical, intent(in) :: use_fast_jacobian ! if True then use my jacobian (keep false!)
   character(len=*), intent(in) :: outfilename ! were to save the solution
   integer, intent(in) :: amount2save
   
-
-  ! output
   logical, intent(out) :: success
   character(len=1000), intent(out) :: err
-  character(len=10) :: message
-
-  ! other
-  double precision, dimension(nnq,nnz) :: solution_temp
-  integer*4 LNST, LNFE, LNSETUP, LNNI, LNCF, LNETF, LNJE ! for printing stats
-  data LNST/3/, LNFE/4/, LNETF/5/,  LNCF/6/, LNNI/7/, LNSETUP/8/, &
-      LNJE/17/
-  integer*4 :: IER, METH, IATOL, ITASK ! some options
-  integer i, j, k, ii
-
-  ! The following declaration specification should match C type long int.
-  integer*8 nneq, IOUT(25), IPAR(2), mu, ml
-  double precision TT
-  double precision U(neq), ROUT(10), RRPAR(1)
-  real(8), allocatable :: UDOT(:), loss(:,:)
+  
+  ! local
+  real(c_double) :: tcur(1)    ! current time
+  integer(c_int) :: ierr       ! error flag from C functions
+  type(c_ptr)    :: cvode_mem  ! CVODE memory
+  type(N_Vector), pointer :: sunvec_y ! sundials vector
+  real(c_double) :: yvec(neq)
+  integer(c_long) :: neq_long
+  integer(c_long) :: mu, ml
+  integer(c_long) :: mxsteps_ ! unused
+  type(SUNMatrix), pointer :: sunmat
+  type(SUNLinearSolver), pointer :: sunlin
+  
+  real(8), allocatable :: UDOT(:), loss(:,:), solution_temp(:,:)
   real(8), allocatable :: photorates(:,:)
   integer :: ind(1)
-  real(8) :: mubar_z(nz)
+  real(8) :: mubar_z(nz) ! needed for initialization
+  character(len=10) :: message
+  integer :: i, j, k, ii
   
   allocate(UDOT(neq))
   allocate(loss(nq,nz))
   allocate(photorates(ks,nz))
+  allocate(solution_temp(nnq, nnz))
   
-  err = ''
-
   cvode_stepper = 0
-
-  nneq = neq ! number of equations
-  METH = 2 ! CVODE BDF method
-  IATOL = 1 ! scalar absolute tolerance
-  mu = nq ! upper diagonal
-  ml = nq ! lower diagonal
-  ITASK = 1 ! for output
+  err = ''
+  
+  mxsteps_ = max_cvode_steps
+  neq_long = neq
+  tcur   = t0
+  mu = nq
+  ml = nq
   
   ! begin stuff that needs to be inizialized
   if (np.gt.0) then
@@ -277,16 +304,16 @@ subroutine cvode_save(T0, usol_start, nnq, nnz, t_eval, num_t_eval, rtol, atol, 
     raingc = 0.d0
   endif
   ! end stuff that needs to be inizialized
-
+  
   ! initial conditions
-  DO I=1,NQ
-    DO J=1,NZ
-      K = I + (J-1)*NQ
-      U(K) = usol_start(i,j)
+  do i = 1,nq
+    do j = 1,nz
+      k = i + (j-1)*nq
+      yvec(k) = usol_start(i,j)
     enddo
   enddo
-  call right_hand_side(U,UDOT,neq,err)
-  
+  call right_hand_side(yvec, udot, neq, err)
+  if (len_trim(err) /= 0) return
   
   ! file prep
   open(2,file=outfilename,status='replace',form="unformatted")
@@ -322,161 +349,162 @@ subroutine cvode_save(T0, usol_start, nnq, nnz, t_eval, num_t_eval, rtol, atol, 
   write(2) num_t_eval
   write(2) amount2save
   close(2)
-
-  CALL FNVINITS(1, nneq, IER)
-  if (ier .ne. 0) then
-    err = 'SUNDIALS_ERROR: FNVINITS'
+  
+  ! create SUNDIALS N_Vector
+  sunvec_y => FN_VMake_Serial(neq_long, yvec)
+  if (.not. associated(sunvec_y)) then
+    err = "CVODE setup error."
     return
-  endif
-
-  ! initialize banded matrix module
-  call FSUNBANDMATINIT(1, nneq, mu, ml, mu+ml, ier)
-  if (ier .ne. 0) then
-    err = 'SUNDIALS_ERROR: FSUNBANDMATINIT'
+  end if
+  
+  ! create CVode memory
+  cvode_mem = FCVodeCreate(CV_BDF)
+  if (.not. c_associated(cvode_mem)) then
+    err = "CVODE setup error."
     return
-  endif
-
-  ! initialize banded linear solver module
-  call FSUNBANDLINSOLINIT(1, IER)
-  if (ier .ne. 0) then
-    err = 'SUNDIALS_ERROR: FSUNBANDLINSOLINIT'
+  end if
+  
+  ierr = FCVodeInit(cvode_mem, c_funloc(RhsFn), t0, sunvec_y)
+  if (ierr /= 0) then
+    err = "CVODE setup error."
     return
-  endif
-
-  call FCVMALLOC(T0, U, METH, IATOL, RTOL, ATOL, &
-                 IOUT, ROUT, IPAR, RRPAR, IER)
-  if (ier .ne. 0) then
-   err = 'SUNDIALS_ERROR: FCVMALLOC'
-   return
-  endif
-
-  ! attach matrix and linear solver modules to CVLs interface
-  CALL FCVLSINIT(IER)
-  if (ier .ne. 0) then
-    err = 'SUNDIALS_ERROR: FCVLSINIT'
-    CALL FCVFREE
+  end if
+  
+  ierr = FCVodeSStolerances(cvode_mem, rtol, atol)
+  if (ierr /= 0) then
+    err = "CVODE setup error."
     return
-  endif
-
-  CALL FCVSETIIN('MAX_NSTEPS', 1000000, IER)
-  if (ier .ne. 0) then
-    err = 'SUNDIALS_ERROR: FCVSETIIN'
-    CALL FCVFREE
+  end if
+  
+  sunmat => FSUNBandMatrix(neq_long, mu, ml)
+  sunlin => FSUNLinSol_Band(sunvec_y,sunmat)
+  
+  ierr = FCVodeSetLinearSolver(cvode_mem, sunlin, sunmat)
+  if (ierr /= 0) then
+    err = "CVODE setup error."
     return
-  endif
-
-  CALL FCVSETIIN('MAX_ERRFAIL', 15, IER)
-  if (ier .ne. 0) then
-    err = 'SUNDIALS_ERROR: FCVSETIIN'
-    CALL FCVFREE
-    return
-  endif
-
-  ! start with tiny step
-  call FCVSETRIN('INIT_STEP',1.d-6,ier)
-  if (ier .ne. 0) then
-    err = 'SUNDIALS_ERROR: FCVSETRIN'
-    CALL FCVFREE
-    return
-  endif
-
+  end if
+  
   if (use_fast_jacobian) then
-    CALL FCVBANDSETJAC(1, IER)
-    if (ier .ne. 0) then
-      err = 'SUNDIALS_ERROR: FCVBANDSETJAC'
-      CALL FCVFREE
+    ierr = FCVodeSetJacFn(cvode_mem, c_funloc(JacFn))
+    if (ierr /= 0) then
+      err = "CVODE setup error."
       return
-    endif
+    end if
   endif
-
-  do ii=1,num_t_eval
-
-    CALL FCVODE(t_eval(ii), TT, U, ITASK, IER)
-    if (ier < 0) then ! then there is a problem
-      if ((global_err == 'max steps') .and. (ier == -8)) then ! reached max steps
+  
+  ierr = FCVodeSetMaxNumSteps(cvode_mem, mxsteps_)
+  if (ierr /= 0) then
+    err = "CVODE setup error."
+    return
+  end if
+  
+  ierr = FCVodeSetInitStep(cvode_mem, initial_dt)
+  if (ierr /= 0) then
+    err = "CVODE setup error."
+    return
+  end if
+  
+  ierr = FCVodeSetMaxErrTestFails(cvode_mem, max_err_test_failures)
+  if (ierr /= 0) then
+    err = "CVODE setup error."
+    return
+  end if
+  
+  ierr = FCVodeSetMaxOrd(cvode_mem, max_order)
+  if (ierr /= 0) then
+    err = "CVODE setup error."
+    return
+  end if
+  
+  
+  do ii = 1, num_t_eval
+    ierr = FCVode(cvode_mem, t_eval(ii), sunvec_y, tcur, CV_NORMAL)
+    if (ierr /= 0) then
+      success = .false.
+      if ((global_err == 'max steps') .and. (ierr == -8)) then ! reached max steps
         write(message,'(i10)')  max_cvode_steps 
         print*,'CVODE stopped because it reached the maximum number of of specified steps: '//trim(message)
-        CALL FCVFREE
+        call FN_VDestroy(sunvec_y)
+        call FCVodeFree(cvode_mem)
+        ierr = FSUNLinSolFree(sunlin)
+        call FSUNMatDestroy(sunmat)
         return
-      else if ((global_err /= 'max steps') .and. (ier == -8)) then ! err in my rhs
+      else if ((global_err /= 'max steps') .and. (ierr == -8)) then ! err in my rhs
         err = global_err
-        CALL FCVFREE
+        call FN_VDestroy(sunvec_y)
+        call FCVodeFree(cvode_mem)
+        ierr = FSUNLinSolFree(sunlin)
+        call FSUNMatDestroy(sunmat)
         return
       else
-        write(message,'(i4)') ier
+        write(message,'(i4)') ierr
         err = 'SUNDIALS_ERROR: FCVODE '//trim(message)
-        CALL FCVFREE
+        call FN_VDestroy(sunvec_y)
+        call FCVodeFree(cvode_mem)
+        ierr = FSUNLinSolFree(sunlin)
+        call FSUNMatDestroy(sunmat)
         return
       endif
-    endif
+    else
+      success = .true.
 
-    ! save the solution
-    do I=1,NQ
-      do J=1,NZ
-        K = I + (J-1)*NQ
-        solution_temp(i,j) = U(k)
+      ! save the solution
+      do I=1,NQ
+        do J=1,NZ
+          K = I + (J-1)*NQ
+          solution_temp(i,j) = yvec(k)
+        enddo
       enddo
-    enddo
 
-    ! fix lbound = 1
-    do i=1,nq
-      if (lbound(i) .eq.1) then
-        solution_temp(i,1) = fixedmr(i)
+      ! fix lbound = 1
+      do i=1,nq
+        if (lbound(i) .eq.1) then
+          solution_temp(i,1) = fixedmr(i)
+        endif
+      enddo
+      
+      call right_hand_side(yvec, udot, neq, err)
+      photorates = 0.d0
+      do j=1,kj
+        i = photoreac(j)   
+        ind = findloc_integer(size(photospec),photospec,i)
+        photorates(ind(1),:) = photorates(ind(1),:) + A(photonums(j),:)*solution_temp(i,:)*den
+      enddo
+      do j = 1,nq
+        loss(j,:) = yl(j,:)*solution_temp(j,:)*den
+      enddo
+      
+      open(2,file=outfilename,status='old',form="unformatted", position="append")
+      write(2) 999
+      write(2) t_eval(ii)
+      ! write(2) solution_temp
+      write(2) D
+      write(2) den
+      if (amount2save == 1) then
+        write(2) P
+        write(2) surf_radiance
+        write(2) photorates
+        write(2) yp
+        write(2) loss
       endif
-    enddo
-    
-    call right_hand_side(U,UDOT,neq,err)
-    photorates = 0.d0
-    do j=1,kj
-      i = photoreac(j)   
-      ind = findloc_integer(size(photospec),photospec,i)
-      photorates(ind(1),:) = photorates(ind(1),:) + A(photonums(j),:)*solution_temp(i,:)*den
-    enddo
-    do j = 1,nq
-      loss(j,:) = yl(j,:)*solution_temp(j,:)*den
-    enddo
-    
-    
-    open(2,file=outfilename,status='old',form="unformatted", position="append")
-    write(2) 999
-    write(2) t_eval(ii)
-    ! write(2) solution_temp
-    write(2) D
-    write(2) den
-    if (amount2save == 1) then
-      write(2) P
-      write(2) surf_radiance
-      write(2) photorates
-      write(2) yp
-      write(2) loss
+      close(2)
+  
     endif
-    close(2)
-
+    
   enddo
-
-  if (verbose) then
-    WRITE(6,80) IOUT(LNFE), IOUT(LNJE), IOUT(LNSETUP), &
-               IOUT(LNNI), IOUT(LNCF), IOUT(LNETF)
-80  FORMAT(//'Final statistics:'// &
-          ' No. f-s = ', I4, &
-          '  No. J-s = ', I4, '   No. LU-s = ', I4/ &
-          ' No. nonlinear iterations = ', I4/ &
-          ' No. nonlinear convergence failures = ', I4/ &
-          ' No. error test failures = ', I4)
-  endif
-
-  if (ier >= 0) then
-    success = .true.
-  else
-    success = .false.
-  endif
-  call fcvfree
-  deallocate(UDOT)
-  deallocate(loss)
-  deallocate(photorates)
+  
+  ! free memory
+  call FN_VDestroy(sunvec_y)
+  call FCVodeFree(cvode_mem)
+  ierr = FSUNLinSolFree(sunlin)
+  if (ierr /= 0) then
+    err = "CVODE deallocation error"
+    return
+  end if
+  call FSUNMatDestroy(sunmat)
 
 end subroutine
-
 
 subroutine cvode_equilibrium(rtol, atol, use_fast_jacobian, success, err)
   use photochem_data, only: nr, nq, np, nz1, nq1, isl, nz, jtrop, &
@@ -599,4 +627,4 @@ subroutine cvode_equilibrium(rtol, atol, use_fast_jacobian, success, err)
     call redox_conservation(FLOW,FUP,SR)
   endif ! end if converged
 
-end subroutine
+end subroutine                                

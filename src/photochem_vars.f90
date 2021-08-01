@@ -47,6 +47,9 @@ module photochem_vars
   
   ! cvode
   integer :: max_cvode_steps = 100000000
+  real(8) :: initial_dt = 1.d-6
+  integer :: max_err_test_failures = 15
+  integer :: max_order = 5
   real(8) :: equilibrium_time = 1.d17
   
   

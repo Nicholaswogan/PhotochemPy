@@ -1,10 +1,10 @@
-  subroutine jacobian(usol_flat,ddjac,neq,ldaa, err)
+  subroutine jacobian(usol_flat,djac,neq,lda, err)
     use photochem_data, only: nw, nr, nz, nz1, nq, nsp2, kj, np, isl, &
                               agl, frak, hcdens, ino, io2, zy, &
                               lco, lhcaer, lhcaer2, lh2o, lo, &
                               ls8aer, lso4aer, background_spec, lh, lh2, &
                               z, dz, jtrop, ispec, photoreac, photonums, &
-                              lda, epsj, lightning, mass, background_mu, rainout_on, &
+                              epsj, lightning, mass, background_mu, rainout_on, &
                               fix_water_in_troposphere, P0, light_disp_rate, &
                               estimate_CO2_photo_above_grid
                               
@@ -23,10 +23,10 @@
 
     ! local variables
     integer, intent(in) :: neq
-    integer, intent(in) :: ldaa
+    integer, intent(in) :: lda
     real*8, dimension(neq), intent(in) :: usol_flat
-    real*8, dimension(lda,neq) :: djac
-    real*8, dimension(ldaa,neq), intent(out) :: ddjac ! ldaa = nq+nq+1
+    real*8, dimension(lda,neq), intent(out) :: djac
+    ! real*8, dimension(ldaa,neq) :: ddjac ! ldaa = nq+nq+1
     character(len=1000), intent(out) :: err
 
     real*8, dimension(neq) :: rhs
@@ -422,10 +422,12 @@
       endif
     enddo
 
-    do i =1,ldaa
-      do j=1,neq
-        ddjac(i,j) = - djac(i+nq,j)
-      enddo
-    enddo
+    ! do i =1,ldaa
+    !   do j=1,neq
+    !     ddjac(i,j) = - djac(i+nq,j)
+    !   enddo
+    ! enddo
+    
+    djac = - djac
 
     end subroutine
