@@ -406,8 +406,10 @@ class PhotochemPy:
                 raise PhotochemError('Only long-lived species can have boundary conditions')
         except ValueError:
             raise PhotochemError('species not in the model')
-        if self.vars.lbound[ind] == 2 or self.vars.lbound[ind] == 3:
+        if self.vars.lbound[ind] == 2:
             self.vars.sgflux[ind] = flx
+        elif self.vars.lbound[ind] == 3:
+            self.vars.distflux[ind] = flx
         else:
             print('mbound set to',self.vars.lbound[ind],'so the flux will not change')
 

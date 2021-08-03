@@ -410,6 +410,9 @@
 !     height index (-1 given the staggered grid)
 !     the 1 in the second postion tells minloc to return a scalar
         jdisth=minloc(Z,1, Z .ge. disth)-1
+        if (jdisth < 2) then
+          jdisth = 2
+        endif
 
         ZTOP=Z(jdisth)-Z(1)
         ZTOP1=Z(jdisth)+0.5*DZ(jdistH)

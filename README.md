@@ -1,6 +1,6 @@
 
 # PhotochemPy [![Memcheck](https://img.shields.io/badge/memcheck-clean-green.svg?style=flat)]() [![Build Status](https://travis-ci.com/Nicholaswogan/PhotochemPy.svg?branch=main)](https://travis-ci.com/Nicholaswogan/PhotochemPy)
-PhotochemPy is a photochemical model of rocky planet's atmospheres. Given inputs, like the stellar UV flux, the atmospheric temperature structure, etc., this code will find the steady-state chemical composition of an atmosphere, or evolve atmospheres through time.
+PhotochemPy is a photochemical model of planet's atmospheres. Given inputs, like the stellar UV flux, the atmospheric temperature structure, etc., this code will find the steady-state chemical composition of an atmosphere, or evolve atmospheres through time.
 
 <!-- [![Documentation Status](https://readthedocs.org/projects/photochempy/badge/?version=latest)](https://photochempy.readthedocs.io/en/latest/?badge=latest) -->
 
@@ -9,22 +9,22 @@ PhotochemPy is a Python wrapper to Fortran source code. This makes the code very
 ## Installation
 
 **Requirements:**
-To install PhotochemPy, you must have the following installed on your system.
+- MacOS or any Linux OS.
 - `Python` (>3.6.0) with the `numpy` package. I suggest using [anaconda](https://www.anaconda.com/) to install these regardless of your operating system.
-- A Fortran and C compiler. I suggest the GNU compiler collection, version >9 (includes `gfortran`, `gcc`, etc.). If you are using a Mac, install it with Homebrew: `brew install gcc`. For other operating systems [follow this GNU installation guide](https://gcc.gnu.org/install/binaries.html).
+- A Fortran and C compiler (any should work). I suggest the GNU compiler collection (includes `gfortran`, `gcc`, etc.). If you are using a Mac, install it with Homebrew: `brew install gcc`.
 
 **Python Module:** After satisfying the requirements, then follow these setups to install PhotochemPy
 
 - Clone or download the github repository [`https://github.com/Nicholaswogan/PhotochemPy`](https://github.com/Nicholaswogan/PhotochemPy)
 - Navigate to the root directory of PhotochemPy, then install with `python -m pip install .`
 
-**Fortran source:** If you prefer to use the code exclusively in Fortran, that is OK too. You can build `libphotochem` with CMake. Download or clone this respository, then from the root directory of the repository run
+**Fortran library:** If you prefer to use the code exclusively in Fortran, that is OK too. You can build `libphotochem` with CMake. Download or clone this respository, then from the root directory of the repository run
 
 ```sh
 mkdir build
 cd build
 cmake ..
-make -j # -j builds in parallel
+make -j
 ```
 
 ## Examples/Tutorial
