@@ -337,7 +337,8 @@ subroutine steam2photochem(nq, np, nz_in, P_surf, P_top, usol_layer, rpar_layer,
   endif
 
   ! compute mubar
-  call mean_molecular_weight(nq, usol_layer, mass, background_mu, mubar)
+  call mean_molecular_weight(nq, usol_layer, mass, background_mu, mubar, err)
+  if (len_trim(err) > 0) return
   ! Use simple climate model to compute T(z)
   ! z_in, T_in, ztrop_in
   call pahlevan_H2_clima(P_surf, mubar, grav_surf, P_top, nz_in, &
@@ -389,6 +390,8 @@ subroutine new_z_grid(nq, np, nz_in, ztrop_in, P_surf_in, z_in, T_in, edd_in, us
   real(8), allocatable :: mubar_z(:)
   integer :: i
   
+  err = ""
+  
   P0 = P_surf_in
   nz = nz_in
   ! this stuff depends on z
@@ -407,7 +410,8 @@ subroutine new_z_grid(nq, np, nz_in, ztrop_in, P_surf_in, z_in, T_in, edd_in, us
   ! treat water vapor special
   allocate(mubar_z(nz))
   do i = 1,nz
-    call mean_molecular_weight(nq, usol_init(:,i), mass, background_mu, mubar_z(i))
+    call mean_molecular_weight(nq, usol_init(:,i), mass, background_mu, mubar_z(i), err)
+    if (len_trim(err) > 0) return
   enddo
   call densty(nz, mubar_z, T, den_tmp, P_tmp, press_tmp) 
   if (fix_water_in_troposphere) then

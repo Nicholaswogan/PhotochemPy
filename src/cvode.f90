@@ -65,7 +65,8 @@ subroutine cvode(t0, usol_start, nnq, nnz, t_eval, num_t_eval, rtol, atol, &
     rpar = rpar_init
   endif
   do i = 1,nz
-    call mean_molecular_weight(nq, usol_start(:,i), mass, background_mu, mubar_z(i))
+    call mean_molecular_weight(nq, usol_start(:,i), mass, background_mu, mubar_z(i), err)
+    if (len_trim(err) > 0) return
   enddo
   call densty(nz, mubar_z, T, den, P, press) 
   if (rainout_on) then
@@ -293,7 +294,8 @@ subroutine cvode_save(t0, usol_start, nnq, nnz, t_eval, num_t_eval, rtol, atol, 
     rpar = rpar_init
   endif
   do i = 1,nz
-    call mean_molecular_weight(nq, usol_start(:,i), mass, background_mu, mubar_z(i))
+    call mean_molecular_weight(nq, usol_start(:,i), mass, background_mu, mubar_z(i), err)
+    if (len_trim(err) > 0) return
   enddo
   call densty(nz, mubar_z, T, den, P, press) 
   if (rainout_on) then
@@ -545,7 +547,8 @@ subroutine cvode_equilibrium(rtol, atol, use_fast_jacobian, success, err)
     rpar = rpar_init
   endif
   do i = 1,nz
-    call mean_molecular_weight(nq, usol_init(:,i), mass, background_mu, mubar_z(i))
+    call mean_molecular_weight(nq, usol_init(:,i), mass, background_mu, mubar_z(i), err)
+    if (len_trim(err) > 0) return
   enddo
   call densty(nz, mubar_z, T, den, P, press) 
   if (rainout_on) then

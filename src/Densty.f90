@@ -47,7 +47,7 @@ subroutine densty(nz, mubar_z, T, den, P, press)
 
 end subroutine
 
-subroutine mean_molecular_weight(nq, usol_layer, mass, background_mu, mubar)
+subroutine mean_molecular_weight(nq, usol_layer, mass, background_mu, mubar, err)
   implicit none
   
   integer, intent(in) :: nq
@@ -56,14 +56,22 @@ subroutine mean_molecular_weight(nq, usol_layer, mass, background_mu, mubar)
   real(8), intent(in) :: background_mu
   
   real(8), intent(out) :: mubar
+  character(len=1000), intent(out) :: err
   integer :: j
   real(8) :: f_background
+  err = ""
 
   mubar = 0.d0
   do j = 1, nq
     mubar = mubar + usol_layer(j) * mass(j)
   enddo
   f_background = 1 - sum(usol_layer)
+  
+  if (f_background < 0.d0) then
+    err = "Mixing ratios sum to > 1.0. Atmosphere is probably in a run-away state."
+    return
+  endif
+  
   mubar = mubar + f_background * background_mu
   
 end subroutine

@@ -70,7 +70,8 @@
     endif
     ! begin stuff that needs to be inizialized
     do i = 1,nz
-      call mean_molecular_weight(nq, usol_init(:,i), mass, background_mu, mubar_z(i))
+      call mean_molecular_weight(nq, usol_init(:,i), mass, background_mu, mubar_z(i), err)
+      if (len_trim(err) > 0) return
     enddo
     call densty(nz, mubar_z, T, den, P, press) 
     if (rainout_on) then
@@ -115,7 +116,8 @@
       nn = nn+1
       
       do i = 1,nz
-        call mean_molecular_weight(nq, usol(:,i), mass, background_mu, mubar_z(i))
+        call mean_molecular_weight(nq, usol(:,i), mass, background_mu, mubar_z(i), err)
+        if (len_trim(err) > 0) return
       enddo
       call densty(nz, mubar_z, T, den, P, press) 
       call difco(nq, nz, mubar_z, T, den, edd, &

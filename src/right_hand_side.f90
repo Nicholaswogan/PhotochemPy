@@ -82,7 +82,8 @@
     KL = KD + NQ
     
     do i = 1,nz
-      call mean_molecular_weight(nq, usol(:,i), mass, background_mu, mubar_z(i))
+      call mean_molecular_weight(nq, usol(:,i), mass, background_mu, mubar_z(i), err)
+      if (len_trim(err) > 0) return
     enddo
     call densty(nz, mubar_z, T, den, P, press) 
     call difco(nq, nz, mubar_z, T, den, edd, &
