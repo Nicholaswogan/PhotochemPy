@@ -7,13 +7,17 @@ integer(c_int) function RhsFn(tn, sunvec_y, sunvec_f, user_data) &
   use fsundials_nvector_mod
   use photochem_data, only: neq
   use photochem_vars, only: max_cvode_steps, verbose
-  use photochem_wrk, only: cvode_stepper, time_prev, global_err
+  use photochem_wrk, only: nsteps_previous, global_err, cvode_mem
   implicit none
   ! calling variables
   real(c_double), value :: tn        ! current time
   type(N_Vector)        :: sunvec_y  ! solution N_Vector
   type(N_Vector)        :: sunvec_f  ! rhs N_Vector
   type(c_ptr), value    :: user_data ! user-defined dat
+  
+  integer(c_long) :: nsteps(1)
+  integer(c_int) :: loc_ierr
+  real(c_double) :: hcur(1)
   
   ! pointers to data in SUNDIALS vectors
   real(c_double), pointer :: yvec(:)
@@ -31,17 +35,15 @@ integer(c_int) function RhsFn(tn, sunvec_y, sunvec_f, user_data) &
     print*,trim(global_err)
     ierr = -1
   endif
+  loc_ierr = FCVodeGetNumSteps(cvode_mem, nsteps)
   
-  if ((tn .ne. time_prev) .and. (verbose)) then
-    print"(1x,'N =',i6,3x,'Time = ',es20.14,3x,'max(df/dt) = ',es10.3)",cvode_stepper,tn,maxval(abs(fvec))
-    cvode_stepper = cvode_stepper + 1
+  if ((nsteps(1) /= nsteps_previous) .and. (verbose)) then
+    loc_ierr = FCVodeGetCurrentStep(cvode_mem, hcur)
+    print"(1x,'N =',i6,3x,'Time = ',es11.5,3x,'dt = ',es11.5,3x,'max(dy/dt) = ',es11.5)", &
+         nsteps, tn, hcur(1),maxval(abs(fvec))
   endif
-  
-  if (cvode_stepper >= max_cvode_steps) then
-    global_err = 'max steps'
-    ierr = -1
-  endif
-  time_prev = tn
+
+  nsteps_previous = nsteps(1)
   
   return
 end function

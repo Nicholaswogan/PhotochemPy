@@ -7,6 +7,10 @@ and OFF of being build by regular cmake" OFF)
 option(BUILD_STATIC_PHOTOCHEM "if ON, then will build the
 static library libphotochem.a" ON)
 
+option(BUILD_SHARED_LIBS "Build shared libraries." OFF)
+
+option(CMAKE_POSITION_INDEPENDENT_CODE "Makes code position independent." ON)
+
 option(BUILD_F2PY_PHOTOCHEM "if ON, then will build a python
 version with f2py" OFF)
 

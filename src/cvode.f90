@@ -5,7 +5,7 @@ subroutine cvode(t0, usol_start, nnq, nnz, t_eval, num_t_eval, rtol, atol, &
   use photochem_vars, only: lbound, fixedmr, T, den, P, Press, &
                             rpar_init, &
                             max_cvode_steps, initial_dt, max_err_test_failures, max_order
-  use photochem_wrk, only: cvode_stepper, rain, raingc, global_err, rpar
+  use photochem_wrk, only: rain, raingc, global_err, rpar, cvode_mem
   
   use, intrinsic :: iso_c_binding
   use fcvode_mod, only: CV_BDF, CV_NORMAL, FCVodeInit, FCVodeSStolerances, &
@@ -38,7 +38,7 @@ subroutine cvode(t0, usol_start, nnq, nnz, t_eval, num_t_eval, rtol, atol, &
   ! local
   real(c_double) :: tcur(1)    ! current time
   integer(c_int) :: ierr       ! error flag from C functions
-  type(c_ptr)    :: cvode_mem  ! CVODE memory
+  ! type(c_ptr)    :: cvode_mem  ! CVODE memory
   type(N_Vector), pointer :: sunvec_y ! sundials vector
   real(c_double) :: yvec(neq)
   integer(c_long) :: neq_long
@@ -51,7 +51,6 @@ subroutine cvode(t0, usol_start, nnq, nnz, t_eval, num_t_eval, rtol, atol, &
   character(len=10) :: message
   integer :: i, j, k, ii
   
-  cvode_stepper = 0
   err = ''
   
   mxsteps_ = max_cvode_steps
@@ -157,7 +156,7 @@ subroutine cvode(t0, usol_start, nnq, nnz, t_eval, num_t_eval, rtol, atol, &
     ierr = FCVode(cvode_mem, t_eval(ii), sunvec_y, tcur, CV_NORMAL)
     if (ierr /= 0) then
       success = .false.
-      if ((global_err == 'max steps') .and. (ierr == -8)) then ! reached max steps
+      if (ierr == -1) then ! reached max steps. We will not throw error
         write(message,'(i10)')  max_cvode_steps 
         print*,'CVODE stopped because it reached the maximum number of of specified steps: '//trim(message)
         call FN_VDestroy(sunvec_y)
@@ -165,7 +164,7 @@ subroutine cvode(t0, usol_start, nnq, nnz, t_eval, num_t_eval, rtol, atol, &
         ierr = FSUNLinSolFree(sunlin)
         call FSUNMatDestroy(sunmat)
         return
-      else if ((global_err /= 'max steps') .and. (ierr == -8)) then ! err in my rhs
+      else if (ierr == -8) then ! err in my rhs
         err = global_err
         call FN_VDestroy(sunvec_y)
         call FCVodeFree(cvode_mem)
@@ -225,7 +224,8 @@ subroutine cvode_save(t0, usol_start, nnq, nnz, t_eval, num_t_eval, rtol, atol, 
   use photochem_vars, only: lbound, fixedmr, T, den, P, Press, &
                             rpar_init, edd, &
                             max_cvode_steps, initial_dt, max_err_test_failures, max_order
-  use photochem_wrk, only: cvode_stepper, rain, raingc, global_err, rpar, surf_radiance, A, yp, yl, D
+  use photochem_wrk, only: rain, raingc, global_err, rpar, surf_radiance, A, yp, yl, D, &
+                           cvode_mem
 
   use, intrinsic :: iso_c_binding
   use fcvode_mod, only: CV_BDF, CV_NORMAL, FCVodeInit, FCVodeSStolerances, &
@@ -259,7 +259,7 @@ subroutine cvode_save(t0, usol_start, nnq, nnz, t_eval, num_t_eval, rtol, atol, 
   ! local
   real(c_double) :: tcur(1)    ! current time
   integer(c_int) :: ierr       ! error flag from C functions
-  type(c_ptr)    :: cvode_mem  ! CVODE memory
+  ! type(c_ptr)    :: cvode_mem  ! CVODE memory
   type(N_Vector), pointer :: sunvec_y ! sundials vector
   real(c_double) :: yvec(neq)
   integer(c_long) :: neq_long
@@ -280,7 +280,6 @@ subroutine cvode_save(t0, usol_start, nnq, nnz, t_eval, num_t_eval, rtol, atol, 
   allocate(photorates(ks,nz))
   allocate(solution_temp(nnq, nnz))
   
-  cvode_stepper = 0
   err = ''
   
   mxsteps_ = max_cvode_steps
@@ -424,7 +423,7 @@ subroutine cvode_save(t0, usol_start, nnq, nnz, t_eval, num_t_eval, rtol, atol, 
     ierr = FCVode(cvode_mem, t_eval(ii), sunvec_y, tcur, CV_NORMAL)
     if (ierr /= 0) then
       success = .false.
-      if ((global_err == 'max steps') .and. (ierr == -8)) then ! reached max steps
+      if (ierr == -1) then ! reached max steps
         write(message,'(i10)')  max_cvode_steps 
         print*,'CVODE stopped because it reached the maximum number of of specified steps: '//trim(message)
         call FN_VDestroy(sunvec_y)
@@ -432,7 +431,7 @@ subroutine cvode_save(t0, usol_start, nnq, nnz, t_eval, num_t_eval, rtol, atol, 
         ierr = FSUNLinSolFree(sunlin)
         call FSUNMatDestroy(sunmat)
         return
-      else if ((global_err /= 'max steps') .and. (ierr == -8)) then ! err in my rhs
+      else if (ierr == -8) then ! err in my rhs
         err = global_err
         call FN_VDestroy(sunvec_y)
         call FCVodeFree(cvode_mem)
@@ -515,7 +514,7 @@ subroutine cvode_equilibrium(rtol, atol, use_fast_jacobian, success, err)
   use photochem_vars, only: verbose, usol_init, usol_out, &
                             den, fluxo, flow, T, P, den, press, rpar_init, &
                             equilibrium_time
-  use photochem_wrk, only: cvode_stepper, wfall, dk, scale_h, h_atm, yp, yl, &
+  use photochem_wrk, only: wfall, dk, scale_h, h_atm, yp, yl, &
                            bx1x2, raingc, A, rain, rpar
   implicit none
   ! input
@@ -541,7 +540,6 @@ subroutine cvode_equilibrium(rtol, atol, use_fast_jacobian, success, err)
   real*8, dimension(nsp2,nz) :: D
   real(8) :: mubar_z(nz)
   err = ''
-  cvode_stepper = 0
   ! begin stuff that needs to be inizialized
   if (np.gt.0) then
     rpar = rpar_init

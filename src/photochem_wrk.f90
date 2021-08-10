@@ -1,4 +1,5 @@
 module photochem_wrk
+  use iso_c_binding, only: c_ptr
   implicit none
   public
   integer, private, parameter :: real_kind = kind(1.0d0)
@@ -55,8 +56,11 @@ module photochem_wrk
   
   ! cvode
   real*8 :: time_prev = -1.d0 ! for printing time
-  integer :: cvode_stepper = 0
+  integer :: nsteps_previous = -10
   character(len=1000) :: global_err = ''
+  
+  !f2py integer(8) :: cvode_mem
+  type(c_ptr) :: cvode_mem
   
   
 end module
