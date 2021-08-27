@@ -418,7 +418,7 @@
             DO j = 1 , naq
                x(j) = x(j) - f(j)
                test = ABS(f(j)/x(j))
-               IF ( test.GT.1.E-5 ) ltest = 1
+               IF ( test.GT.1.E-4 ) ltest = 1
             ENDDO
             IF ( ltest.EQ.0 ) GOTO 50
                                   ! loop has converged; jump out of loop

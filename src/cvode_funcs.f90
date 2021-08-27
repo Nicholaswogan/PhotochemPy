@@ -32,8 +32,13 @@ integer(c_int) function RhsFn(tn, sunvec_y, sunvec_f, user_data) &
   ! fill RHS vector
   call right_hand_side(yvec, fvec, neq, global_err)
   if (len_trim(global_err) /= 0) then
-    print*,trim(global_err)
-    ierr = -1
+    if (trim(global_err) == "Mixing ratios sum to > 1.0. "//&
+                          "Atmosphere is probably in a run-away state.") then
+      ierr = -1
+    else
+      print*,trim(global_err)
+      ierr = 1
+    endif
   endif
   loc_ierr = FCVodeGetNumSteps(cvode_mem, nsteps)
   
@@ -82,7 +87,13 @@ integer(c_int) function JacFn(tn, sunvec_y, sunvec_f, sunmat_J, user_data, &
 
   call jacobian(yvec, djac, neq, lda, global_err)
   if (len_trim(global_err) /= 0) then
-    ierr = -1
+    if (trim(global_err) == "Mixing ratios sum to > 1.0. "//&
+                          "Atmosphere is probably in a run-away state.") then
+      ierr = -1
+    else
+      print*,trim(global_err)
+      ierr = 1
+    endif
   endif
   return
 end function
