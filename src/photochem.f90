@@ -264,6 +264,7 @@ contains
       deallocate(yl)
       deallocate(D)
       deallocate(grav_z)
+      deallocate(amean)
     endif
     
     allocate(grav_z(nz))
@@ -390,7 +391,10 @@ contains
     yp = 0.0d0
     yl = 0.0d0
     D = 0.d0
-  
+    
+    ! photo
+    allocate(amean(nz,nw))
+    amean = 0.d0
   end subroutine
   
   

@@ -744,4 +744,34 @@ class PhotochemPy:
         
         return pl
         
+    def koxy(self):
+        flux = self.surf_flux()
+        sol = self.out_dict()
+
+        redoxstate = self.data.redoxstate[:self.data.nq]
+
+        ind = np.where(redoxstate<0)[0]
+        Fred = 0.0
+        for i in ind:
+            Fred += flux[self.ispec[i]]*-redoxstate[i]
+            esc = self.vars.veff[i]*self.vars.den[-1]*sol[self.ispec[i]][-1]
+            Fred -= esc*-redoxstate[i]
+
+        ind = np.where(redoxstate>0)[0]
+        Foxi = 0.0
+        for i in ind:
+            Foxi += flux[self.ispec[i]]*redoxstate[i]
+            esc = self.vars.veff[i]*self.vars.den[-1]*sol[self.ispec[i]][-1]
+            Foxi -= esc*redoxstate[i]
+            
+        for i,sp in enumerate(self.ispec[:self.data.nq]):
+            if sp == 'CO' or sp == 'O':
+                pass
+            else:
+                if self.vars.mbound[i] != 0:
+                    raise PhotochemError('Upper boundary must be effusion velocity'//
+                                        ' to compute koxy (CO and O are an exception)')
+            
+        return Foxi/Fred
+        
         

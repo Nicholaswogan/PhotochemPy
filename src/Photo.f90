@@ -1,7 +1,7 @@
 
 
       SUBROUTINE PHOTO(zy, agl, io2, ino, usol, mubar_z, D, nsp2, nw, nq, nz, kj, prates,&
-                      surf_radiance)
+                      surf_radiance, amean)
         use photochem_data, only: np, nsp, fscale, grav_z, &
                                   photoreac, ispec, rstand, qexthc, ghc, W0HC, &
                                   wavl, wav, sq, flux, &
@@ -20,6 +20,7 @@
       
       real*8, dimension(kj,nz), intent(out) :: prates
       real(8), intent(out) :: surf_radiance(nw)
+      real(8), intent(out) :: amean(nz,nw)
 
       real*8, dimension(kj,nz) :: partial_prates
 
@@ -46,9 +47,6 @@
       integer :: m
       integer lpolyscount
       real(8) :: surf_rad
-      ! integer tmp1
-      ! real*8 start, finish
-      ! call cpu_time(start)
 
       NZP1=NZ+1
       nz2 = 2*nz
@@ -366,7 +364,7 @@
 
           CALL TWOSTR(SIGR,U0,sq,WAV(L),L,nzp1,nz2,absorbers,S,surf_rad)  !two stream radiative tranfer
           surf_radiance(l) = surf_rad
-
+          amean(:,l) = S
   ! this returns the Source function S to this code
 
           FLX = FLUX(L)*AGL*ALP*FSCALE

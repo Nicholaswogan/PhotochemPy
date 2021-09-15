@@ -16,7 +16,7 @@
                              A, rain, raingc, &
                              adl, add, adu, dl, dd, du, dk, &
                              prod_rates, tauedd, &
-                             H2SO4S, S8S, fsulf, surf_radiance, D
+                             H2SO4S, S8S, fsulf, surf_radiance, amean, D
     implicit none
     ! module variables
     ! all of them?
@@ -206,7 +206,7 @@
     endif
     
     call photo(zy, agl, io2, ino, usol, mubar_z, D, nsp2, nw, &
-               nq, nz, kj, prates, surf_radiance)
+               nq, nz, kj, prates, surf_radiance, amean)
     do j=1,kj
       do i=1,nz
         A(photonums(j),i)=prates(j,i)

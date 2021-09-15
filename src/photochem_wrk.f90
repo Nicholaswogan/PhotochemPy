@@ -24,6 +24,7 @@ module photochem_wrk
   ! needed in photo.f90
   real*8, allocatable, dimension(:,:,:) :: QEXTT, W0T, GFT
   real(8), allocatable :: surf_radiance(:)
+  real(8), allocatable :: amean(:,:)
   
   ! needed in rates.f90
   real*8, allocatable, dimension(:,:) :: A ! reaction rate coefficients
