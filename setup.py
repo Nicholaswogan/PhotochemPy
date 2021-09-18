@@ -8,7 +8,7 @@ with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
 setup(
     name="PhotochemPy",
     packages=['PhotochemPy'],
-    python_requires='>=3.6.0',
+    python_requires='>=3.7',
     version="0.2.10",
     license="MIT",
     install_requires=['numpy>=1.21','scipy'],
