@@ -3,7 +3,7 @@
 skip = "cp36-*"
 
 [tool.cibuildwheel.macos]
-before-all = "brew install gcc"
+before-all = "brew reinstall gcc"
 
 [project]
 requires-python = ">=3.7"
