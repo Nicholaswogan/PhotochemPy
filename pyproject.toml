@@ -2,6 +2,9 @@
 # Skip building on CPython 3.6 on all platforms
 skip = "cp36-*"
 
+[tool.cibuildwheel.macos]
+before-all = "brew install gcc"
+
 [project]
 requires-python = ">=3.7"
 
