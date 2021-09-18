@@ -21,7 +21,7 @@ if (NOT CMAKE_BUILD_TYPE OR CMAKE_BUILD_TYPE STREQUAL "")
   set(CMAKE_BUILD_TYPE "Release" CACHE STRING "" FORCE)
 endif()
 
-option(BUILD_WITH_OPENMP "Compile with muli-threading" ON)
+option(BUILD_WITH_OPENMP "Compile with muli-threading" OFF)
 if (BUILD_WITH_OPENMP)
   find_package(OpenMP REQUIRED)
   if (OpenMP_Fortran_FOUND)
