@@ -1,4 +1,6 @@
   subroutine integrate(nsteps,converged,err)
+    use iso_c_binding, only: c_associated, c_f_procpointer
+    use photochem_interface, only: lbound_fcn_interface
     use photochem_data, only: nw, nr, nz, nz1, nq, nq1, kj, np, lda, neq, isl, &
                               agl, epsj, frak, hcdens, ino, io2, zy, &
                               lco, lh, lh2, lhcaer, lhcaer2, lh2o, lo, &
@@ -10,7 +12,7 @@
     use photochem_vars, only: verbose, usol_init, usol_out, rpar_init, wfall_init, aersol_init, &
                               lbound, fixedmr, vdep, vdep0, veff, veff0, smflux, sgflux, &
                               distheight, distflux, mbound, T, den, edd, fluxo, flow, H2Osat, P, &
-                              press, equilibrium_time
+                              press, equilibrium_time, lbound_ptrs
     use photochem_wrk, only: rpar, wfall, aersol, hscale, scale_h, h_atm, bx1x2, &
                              A, yl, yp, rain, raingc, &
                              adl, add, adu, dl, dd, du, dk, &
@@ -55,6 +57,8 @@
     real*8,dimension(nq1) :: SR, FUP
     ! real*8, dimension(nsp2,nz) :: D
     real(8) :: mubar_z(nz)
+    ! for custom lower bc
+    procedure(lbound_fcn_interface), pointer :: lbound_fcn
 
     converged = .true.
     err = ''
@@ -386,7 +390,22 @@
           DJAC(KD,K) = DJAC(KD,K) +DTINV +DU(k,1) -ADU(k,1) &
           + (edd(1)/h_atm(1))/DZ(1)
           DJAC(KU,K+NQ) = - DU(k,1) - ADU(k,1)
+        else if (LB == 10) then 
+          ! a custom boundary condition
+          if (.not.c_associated(lbound_ptrs(k))) then
+            err = "Custom lower boundary condition function pointer is not set."
+            return
+          endif
           
+          call c_f_procpointer(lbound_ptrs(k), lbound_fcn)
+          
+          RHS(K) = RHS(K) + DU(k,1)*(USOL(K,2) - U(K)) &
+          + ADU(k,1)*(USOL(K,2) + U(K)) + lbound_fcn(time)/DEN(1)/DZ(1)
+          DJAC(KD,K) = DJAC(KD,K) + DTINV + DU(k,1) - ADU(k,1)
+          DJAC(KU,K+NQ) = - DU(k,1) - ADU(k,1)
+        else
+          err = "The lower boundary condition for "//trim(ispec(k))//" is not set properly"
+          return
         endif
       enddo
 

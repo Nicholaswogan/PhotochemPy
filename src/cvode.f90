@@ -313,7 +313,7 @@ subroutine cvode_save(t0, usol_start, nnq, nnz, t_eval, num_t_eval, rtol, atol, 
       yvec(k) = usol_start(i,j)
     enddo
   enddo
-  call right_hand_side(yvec, udot, neq, err)
+  call right_hand_side(t0, yvec, udot, neq, err)
   if (len_trim(err) /= 0) return
   
   ! file prep
@@ -465,7 +465,7 @@ subroutine cvode_save(t0, usol_start, nnq, nnz, t_eval, num_t_eval, rtol, atol, 
         endif
       enddo
       
-      call right_hand_side(yvec, udot, neq, err)
+      call right_hand_side(t_eval(ii), yvec, udot, neq, err)
       photorates = 0.d0
       do j=1,kj
         i = photoreac(j)   

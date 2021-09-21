@@ -100,7 +100,6 @@ class PhotochemPy:
                 raise PhotochemError(err.decode("utf-8").strip())
                 
             self.code_run = False
-            self.redox_factor = np.nan
             self.test_for_reproducibility()
 
     def setup(self,species_dat,reactions_rx,set_file,\
@@ -160,15 +159,14 @@ class PhotochemPy:
             raise PhotochemError(err.decode("utf-8").strip())
             
         self.code_run = False
-        self.redox_factor = np.nan
         self.test_for_reproducibility()
         
     def test_for_reproducibility(self):
         u0 = self.vars.usol_init.flatten(order='F').copy()
         u1 = self.vars.usol_init.flatten(order='F').copy()*2.0
-        self.right_hand_side(u0)
-        rhs1 = self.right_hand_side(u1)
-        rhs2 = self.right_hand_side(u1)
+        self.right_hand_side(0,u0)
+        rhs1 = self.right_hand_side(0,u1)
+        rhs2 = self.right_hand_side(0,u1)
         should_be_true = np.all(np.isclose(rhs1,rhs2,rtol=1.0e-8,atol=1.0e-30))
         if not should_be_true:
             raise PhotochemError("There is a problem with the right-hand-side. "+\
@@ -207,10 +205,9 @@ class PhotochemPy:
             self.code_run = True
 
             # check redox conservation
-            self.redox_factor = self.vars.redox_factor
-            if np.abs(self.redox_factor) > 1e-3 and self.warnings:
+            if np.abs(self.vars.redox_factor) > 1e-3 and self.warnings:
                 print('Warning, redox conservation is not very good.')
-                print('redox factor =','%.2e'%self.redox_factor)
+                print('redox factor =','%.2e'%self.vars.redox_factor)
                 
             # check for mixing ratios greater than 1
             if np.max(self.vars.usol_out) > 1 and self.warnings:
@@ -536,7 +533,7 @@ class PhotochemPy:
         except ValueError:
             raise PhotochemError('species not in the model')
 
-    def right_hand_side(self,usol_flat):
+    def right_hand_side(self,tn,usol_flat):
         '''
         Returns the right-hand-side of the system of ordinary differential equations
         defining photochemistry and transport.
@@ -552,7 +549,7 @@ class PhotochemPy:
         rhs : rank-1 array with bounds (self.photo.neq)
             The right hand side of the model equations (change in mixing ratio/second)
         '''
-        rhs, err = self.photo.right_hand_side(usol_flat)
+        rhs, err = self.photo.right_hand_side(tn, usol_flat)
         if len(err.strip()) > 0:
             raise PhotochemError(err.decode("utf-8").strip())
         return rhs

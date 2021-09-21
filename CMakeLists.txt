@@ -21,6 +21,11 @@ if (NOT CMAKE_BUILD_TYPE OR CMAKE_BUILD_TYPE STREQUAL "")
   set(CMAKE_BUILD_TYPE "Release" CACHE STRING "" FORCE)
 endif()
 
+if ("${CMAKE_Fortran_COMPILER_ID}" MATCHES "GNU" 
+   AND CMAKE_BUILD_TYPE STREQUAL "Debug")
+  set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -Wunused")
+endif()
+
 option(BUILD_WITH_OPENMP "Compile with muli-threading" OFF)
 if (BUILD_WITH_OPENMP)
   find_package(OpenMP REQUIRED)
@@ -33,13 +38,22 @@ message (STATUS "Building with OpenMP multi-threading = ${BUILD_WITH_OPENMP}")
 # adding src build dependencies
 add_subdirectory(src)
 
-set(PHOTOCHEM_SOURCES ${CMAKE_SOURCE_DIR}/src/photochem_data.f90 
+set(PHOTOCHEM_SOURCES ${CMAKE_SOURCE_DIR}/src/photochem_interface.f90 
+                      ${CMAKE_SOURCE_DIR}/src/photochem_data.f90 
                       ${CMAKE_SOURCE_DIR}/src/photochem_vars.f90 
                       ${CMAKE_SOURCE_DIR}/src/photochem_wrk.f90 
                       ${CMAKE_SOURCE_DIR}/src/photochem_lightning.f90 
                       ${CMAKE_SOURCE_DIR}/src/photochem_clima.f90
                       ${CMAKE_SOURCE_DIR}/src/photochem.f90
                       ${CMAKE_SOURCE_DIR}/src/lin_alg.f)
+
+set(F2PY_SOURCES ${CMAKE_SOURCE_DIR}/src/photochem_data.f90 
+                  ${CMAKE_SOURCE_DIR}/src/photochem_vars.f90 
+                  ${CMAKE_SOURCE_DIR}/src/photochem_wrk.f90 
+                  ${CMAKE_SOURCE_DIR}/src/photochem_lightning.f90 
+                  ${CMAKE_SOURCE_DIR}/src/photochem_clima.f90
+                  ${CMAKE_SOURCE_DIR}/src/photochem.f90
+                  ${CMAKE_SOURCE_DIR}/src/lin_alg.f)
 
 set(PHOTOCHEM_DEPS ${CMAKE_SOURCE_DIR}/src/determine_dimensions.f90
                    ${CMAKE_SOURCE_DIR}/src/read_species.f90
@@ -122,20 +136,20 @@ if (BUILD_F2PY_PHOTOCHEM)
   set(generated_module_file ${f2py_module_name}${PYTHON_EXTENSION_MODULE_SUFFIX})
   
   add_custom_target(${f2py_module_name} ALL
-  DEPENDS ${PHOTOCHEM_SOURCES}
+  DEPENDS ${F2PY_SOURCES}
   )
   
   add_custom_command(
   OUTPUT "${f2py_module_name}module.c" "${f2py_module_name}-f2pywrappers2.f90"
   COMMAND ${F2PY_EXECUTABLE}
     -m ${f2py_module_name}
-    ${PHOTOCHEM_SOURCES}
+    ${F2PY_SOURCES}
     --lower
     only: setup right_hand_side jacobian 
           integrate cvode cvode_save cvode_equilibrium
           steam2photochem :
   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-  DEPENDS ${PHOTOCHEM_SOURCES}
+  DEPENDS ${F2PY_SOURCES}
   )
   
   add_library(${generated_module_file} MODULE

@@ -6,7 +6,7 @@ integer(c_int) function RhsFn(tn, sunvec_y, sunvec_f, user_data) &
   use fcvode_mod
   use fsundials_nvector_mod
   use photochem_data, only: neq
-  use photochem_vars, only: max_cvode_steps, verbose
+  use photochem_vars, only: verbose
   use photochem_wrk, only: nsteps_previous, global_err, cvode_mem
   implicit none
   ! calling variables
@@ -30,7 +30,7 @@ integer(c_int) function RhsFn(tn, sunvec_y, sunvec_f, user_data) &
   fvec(1:neq) => FN_VGetArrayPointer(sunvec_f)
   
   ! fill RHS vector
-  call right_hand_side(yvec, fvec, neq, global_err)
+  call right_hand_side(tn, yvec, fvec, neq, global_err)
   if (len_trim(global_err) /= 0) then
     if (trim(global_err) == "Mixing ratios sum to > 1.0. "//&
                           "Atmosphere is probably in a run-away state.") then
@@ -85,7 +85,7 @@ integer(c_int) function JacFn(tn, sunvec_y, sunvec_f, sunmat_J, user_data, &
   yvec(1:neq) => FN_VGetArrayPointer(sunvec_y)
   djac(1:lda,1:neq) => FSUNBandMatrix_Data(sunmat_J)
 
-  call jacobian(yvec, djac, neq, lda, global_err)
+  call jacobian(tn, yvec, djac, neq, lda, global_err)
   if (len_trim(global_err) /= 0) then
     if (trim(global_err) == "Mixing ratios sum to > 1.0. "//&
                           "Atmosphere is probably in a run-away state.") then

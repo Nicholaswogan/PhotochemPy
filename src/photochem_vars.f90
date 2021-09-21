@@ -1,4 +1,5 @@
 module photochem_vars
+  use iso_c_binding, only: c_funptr
   implicit none
   public
   integer, private, parameter :: real_kind = kind(1.0d0)
@@ -21,8 +22,13 @@ module photochem_vars
   real*8, allocatable, dimension(:) :: VEFF0
   real*8, allocatable, dimension(:) :: VEFF
   
+  ! custom functions for lower boundary flux
+  !f2py integer(8), allocatable :: lbound_ptrs(:)
+  type(c_funptr), allocatable :: lbound_ptrs(:)
+  
   ! for output
-  double precision :: redox_factor
+  real(8) :: redox_factor
+  real(8) :: sulfur_factor
   
   ! needed in read_atmosphere.f90
   real*8, allocatable, dimension(:,:) :: usol_init ! initial atmospheric composition

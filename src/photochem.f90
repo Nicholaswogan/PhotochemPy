@@ -48,12 +48,15 @@ contains
 
   subroutine allocate_memory(nnq, nnp, nnsp,&
                              nnr, kks, kkj, nnw)
-     use photochem_data
-     use photochem_vars
-     use photochem_wrk
+    use iso_c_binding, only: c_null_funptr 
+    use photochem_data
+    use photochem_vars
+    use photochem_wrk
     implicit none
     integer, intent(in) ::  nnq, nnp, nnsp, nnr, kks, kkj, nnw
-
+    
+    integer :: i
+    
     ! The dimensions.
     nq  = nnq
     nq1 = nq
@@ -81,6 +84,7 @@ contains
       deallocate(SMFLUX)
       deallocate(VEFF0)
       deallocate(VEFF)
+      deallocate(lbound_ptrs)
       deallocate(atomsO)
       deallocate(atomsH)
       deallocate(atomsC)
@@ -126,6 +130,7 @@ contains
     allocate(SMFLUX(nq))
     allocate(VEFF0(nq))
     allocate(VEFF(nq))
+    allocate(lbound_ptrs(nq))
     allocate(atomsO(nsp2))
     allocate(atomsH(nsp2))
     allocate(atomsC(nsp2))
@@ -155,6 +160,9 @@ contains
     redoxstate = 0.d0
     redox_factor = 0.d0
     mass = 0.d0
+    do i = 1,nq
+      lbound_ptrs(i) = c_null_funptr
+    enddo
 
     ! definined in reactions.rx
     allocate(chemj(5,nr))
