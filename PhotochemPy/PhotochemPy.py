@@ -554,7 +554,7 @@ class PhotochemPy:
             raise PhotochemError(err.decode("utf-8").strip())
         return rhs
 
-    def jacobian(self,usol_flat):
+    def jacobian(self,tn,usol_flat):
         '''
         Returns the jacobian of the system of ordinary differential equations
         defining photochemistry and transport.
@@ -571,7 +571,7 @@ class PhotochemPy:
             The right hand side of the model equations (change in mixing ratio/second)
         '''
         ldaa = self.data.nq+self.data.nq+1
-        jac, err = self.photo.jacobian(usol_flat,ldaa)
+        jac, err = self.photo.jacobian(tn,usol_flat,ldaa)
         if len(err.strip()) > 0:
             raise PhotochemError(err.decode("utf-8").strip())
         return jac
