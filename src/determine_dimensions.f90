@@ -121,12 +121,13 @@ subroutine determine_dimensions(species_dat,reactions_rx, set_file, &
       if (associated(io_err)) then; err = trim(set_file)//trim(io_err%message); return; endif
       j = tmpdict%get_integer('lgrid',error = io_err)
       if (associated(io_err)) then; err = trim(set_file)//trim(io_err%message); return; endif
-      call root%finalize()
-      deallocate(root)
     class default
       err = "settings file must have dictionaries at root level"
       return
   end select
+  
+  call root%finalize()
+  deallocate(root)
   if (j == 0) then
     open(100,file=trim(rootdir)//'DATA/GRIDS/wogan.grid',status = 'old',iostat = io)
     if (io /= 0) then

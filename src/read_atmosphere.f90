@@ -268,13 +268,13 @@ subroutine interp2atmosfile(nz, nq, np, z, T, edd, usol, rpar, wfall, aersol, er
   
   call interp(nz, nzf, z, z_file, dlog10(dabs(edd_file)), edd, err)
   if (len_trim(err) /= 0) return
-  edd = 10.d0**edd
+  edd = 10.d0**max(edd,-100.d0)
   
   do i = 1,nq
     call interp(nz, nzf, z, z_file, dlog10(dabs(usol_file(i,:))), usol(i,:), err)
     if (len_trim(err) /= 0) return
   enddo
-  usol = 10.d0**usol
+  usol = 10.d0**max(usol,-100.d0)
   
   do i = 1,np
     call interp(nz, nzf, z, z_file, dlog10(dabs(rpar_file(:,i))), rpar(:,i), err)
@@ -284,9 +284,9 @@ subroutine interp2atmosfile(nz, nq, np, z, T, edd, usol, rpar, wfall, aersol, er
     call interp(nz, nzf, z, z_file, dlog10(dabs(aersol_file(:,i))), aersol(:,i), err)
     if (len_trim(err) /= 0) return
   enddo
-  rpar = 10.d0**rpar
-  wfall = 10.d0**wfall
-  aersol = 10.d0**aersol
+  rpar = 10.d0**max(rpar,-100.d0)
+  wfall = 10.d0**max(wfall,-100.d0)
+  aersol = 10.d0**max(aersol,-100.d0)
   
   
   if (z(1) < z_file(1)) then

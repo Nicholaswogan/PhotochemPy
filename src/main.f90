@@ -2,8 +2,8 @@
 
 program main
   use photochem, only: setup, integrate, allocate_memory, cvode_equilibrium, steam2photochem!, cvode_save!, read_settings
-  use photochem_data, only: nq, np, z, nz, P0
-  use photochem_vars, only: rootdir,  max_cvode_steps, redox_factor, usol_init
+  use photochem_data, only: nq, np, z, nz, P0, LH2, LH, nz, dz
+  use photochem_vars, only: rootdir,  max_cvode_steps, redox_factor, usol_init, veff, usol_out,den,flow
   use photochem_wrk, only: surf_radiance
   implicit none
   logical success
@@ -34,47 +34,11 @@ program main
     stop
   endif
   
-  ! nz_in = 200
-  ! P_surf = 7.d0
-  ! P_top = 2.1427d-08
-  ! allocate(usol_layer(nq))
-  ! allocate(rpar_layer(np))
-  ! usol_layer = 1.d-30
-  ! usol_layer(65) = 0.05d0
-  ! usol_layer(66) = 0.05d0
-  ! rpar_layer = [1.d-5, 1.d-5, 1.d-7, 1.d-7]
-  ! call steam2photochem(nq, np, nz_in, P_surf, P_top, usol_layer, rpar_layer, err)
-  ! if (len_trim(err) /= 0) then
-  !   print*,trim(err)
-  !   print*,'error worked properly'
-  !   stop
-  ! endif
-  ! 
-  ! print*,P0
-  
-  ! call integrate(10000,success,err)
-  ! max_cvode_steps = 100000
-  ! print*,max_cvode_steps
   call cvode_equilibrium(1.d-3, 1.d-30, .true., success, err)
   if (len_trim(err) /= 0) then
     print*,trim(err)
     print*,'error worked properly'
     stop
   endif
-  
-  ! do i = 1,num_t_eval
-  !   t_eval(i) = 10.d0**(5.d0 + (i-1)*(17.d0 - 5.d0)/num_t_eval)
-  ! enddo
-  ! call cvode_save(0.d0, usol_init, nq, nz, t_eval, num_t_eval, 1.d-3, 1.d-30, &
-  !                    .true., 'blatest.dat', 1, success, err)
-  !  if (len_trim(err) /= 0) then
-  !    print*,trim(err)
-  !    print*,'error worked properly'
-  !    stop
-  !  endif
-
-  ! do i = 1,nw
-    ! print*,wavl(i)/10.d0,surf_radiance(i)
-  ! enddo
   
 end program

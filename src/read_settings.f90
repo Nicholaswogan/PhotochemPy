@@ -115,14 +115,13 @@ subroutine read_settings(set_file, err)
       ! no error possible  
       estimate_CO2_photo_above_grid = set_dict%get_logical('estimate-CO2-photo-above-grid', &
                                       .true.,error = io_err)
-      
-  
-      call root%finalize()
-      deallocate(root)
     class default
       err = "settings file must have dictionaries at root level"
       return
   end select
+  
+  call root%finalize()
+  deallocate(root)
   
   if ((frak == 1) .and. (np < 3)) then
     err = 'frak must be 0 if no hydrocarbons are present. See '//trim(set_file)

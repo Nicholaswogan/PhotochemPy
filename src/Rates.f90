@@ -666,7 +666,7 @@
               else if (CHEMJ(1,J).EQ.'CH'.AND.CHEMJ(2,J).EQ.'CH4') THEN
                 A270A = 2.5E-11 * EXP(200./T(I))
                 A270B = 1.7E-10
-                A(J,I) = AMIN1(A270A,A270B)
+                A(J,I) = min(A270A,A270B)
               ! endif
 
               !  C2H5 + CH3 -> C2H4 + CH4
@@ -709,7 +709,7 @@
               else if (CHEMJ(1,J).EQ.'CH'.AND.CHEMJ(2,J).EQ.'C2H4') THEN
                 A272A = 5.5E-11 * EXP(173./T(I))
                 A272B = 3.55E-10
-                A(J,I) = AMIN1(A272A,A272B)
+                A(J,I) = min(A272A,A272B)
               ! endif
 
               !  CH2CCH2 + H -> CH3 + C2H2              WEIRD                                                            ! Yung et al. [1984]
@@ -750,7 +750,7 @@
               else if (CHEMJ(1,J).EQ.'CH'.AND.CHEMJ(2,J).EQ.'C2H2') THEN
                 A271A = 1.75E-10 * EXP(61./T(I))
                 A271B = 5.3E-10
-                A(J,I) = AMIN1(A271A,A271B)
+                A(J,I) = min(A271A,A271B)
               ! endif
 
               !  CH23 + C2H2 -> CH3C2H                      WEIRD                                                            ! Laufer et al. [1983] and Laufer [1981]

@@ -16,7 +16,7 @@
       integer, intent(in) :: nq, nz, kj, nsp2, nw
       real*8, dimension(nq,nz), intent(in) :: usol
       real(8), intent(in) :: mubar_z(nz)
-      real*8, dimension(nsp2,nz), intent(out) :: D
+      real*8, dimension(nsp2,nz), intent(in) :: D
       
       real*8, dimension(kj,nz), intent(out) :: prates
       real(8), intent(out) :: surf_radiance(nw)
@@ -590,11 +590,11 @@
       ! enddo
 
       ! sacrafice precision for reproducibility
-      do j=1,kj
-        do i=1,nz
-          call round(prates(j,i),-8)
-        enddo
-      enddo
+      ! do j=1,kj
+      !   do i=1,nz
+      !     call round(prates(j,i),-8)
+      !   enddo
+      ! enddo
 
 
 
