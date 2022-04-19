@@ -669,14 +669,17 @@ class PhotochemPy:
             fil.write('\n')
         fil.close()
         
-    def production_and_loss(self,spec):
+    def production_and_loss(self, spec, tn, usol_in):
         
         try:
             i = self.ispec.index(spec)
         except ValueError:
             raise PhotochemError('species not in the model')
-            
-        sol = self.out_dict()
+        
+        usol_in = np.asfortranarray(usol_in)
+        # compute right hand side to update all data for usol_in
+        self.right_hand_side(tn, usol_in.flatten(order='F'))
+        
         # loss
         ll = self.data.numl[i]
         nz = self.data.nz
@@ -689,7 +692,7 @@ class PhotochemPy:
             k = self.data.iloss[0,i,ii]-1
             n = self.data.jchem[0,k]-1 # reactant 1
             m = self.data.jchem[1,k]-1 # reactant 2
-            loss[jj] = self.wrk.a[k]*sol[self.ispec[n]]*sol[self.ispec[m]]*self.vars.den**2
+            loss[jj] = self.wrk.a[k]*self.wrk.d[n,:]*self.wrk.d[m,:]
             l1 = [self.data.jchem[2,k]-1,self.data.jchem[3,k]-1,self.data.jchem[4,k]-1]
             loss_react[jj] = self.ispec[n]+" + "+self.ispec[m]+" => "
             for l in l1:
@@ -707,7 +710,7 @@ class PhotochemPy:
             k = self.data.iprod[i,ii]-1
             n = self.data.jchem[0,k]-1 # reactant 1
             m = self.data.jchem[1,k]-1 # reactant 2
-            production[jj] = self.wrk.a[k]*sol[self.ispec[n]]*sol[self.ispec[m]]*self.vars.den**2
+            production[jj] = self.wrk.a[k]*self.wrk.d[n,:]*self.wrk.d[m,:]
 
             p1 = [self.data.jchem[2,k]-1,self.data.jchem[3,k]-1,self.data.jchem[4,k]-1]
             prod_react[jj] = self.ispec[n]+" + "+self.ispec[m]+" => "

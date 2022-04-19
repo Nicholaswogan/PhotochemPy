@@ -83,6 +83,7 @@ def read_evolve_output(filename):
     photospecies = [ispec[j-1] for j in photospec]
     
     sol = {}
+    sol['nq'] = nq
     sol['background_gas'] = background_gas
     sol['ispec'] = ispec
     sol['photospecies'] = photospecies
@@ -308,3 +309,11 @@ def stm2atmosphere_txt(pc, stm, sol_stm, filename = 'impact_atmosphere.txt', ove
     fil.close()
     
     print('Surface Pressure (bars) =', '%.4f'%sol_dry['Psurf'])
+
+def sol2usol(sol, j):
+    nz = len(sol['alt'])
+    nq = sol['nq']
+    usol = np.empty((nq,nz),order='F')
+    for i in range(nq):
+        usol[i,:] = sol[sol['ispec'][i]][j]
+    return usol
