@@ -8,7 +8,7 @@
                               z, dz, jtrop, ispec, photoreac, photonums, nsp2, &
                               background_spec, lightning, mass, background_mu, rainout_on, &
                               fix_water_in_troposphere, P0, light_disp_rate, &
-                              estimate_CO2_photo_above_grid
+                              estimate_CO2_photo_above_grid, time_dependent_photon_flux
     use photochem_vars, only: verbose, usol_init, usol_out, rpar_init, wfall_init, aersol_init, &
                               lbound, fixedmr, vdep, vdep0, veff, veff0, smflux, sgflux, &
                               distheight, distflux, mbound, T, den, edd, fluxo, flow, H2Osat, P, &
@@ -242,8 +242,15 @@
         endif
       endif
       
-      call photo(zy, agl, io2, ino, usol, mubar_z, D, nsp2, nw, &
-                 nq, nz, kj, prates, surf_radiance, amean)
+      if (time_dependent_photon_flux) then
+        err = "You can not use a time-dependent photon flux with Backward Euler." &
+              //" You must use CVODE BDF."
+        return
+      endif
+      
+      call photo(TIME, zy, agl, io2, ino, usol, mubar_z, D, nsp2, nw, &
+                 nq, nz, kj, prates, surf_radiance, amean, err)
+      if (len_trim(err) /= 0) return
       do j=1,kj
         do i=1,nz
           A(photonums(j),i)=prates(j,i)

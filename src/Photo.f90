@@ -1,16 +1,20 @@
 
 
-      SUBROUTINE PHOTO(zy, agl, io2, ino, usol, mubar_z, D, nsp2, nw, nq, nz, kj, prates,&
-                      surf_radiance, amean)
+      SUBROUTINE PHOTO(tn, zy, agl, io2, ino, usol, mubar_z, D, nsp2, nw, nq, nz, kj, prates,&
+                      surf_radiance, amean, err)
+        use iso_c_binding, only: c_associated, c_f_procpointer
+        use photochem_interface, only: time_dependent_flux_fcn
         use photochem_data, only: np, nsp, fscale, grav_z, &
                                   photoreac, ispec, rstand, qexthc, ghc, W0HC, &
                                   wavl, wav, sq, flux, &
-                                  lno, nz1, dz
+                                  lno, nz1, dz, time_dependent_photon_flux, &
+                                  photon_flux_ptr
         use photochem_vars, only: verbose, den, T
         use photochem_wrk, only: rpar, gft, w0T, QEXTT
       implicit none
 
       ! local variables
+      real(8), intent(in) :: tn
       real*8, intent(in) :: zy, agl
       integer, intent(in) :: io2, ino
       integer, intent(in) :: nq, nz, kj, nsp2, nw
@@ -21,6 +25,7 @@
       real*8, dimension(kj,nz), intent(out) :: prates
       real(8), intent(out) :: surf_radiance(nw)
       real(8), intent(out) :: amean(nz,nw)
+      character(err_len), intent(out) :: err
 
       real*8, dimension(kj,nz) :: partial_prates
 
@@ -47,6 +52,24 @@
       integer :: m
       integer lpolyscount
       real(8) :: surf_rad
+      
+      ! for time dependent photon flux
+      real(8) :: flux_copy(nw)
+      procedure(time_dependent_flux_fcn), pointer :: flux_fcn
+      
+      err = ""
+      
+      ! does the photon flux change over time?
+      if (time_dependent_photon_flux) then
+        if (.not.c_associated(photon_flux_ptr)) then
+          err = "Custom time-dependent flux function is not set properly"
+          return
+        endif
+        call c_f_procpointer(photon_flux_ptr, flux_fcn)
+        call flux_fcn(tn, nw, flux_copy)
+      else
+        flux_copy = flux
+      endif
 
       NZP1=NZ+1
       nz2 = 2*nz
@@ -367,7 +390,7 @@
           amean(:,l) = S
   ! this returns the Source function S to this code
 
-          FLX = FLUX(L)*AGL*ALP*FSCALE
+          FLX = flux_copy(L)*AGL*ALP*FSCALE
 
 
 

@@ -1,5 +1,6 @@
 
 module photochem_data
+  use iso_c_binding, only: c_funptr, c_null_funptr
   implicit none
   public
   integer, private, parameter :: real_kind = kind(1.0d0)
@@ -86,6 +87,10 @@ module photochem_data
   real*8, allocatable, dimension(:) :: Flux ! Solar flux photons/(cm2 s)
   real*8, allocatable, dimension(:) :: wavl, wav, wavu ! wavelength bins
   real*8, allocatable, dimension(:,:,:) :: sq ! cross sections * qy
+  ! custom function to change photon flux over time
+  logical :: time_dependent_photon_flux = .false.
+  !f2py integer(8) :: photon_flux_ptr
+  type(c_funptr) :: photon_flux_ptr = c_null_funptr
   
   ! needed in initmie.f90
   real*8, dimension(51) :: Rstand

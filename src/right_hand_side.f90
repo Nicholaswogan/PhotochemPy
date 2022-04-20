@@ -211,8 +211,10 @@
       endif
     endif
     
-    call photo(zy, agl, io2, ino, usol, mubar_z, D, nsp2, nw, &
-               nq, nz, kj, prates, surf_radiance, amean)
+    call photo(tn, zy, agl, io2, ino, usol, mubar_z, D, nsp2, nw, &
+               nq, nz, kj, prates, surf_radiance, amean, err)
+    if (len_trim(err) /= 0) return
+    
     do j=1,kj
       do i=1,nz
         A(photonums(j),i)=prates(j,i)
