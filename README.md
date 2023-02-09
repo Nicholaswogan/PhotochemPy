@@ -13,7 +13,7 @@ You need a Fortran compiler (`gfortran>=9.30`, [install instructions here](https
 Create a `conda` environment with all dependencies
 
 ```sh
-conda create -n photochempy -c conda-forge python numpy scipy scikit-build
+conda create -n photochempy -c conda-forge python numpy=1.21 scipy scikit-build
 ```
 
 Clone or download the github repository. Navigate to the root directory with a terminal, activate your new `conda` environment, then install with setup.py:

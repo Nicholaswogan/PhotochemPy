@@ -107,6 +107,13 @@ if (BUILD_STATIC_PHOTOCHEM)
   #                           "${CMAKE_BINARY_DIR}/modules"
   #                           )
 
+  if ("${CMAKE_Fortran_COMPILER_ID}" MATCHES "GNU")
+    target_compile_options(photochem PRIVATE -Wunused -Wimplicit-interface -fimplicit-none)
+    if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+      target_compile_options(photochem PRIVATE -fcheck=all,no-array-temps)
+    endif()
+  endif()
+
   # the main executable
   add_executable(photo.run ${CMAKE_SOURCE_DIR}/src/main.f90)
   target_link_libraries(photo.run photochem )
