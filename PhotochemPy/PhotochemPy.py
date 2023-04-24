@@ -100,7 +100,6 @@ class PhotochemPy:
                 raise PhotochemError(err.decode("utf-8").strip())
                 
             self.code_run = False
-            self.test_for_reproducibility()
 
     def setup(self,species_dat,reactions_rx,set_file,\
               atmosphere_txt, flux_txt):
@@ -159,7 +158,6 @@ class PhotochemPy:
             raise PhotochemError(err.decode("utf-8").strip())
             
         self.code_run = False
-        self.test_for_reproducibility()
         
     def test_for_reproducibility(self):
         u0 = self.vars.usol_init.flatten(order='F').copy()
